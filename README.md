@@ -1,9 +1,9 @@
 # rpi3rtos
 A Simple RTOS for the Raspberry Pi 3
 
-** Tuesday February 4, 2020 ** - A recent job application rejection was keyword based for "RTOS" and "C". As a result I decided to take on a personal daily challenge to write a simple RTOS in C for the Raspberry Pi 3. I'll be leveraging much of what I learned in my [rpi3fxproc](https://github.com/rahealy/rpi3fxproc) project and see how much working code can be written in 1 day, 2 days, and so on...
+**Tuesday February 4, 2020** - A recent job application rejection was keyword based for "RTOS" and "C". As a result I decided to take on a personal daily challenge to write a simple RTOS in C for the Raspberry Pi 3. I'll be leveraging much of what I learned in my [rpi3fxproc](https://github.com/rahealy/rpi3fxproc) project and see how much working code can be written in 1 day, 2 days, and so on...
 
-** Monday February 10, 2020 (Current) ** - This is more or less the first full day of work. After finishing up the [diaspora_client_example](https://github.com/rahealy/diaspora_client_example) I have time to focus on daily contributions to this project. Researching options for how to implement.
+**Monday February 10, 2020 (Current)** - This is more or less the first full day of work. After finishing up the [diaspora_client_example](https://github.com/rahealy/diaspora_client_example) I have time to focus on daily contributions to this project. Researching options for how to implement.
 
 
 * Project Goals
