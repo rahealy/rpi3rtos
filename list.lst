@@ -1,0 +1,66 @@
+
+kernel8.elf:	file format ELF64-aarch64-little
+
+
+Disassembly of section .text:
+
+0000000000080000 _start:
+   80000: a1 00 38 d5                  	mrs	x1, MPIDR_EL1
+   80004: 21 04 40 92                  	and	x1, x1, #0x3
+   80008: 61 00 00 b4                  	cbz	x1, #12 <_cinit>
+   8000c: 5f 20 03 d5                  	wfe
+   80010: ff ff ff 17                  	b	#-4 <_start+0xc>
+
+0000000000080014 _cinit:
+   80014: 61 01 00 58                  	ldr	x1, #44
+   80018: 3f 00 00 91                  	mov	sp, x1
+
+000000000008001c _zbss:
+   8001c: 61 01 00 58                  	ldr	x1, #44
+   80020: 82 01 00 18                  	ldr	w2, #48
+   80024: 82 00 00 34                  	cbz	w2, #16 <_jmp>
+   80028: 3f 84 00 f8                  	str	xzr, [x1], #8
+   8002c: 42 04 00 51                  	sub	w2, w2, #1
+   80030: a2 ff ff 35                  	cbnz	w2, #-12 <_zbss+0x8>
+
+0000000000080034 _jmp:
+   80034: 09 00 00 94                  	bl	#36 <_cpuinit>
+   80038: f5 ff ff 17                  	b	#-44 <_start+0xc>
+   8003c: 1f 20 03 d5                  	nop
+
+0000000000080040 $d.1:
+   80040:	00 00 08 00	.word	0x00080000
+   80044:	00 00 00 00	.word	0x00000000
+   80048:	c0 00 08 00	.word	0x000800c0
+   8004c:	00 00 00 00	.word	0x00000000
+   80050:	00 00 00 00	.word	0x00000000
+   80054:	00 00 00 00	.word	0x00000000
+
+0000000000080058 _cpuinit:
+   80058: 49 00 80 52                  	mov	w9, #2
+   8005c: 4c 42 38 d5                  	mrs	x12, CurrentEL
+   80060: 09 e1 3c d5                  	mrs	x9, CNTHCTL_EL2
+   80064: 29 05 40 b2                  	orr	x9, x9, #0x3
+   80068: 09 e1 1c d5                  	msr	CNTHCTL_EL2, x9
+   8006c: 7f e0 1c d5                  	msr	CNTVOFF_EL2, xzr
+   80070: e8 03 1f aa                  	mov	x8, xzr
+   80074: 0a 00 00 90                  	adrp	x10, #0
+   80078: 0b 00 00 90                  	adrp	x11, #0
+   8007c: e9 7f 86 d2                  	mov	x9, #13311
+   80080: 49 11 1c d5                  	msr	CPTR_EL2, x9
+   80084: 7f 11 1c d5                  	msr	HSTR_EL2, xzr
+   80088: 09 11 3c d5                  	mrs	x9, HCR_EL2
+   8008c: 29 01 61 b2                  	orr	x9, x9, #0x80000000
+   80090: 09 11 1c d5                  	msr	HCR_EL2, x9
+   80094: 4a e1 02 91                  	add	x10, x10, #184
+   80098: 6b 01 00 91                  	add	x11, x11, #0
+   8009c: a8 78 80 d2                  	mov	x8, #965
+   800a0: 09 40 3c d5                  	mrs	x9, SPSR_EL2
+   800a4: 29 01 08 aa                  	orr	x9, x9, x8
+   800a8: 09 40 1c d5                  	msr	SPSR_EL2, x9
+   800ac: 2a 40 1c d5                  	msr	ELR_EL2, x10
+   800b0: 0b 41 1c d5                  	msr	SP_EL1, x11
+   800b4: e0 03 9f d6                  	eret
+
+00000000000800b8 main:
+   800b8: 00 00 00 14                  	b	#0 <main>
