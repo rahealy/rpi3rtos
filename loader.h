@@ -22,39 +22,32 @@
  * SOFTWARE.
  */
 
-#ifndef TASK_H
-#define TASK_H
+/*
+RTOS executable file is laid out as follows:
 
-//
-//task.h
-// A task is a block of code that will be run.
-//
-#include "platform.h"
+0x00000000 RTOS kernel.
+0x0008n000 First task in ELF format as data.
+...
+0x00nnnnnn Last task in ELF format as data.
 
-#define TASK_TIMED_OUT 0x00000001 //Set if task is still running after slice expires.
-#define TASK_WORKING   0x00000002 //Task is working on something.
-#define TASK_PENDING   0x00000004 //Task is waiting on something.
-#define TASK_FINISHED  0x00000008 //Task is finished.
+Tasks are loaded into 4MB address spaces in last first order. Address spaces are 
+filled from higher memory address to lower address possibly overwriting already
+loaded tasks in the initial executable. Example:
 
-typedef void (*taskfn)();
+Executable File:
+0x00000000 RTOS kernel (16kB for example. May be different.)
+0x00004000 Task 1 in ELF format as data (4kB for example. May be different.)
+0x00005000 Task 2 in ELF format as data (4kB for example. May be different.)
 
-typedef struct _task_header {
-    u64_t flags;    //Status flags.
-    u64_t sp;       //Saved stack pointer.
-    taskfn reset;   //Reset/re-init the task. Reset should check flags to see why.
-    taskfn main;    //Task's main loop.
-} task_header;
+Memory:
+0x00080000 RTOS kernel.
+0x00200000 Task 1 Loaded second - bottom to top.
+0x00400000 Task 2 Loaded first - bottom to top.
 
-//
-//task_save_context()
-// Saves the task's state on the current stack.
-//
-void __attribute__((naked)) task_save_context();
+*/
 
-//
-//task_restore_context()
-// Restores the task's state from the current stack.
-//
-void __attribute__((naked)) task_restore_context();
+#ifndef LOADER_H
+#define LOADER_H
+
 
 #endif

@@ -22,39 +22,30 @@
  * SOFTWARE.
  */
 
-#ifndef TASK_H
-#define TASK_H
+#ifndef MMU_H
+#define MMU_H
+
+/*
+Memory Layout
+Addresses relative.
+
+Task Memory
+ Each task is assigned 4MB of contiguous address space laid out as follows:
+
+ 0x00200000-0x00400000: Mixed executable R/O and nonexecutable R/W in 4kB blocks.
+ 0x00000000-0x00200000: Non-executable R/W single 2MB block.
+ 
+ Task executable code is placed at top of address space. Stack grows down. Example:
+ 
+ 0x00400000-0x003F8000: Read only executable code takes up 8 4kB blocks.
+ 0x003F8000-0x00000000: Task BSS + data + stack takes up remaining 4kB and single 2MB block.
+*/
+
 
 //
-//task.h
-// A task is a block of code that will be run.
+//Enable the MMU using a list containing number of 4kB R/O blocks for
+//each address space.
 //
-#include "platform.h"
-
-#define TASK_TIMED_OUT 0x00000001 //Set if task is still running after slice expires.
-#define TASK_WORKING   0x00000002 //Task is working on something.
-#define TASK_PENDING   0x00000004 //Task is waiting on something.
-#define TASK_FINISHED  0x00000008 //Task is finished.
-
-typedef void (*taskfn)();
-
-typedef struct _task_header {
-    u64_t flags;    //Status flags.
-    u64_t sp;       //Saved stack pointer.
-    taskfn reset;   //Reset/re-init the task. Reset should check flags to see why.
-    taskfn main;    //Task's main loop.
-} task_header;
-
-//
-//task_save_context()
-// Saves the task's state on the current stack.
-//
-void __attribute__((naked)) task_save_context();
-
-//
-//task_restore_context()
-// Restores the task's state from the current stack.
-//
-void __attribute__((naked)) task_restore_context();
+int mmu_enable(u64_t *rolst, u64_t lstsz);
 
 #endif

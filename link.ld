@@ -5,15 +5,17 @@ SECTIONS
         KEEP(*(.text.start)) *(.text .text.*)
     }
 
-    .rodata :
+    .rodata:
     {
         *(.rodata .rodata.*)
     }
 
-    .data : { 
+    . = ALIGN(0x1000);
+
+    .data : {
         *(.data .data.*)
     }
-    
+
     .bss ALIGN(16):
     {
         __bss_beg = .;

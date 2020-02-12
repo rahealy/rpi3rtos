@@ -29,7 +29,7 @@
 
 #include "task.h"
 
-void __attribute__((naked)) task_save_state(void) {
+void __attribute__((naked)) task_save_context(void) {
     asm(
         "msr    daifset, #3\n"              //Disable IRQ and FIQ interrupts. 
         "sub    sp,  sp,  #16 * 16\n"       //Allocate 256 bytes on the stack.
@@ -53,7 +53,7 @@ void __attribute__((naked)) task_save_state(void) {
     );
 }
 
-void __attribute__((naked)) task_restore_state(void) {
+void __attribute__((naked)) task_restore_context(void) {
     asm(
         "ldp    x0, x30,  [sp, #16 * 15]\n"
         "msr    ELR_EL1,  x0\n"
