@@ -29,5 +29,12 @@ A Simple RTOS for the Raspberry Pi 3
     * Handled by single high priority task.
 
 
+## Credits
+
+### Software
+
+This project contains code Copyright (c) 2018 Andre Richter <andre.o.richter@gmail.com> and bzt [https://github.com/bztsrc](https://github.com/bztsrc). All copyrights are respective of their owners.
+
+Much of the RPi hardware specific code in this project is derived from information in the "Bare-metal and Operating System development tutorials in Rust on the Raspberry Pi 3" [https://github.com/rust-embedded/rust-raspi3-OS-tutorials](https://github.com/rust-embedded/rust-raspi3-OS-tutorials). This is a recommended resource for anyone interested in learning the specifics involved in solving problems in this particular domain.
 
 
