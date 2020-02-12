@@ -22,14 +22,27 @@
  * SOFTWARE.
  */
 
-#include "uart.h"
-
-void main(void) {
-    if (0 == uart_init()) {
-        uart_puts("Hello World!\n", 13);
-    }
-
-    while(1) {
-        asm("wfe":::);
-    }
+void current_el0_irq(void) {
 }
+
+void current_el0_fiq(void) {
+}
+
+void current_elx_irq(void) {
+}
+
+void current_elx_fiq(void) {
+}
+
+void lower_aarch64_irq(void) {
+}
+
+void lower_aarch64_fiq(void) {
+}
+
+void lower_aarch32_irq(void) {
+}
+
+void lower_aarch32_fiq(void) {
+}
+

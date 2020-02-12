@@ -8,7 +8,7 @@ COBJS        = $(CSRCS:.c=.o)
 ASMOBJS      = $(ASMSRCS:.S=.o)
 CTARGET      = aarch64-elf
 LDTARGET     = aarch64elf
-CFLAGS       = -Wall -O2 -ffreestanding -nostdinc -nostdlib -mcpu=cortex-a53
+CFLAGS       = -Wall -O2 -ffreestanding -nostdinc -nostdlib -mcpu=cortex-a53+nosimd
 KERNEL       = kernel8.elf
 KERNEL_IMAGE = kernel8.img
 
@@ -17,10 +17,7 @@ KERNEL_IMAGE = kernel8.img
 #######################################################################
 
 
-all: start.o kernel8.img
-
-start.o: start.S
-	clang --target=$(CTARGET) $(CFLAGS) -c start.S -o start.o
+all: clean kernel8.img
 
 kernel8.img: $(COBJS) $(ASMOBJS)
 	ld.lld -m $(LDTARGET) -nostdlib $(ASMOBJS) $(COBJS) -T link.ld -o $(KERNEL)
@@ -29,8 +26,8 @@ kernel8.img: $(COBJS) $(ASMOBJS)
 %.o: %.c
 	clang --target=$(CTARGET) $(CFLAGS) -c $< -o $@
 
-# %.o: %.S
-# 	clang --target=$(CTARGET) $(CFLAGS) -c $< -o $@
+%.o: %.S
+	clang --target=$(CTARGET) $(CFLAGS) -c $< -o $@
 
 clean:
 	-rm -f ./$(KERNEL)
@@ -42,7 +39,9 @@ clean:
 #######################################################################
 
 #
-#Uses  
+#Uses docker container from:
+# https://github.com/rust-embedded/rust-raspi3-OS-tutorials
+# Provided by Andre Richter <andre.o.richter@gmail.com>
 #
 CONTAINER_UTILS   = andrerichter/raspi3-utils
 

@@ -22,14 +22,31 @@
  * SOFTWARE.
  */
 
-#include "uart.h"
+//
+//GPU Mailbox routines.
+//
 
-void main(void) {
-    if (0 == uart_init()) {
-        uart_puts("Hello World!\n", 13);
-    }
+#ifndef MBOX_H
+#define MBOX_H
 
-    while(1) {
-        asm("wfe":::);
-    }
-}
+#include "platform.h"
+
+#define MBOX_TAG_SETCLKRATE 0x00038002
+#define MBOX_CLOCK_UART     0x00000002
+#define MBOX_CHANNEL_PROP   0x00000008
+
+//
+//mbox_buf
+// Buffer used to share information with the GPU mailbox.
+//
+typedef struct _mbox_buf {
+    u32_t buffer[36];
+} __attribute__((packed, aligned(16))) mbox_buf;
+
+//
+//Call mailbox with buffer contents.
+// Returns: -1 on error. 0 on success.
+//
+int mbox_call(mbox_buf *mbox, u32_t ch);
+
+#endif

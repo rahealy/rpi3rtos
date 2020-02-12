@@ -22,14 +22,34 @@
  * SOFTWARE.
  */
 
-#include "uart.h"
 
-void main(void) {
-    if (0 == uart_init()) {
-        uart_puts("Hello World!\n", 13);
-    }
+//
+//task.h
+// A task is a block of code that will be run.
+//
+#include "platform.h"
 
-    while(1) {
-        asm("wfe":::);
-    }
-}
+#define TASK_TIMED_OUT 0x00000001
+#define TASK_WORKING   0x00000002
+#define TASK_IDLE      0x00000004
+
+typedef void (*taskfn)();
+
+typedef struct _task_header {
+    u64_t flags;
+    u64_t sp;
+    taskfn reset;
+    taskfn main;
+} task_header;
+
+//
+//task_save_state()
+// Saves the task's state on the current stack.
+//
+void __attribute__((naked)) task_save_state();
+
+//
+//task_restore_state()
+// Restores the task's state from the current stack.
+//
+void __attribute__((naked)) task_restore_state();
