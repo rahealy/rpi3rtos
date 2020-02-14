@@ -50,9 +50,21 @@ int uart_init(void);
 void uart_send(char c);
 
 //
-//uart_puts()
+//uart_nputs()
 // Sends up to 'numch' characters or null terminated string.
 //
-void uart_puts(char *str, u32_t numch);
+void uart_nputs(char *str, u32_t numch);
+
+//
+//uart_puts()
+// Sends null terminated string.
+//
+void uart_puts(const char *str);
+
+//
+//uart_u64hex()
+// Writes 64 bit number as hex.
+//
+void uart_u64hex(u64_t val);
 
 #endif

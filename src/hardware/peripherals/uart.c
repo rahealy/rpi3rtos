@@ -165,7 +165,18 @@ void uart_send(char c) {
     uart->DR = (u32_t) c;
 }
 
-void uart_puts(char *str, u32_t numch) {
+void uart_puts(const char *str) {
+    const char *ch;
+    for (ch = str; *ch != 0x00; ++ch) {
+        // convert newline to carrige return + newline
+        if ('\n' == *ch) {
+            uart_send('\r');
+        }
+        uart_send(*ch);
+    }
+}
+
+void uart_nputs(char *str, u32_t numch) {
     int i = 0;
     char *ch = str;
     
@@ -179,17 +190,34 @@ void uart_puts(char *str, u32_t numch) {
     }
 }
 
-//     /// Send a character
-//     pub fn send(&self, c: char) {
-//         // wait until we can send
-//         loop {
-//             if !self.FR.is_set(FR::TXFF) {
-//                 break;
-//             }
-// 
-//             asm::nop();
-//         }
-// 
-//         // write the character to the buffer
-//         self.DR.set(c as u32);
-//     }
+char uart_tohex(u8_t val) {
+    switch (val & 0x0F) {
+        case 0x0: return '0';
+        case 0x1: return '1';
+        case 0x2: return '2';
+        case 0x3: return '3';
+        case 0x4: return '4';
+        case 0x5: return '5';
+        case 0x6: return '6';
+        case 0x7: return '7';
+        case 0x8: return '8';
+        case 0x9: return '9';
+        case 0xA: return 'A';
+        case 0xB: return 'B';
+        case 0xC: return 'C';
+        case 0xD: return 'D';
+        case 0xE: return 'E';
+        case 0xF: return 'F';
+        default:  return '?';
+    }
+}
+
+void uart_u64hex(u64_t val) {
+    int i;
+    uart_puts("0x");
+    for(i = 15; i > -1; --i) {
+        uart_send(
+            uart_tohex((u8_t) (val >> i * 4))
+        );
+    }
+}

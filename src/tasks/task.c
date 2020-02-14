@@ -86,7 +86,7 @@ void task_save(task_header *th) {
         : "=r"(sp) : "r"(th->sp) : 
     );
 
-    task_save_state();
+    task_save_context();
     
     asm volatile (
         "mov    %0, sp\n"

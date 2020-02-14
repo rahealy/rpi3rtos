@@ -23,3 +23,20 @@
  */
 
 #include "loader.h"
+
+// typedef struct _elf_header {
+//     unsigned char   e_ident[16];
+//     u16_t      e_type;
+//     u16_t      e_machine;
+//     u32_t      e_version;
+//     u64_t      e_entry;
+//     u64_t      e_phoff;
+//     u64_t      e_shoff;
+//     u32_t      e_flags;
+//     u16_t      e_ehsize;
+//     u16_t      e_phentsize;
+//     u16_t      e_phnum;
+//     u16_t      e_shentsize;
+//     u16_t      e_shnum;
+//     u16_t      e_shtrndx;
+// } elf_header;

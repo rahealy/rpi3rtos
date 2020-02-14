@@ -22,5 +22,11 @@
  * SOFTWARE.
  */
 
-int mmu_enable(void) {
-}
+//
+//rpi3rtos.h
+// All tasks should include this top level file.
+//
+
+#include "platform.h"
+#include "hardware.h"
+

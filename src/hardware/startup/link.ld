@@ -1,22 +1,23 @@
 SECTIONS
 {
     . = 0x80000;
-    .text : { 
+    
+    .text : {
         KEEP(*(.text.start)) *(.text .text.*)
     }
 
-    .rodata:
-    {
+    .rodata : {
         *(.rodata .rodata.*)
     }
 
     . = ALIGN(0x1000);
 
     .data : {
+        __ro_end = 123;
         *(.data .data.*)
     }
 
-    .bss ALIGN(16):
+    .bss ALIGN(0x10):
     {
         __bss_beg = .;
         *(.bss .bss.*)

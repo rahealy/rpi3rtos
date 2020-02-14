@@ -26,9 +26,9 @@
 RTOS executable file is laid out as follows:
 
 0x00000000 RTOS kernel.
-0x0008n000 First task in ELF format as data.
+0x0008n000 First task as data.
 ...
-0x00nnnnnn Last task in ELF format as data.
+0x00nnnnnn Last task as data.
 
 Tasks are loaded into 4MB address spaces in last first order. Address spaces are 
 filled from higher memory address to lower address possibly overwriting already
@@ -49,5 +49,10 @@ Memory:
 #ifndef LOADER_H
 #define LOADER_H
 
+//
+//loader_task
+// A task is 
+typedef struct _loader_task {
+} loader_task;
 
 #endif
