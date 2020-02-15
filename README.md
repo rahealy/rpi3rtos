@@ -3,7 +3,7 @@ A Simple RTOS for the Raspberry Pi 3
 
 **Tuesday February 4, 2020** - A recent job application of mine was rejected because it did not contain the terms  "RTOS" and "C". As a result I decided to take on a personal daily challenge to write a simple RTOS in C for the Raspberry Pi 3. I'll be leveraging much of what I learned in my [rpi3fxproc](https://github.com/rahealy/rpi3fxproc) project to see how much working code can be written in 1 day, 2 days, and so on...
 
-**Friday February 12, 2020 (Current)** - Got most of the MMU code written. Decided on memory layout and wrote startup loader. Wrote kernel (Task0) stub. Tried using autotools but couldn't make them do the right thing so backed out changes. Currently working on a linker issue that adds 10's of kB of 0x00 to the Task0 stub making ~8kB grow to ~40kB. Highly unexpected.
+**Friday February 12, 2020 (Current)** - Got most of the MMU code written. Decided on memory layout and wrote startup loader. Wrote kernel (Task0) stub. Tried using autotools but couldn't make them do the right thing so backed out changes. Currently working on a linker issue that adds 10's of kB of 0x00 to the Task0 stub making ~8kB grow to ~40kB. Highly unexpected. Update: Adding something after the .bss segment in a linker script causes the linker to include the whole .bss section in the executable file. Will find another way.
 
 **Wedneday February 12, 2020 0946** - Got a big chunk of the hardware groundwork (CPU init, exception table, UART) done yesterday. MMU and hardware timer will come today. Also, C compiler seems to be oblivious/not too aware of stack pointer manipulation in asm. It will probably take some experimenting to get the context switching right.
 
