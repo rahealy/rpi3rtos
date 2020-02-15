@@ -4,11 +4,16 @@ SECTIONS
 {
     . = 0x00000000;
 
+    .task_list_item :
+    {
+        KEEP(*(.task_list_item)) ;
+    }
+
     .task_header :
     {
         KEEP(*(.task_header)) ;
     }
-
+    
     .text : {
         KEEP(*(.text.start)) *(.text .text.*)
     }
@@ -31,11 +36,6 @@ SECTIONS
         *(COMMON)
         __bss_end = .;
         __task_end = .;
-    }
-
-    .task_list_item :
-    {
-        KEEP(*(.task_list_item)) ;
     }
 
     /DISCARD/ : { *(.comment) *(.gnu*) *(.note*) *(.eh_frame*) }

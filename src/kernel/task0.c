@@ -34,6 +34,14 @@ void start(void);
 void reset(void);
 void main(void);
 
+static task_list_item tasklistitem
+    __attribute__ ((section (".task_list_item"))) 
+    __attribute__ ((__used__)) = {
+    TASK_LIST_ITEM_MAGIC,                          //Magic number.
+    0,                                             //This is task 0 so no next in list.
+    (u64_t) &__task_end - sizeof(task_list_item)   //Size of task not including this header.
+};
+
 static task_header taskheader
     __attribute__ ((section (".task_header"))) 
     __attribute__ ((__used__)) = {
@@ -62,11 +70,3 @@ void reset(void) {
 void main() {
     uart_puts("rpi3rtos::task0_main(): Beginning kernel Task0...");
 }
-
-static task_list_item tasklistitem
-    __attribute__ ((section (".task_list_item"))) 
-    __attribute__ ((__used__)) = {
-    TASK_LIST_ITEM_MAGIC, //Magic number.
-    0,                    //This is task 0 so no next in list.
-    (u64_t) &__task_end   //Size of task not including this header.
-};

@@ -44,4 +44,4 @@ clean:
 	-rm -f *.o
 
 objdump:
-	llvm-objdump --disassemble task0.elf > ../../debug/task0.lst
+	llvm-objdump --all-headers --full-contents --disassemble task0.elf > ../../debug/task0.lst
