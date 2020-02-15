@@ -28,13 +28,22 @@
 #include "platform.h"
 
 //
-//MMU_TASK_MEMORY_SZ
-// Amount of memory allocated to a task in 2MB increments. Executable
-// size is fixed to 2MB or less. Making this value larger will increase
-// the amount of stack space available to the task. It will not increase
-// the amount of memory to store the executable code.
+//MMU_BLOCK_SZ
+// MMU provides 2MB blocks of memory for Level 2 table.
 //
-#define MMU_TASK_MEMORY_SZ      0x00400000
+#define MMU_BLOCK_SZ 0x00200000
+
+//
+//MMU_BLOCKS_PER_TASK
+// Number of blocks in each task.
+//
+#define MMU_BLOCKS_PER_TASK  2
+
+//
+//MMU_TASK_MEMORY_SZ
+// Total amount of memory allocated to a task.
+//
+#define MMU_TASK_MEMORY_SZ (MMU_BLOCKS_PER_TASK / MMU_BLOCK_SZ)
 
 /*
 Memory Layout

@@ -25,7 +25,6 @@
 #include "mmu.h"
 #include "uart.h"
 
-#define MMU_TASK_NUM_2MB_BLOCKS (MMU_TASK_MEMORY_SZ / 0x00200000)
 #define MMU_PAGE_TABLE_LEN      512
 
 //
@@ -189,22 +188,22 @@ void mmu_enable_level_2_table(u64_t task, u64_t lvl3_pos) {
 //Memory offset in bytes for current task memory.
     u64_t task_mem_offst  = task * MMU_TASK_MEMORY_SZ;
 //Offset into the level 2 table for current task.
-    u64_t lvl2_offst = task * MMU_TASK_NUM_2MB_BLOCKS;
+    u64_t lvl2_offst = task * MMU_BLOCKS_PER_TASK;
 
     uart_puts("mmu_enable(): Setting up level 2 table\n");
 
 //First 2MiB blocks in task describe read-write DRAM.
     uart_puts("RW : ");
     mmu_print_range(task_mem_offst, 
-                    task_mem_offst + (0x200000 * (MMU_TASK_NUM_2MB_BLOCKS - 1)), 
+                    task_mem_offst + (0x200000 * (MMU_BLOCKS_PER_TASK - 1)), 
                     0x200000);
     uart_puts("\n");
 
-    for (i = 0; i < MMU_TASK_NUM_2MB_BLOCKS; ++i) {
+    for (i = 0; i < MMU_BLOCKS_PER_TASK; ++i) {
         //Current offset into the level two table.
         u64_t cur_lvl2_offst = lvl2_offst + i;
 
-        if(i = lvl3_pos) {
+        if(i == lvl3_pos) {
 //This 2MiB block in task is subdivided into 512 4KiB (0x1000) block
 //described by the 512 entries in the level 3 table. Tell the MMU to
 //jump to the level 3 table when this block of addresses is accessed.
@@ -254,6 +253,7 @@ void mmu_enable_level_2_table(u64_t task, u64_t lvl3_pos) {
 
 void mmu_enable(mmu_range_lst rolst, u64_t numtasks) {
     u64_t i;
+
 //
 // MAIR_EL1
 //
@@ -296,7 +296,7 @@ void mmu_enable(mmu_range_lst rolst, u64_t numtasks) {
 
 //Set up the page tables for each task.
     for (i = 0; i < numtasks; ++i) {
-        mmu_enable_level_2_table(i);
+        mmu_enable_level_2_table(i, MMU_BLOCKS_PER_TASK - 1);
         mmu_enable_level_3_table(i, rolst[i][0], rolst[i][1]);
     }
 

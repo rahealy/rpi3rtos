@@ -22,37 +22,26 @@
  * SOFTWARE.
  */
 
-/*
-RTOS executable file is laid out as follows:
+#ifndef STARTUP_H
+#define STARTUP_H
 
-0x00000000 RTOS kernel.
-0x0008n000 First task as data.
-...
-0x00nnnnnn Last task as data.
+#include "platform.h"
 
-Tasks are loaded into 4MB address spaces in last first order. Address spaces are 
-filled from higher memory address to lower address possibly overwriting already
-loaded tasks in the initial executable. Example:
-
-Executable File:
-0x00000000 RTOS kernel (16kB for example. May be different.)
-0x00004000 Task 1 in ELF format as data (4kB for example. May be different.)
-0x00005000 Task 2 in ELF format as data (4kB for example. May be different.)
-
-Memory:
-0x00080000 RTOS kernel.
-0x00200000 Task 1 Loaded second - bottom to top.
-0x00400000 Task 2 Loaded first - bottom to top.
-
-*/
-
-#ifndef LOADER_H
-#define LOADER_H
+#define STARTUP_TASK_LIST_MAGIC      0x4B534154 //"TASK"
 
 //
-//loader_task
-// A task is 
-typedef struct _loader_task {
-} loader_task;
+//startup_task_list_hdr
+// The startup image contains executable startup code followed by a list of
+// executable task code. Task code is loaded last first.
+//
+// magic     - always ASCII 'TASK'
+// num_tasks - total number of tasks packed image.
+// head      - byte offset of the task list head in the image.
+//
+typedef struct _startup_task_list {
+    u32_t magic;
+    u64_t num_tasks;
+    u64_t head;
+} startup_task_list;
 
 #endif

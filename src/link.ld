@@ -34,4 +34,3 @@ SECTIONS
 }
 
 __bss_sz = (__bss_end - __bss_beg)>>3;
- 

@@ -25,8 +25,7 @@
 #include "platform.h"
 
 extern void _start(void);
-extern void __exception_vectors_start(void);
-void main(void);
+void startup(void);
 
 #define EL_BITS 0x0000000C
 //
@@ -75,14 +74,9 @@ void _cpuinit(void) {
             : "r"(reg0), "r"(reg1):
         );
 
-//Set exception handlers for EL1.
-        asm volatile (
-            "msr    vbar_el1, %0\n" :: "r"(__exception_vectors_start) :
-        );
-
 //On ERET, execution will jump to location in elr_el2.
         asm volatile (
-            "msr    elr_el2, %0\n" :: "r"(main) :
+            "msr    elr_el2, %0\n" :: "r"(startup) :
         ); 
 
 //On ERET stack pointer is set to sp_el1
@@ -90,10 +84,10 @@ void _cpuinit(void) {
             "msr    sp_el1, %0\n" :: "r"(_start) :
         );
 
-//On ERET go to EL1, set stack pointer to sp_el1 and jump to main()
+//On ERET go to EL1, set stack pointer to sp_el1 and jump to startup()
         asm volatile ("eret\n" :::);
-    }
+    } 
 
-    main();
+    startup();
 }
 

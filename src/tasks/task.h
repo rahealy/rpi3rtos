@@ -38,12 +38,35 @@
 
 typedef void (*taskfn)();
 
+#define TASK_LIST_ITEM_MAGIC 0x4D455449 //"ITEM"
+
+//
+//task_list_item
+// List header for each task stored in the executable image.
+//
+// magic - always ASCII 'ITEM'
+// next  - byte offset of the next task in the image.
+// sz    - size in bytes of current task.
+// data  - task executable data.
+//
+typedef struct _task_list_item {
+    u64_t magic;
+    u64_t next;
+    u64_t sz;
+} task_list_item; 
+
+//
+//Header shared by kernel and task.
+//
 typedef struct _task_header {
     u64_t flags;    //Status flags.
     u64_t sp;       //Saved stack pointer.
-    taskfn reset;   //Reset/re-init the task. Reset should check flags to see why.
+    taskfn start;   //Run once. Zero bss and stuff.
+    taskfn reset;   //Reset/re-init the task. Check flags for timeout.
     taskfn main;    //Task's main loop.
 } task_header;
+
+void task_zero_bss(char *bss, u64_t sz);
 
 //
 //task_save_context()

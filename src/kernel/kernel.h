@@ -22,33 +22,4 @@
  * SOFTWARE.
  */
 
-#include "uart.h"
-#include "mmu.h"
-
-extern int __ro_end;
-
-void panic() {
-    while(1) {
-        asm("wfe":::);
-    }
-}
-
-void main(void) {
-    mmu_range_lst rolst;
-    u64_t roend = (u64_t) &__ro_end;
-
-    if (-1 == uart_init()) {
-        panic();
-    }
-
-    uart_puts("Hello World!\n");
-    uart_u64hex(0x012345678ABCDEF0);
-    uart_puts("\n");
-    rolst[0][0] = 0;
-    rolst[0][1] = roend;
-    //mmu_enable(rolst, 1);
-
-    while(1) {
-        asm("wfe":::);
-    }
-}
+void kernel_init(void); 

@@ -94,3 +94,10 @@ void task_save(task_header *th) {
         : "=r"(th->sp) : "r"(sp) : 
     );
 }
+
+void task_zero_bss(char *bss, u64_t sz) {
+    int i;
+    for (i = 0; i < sz; ++i) {
+        bss[i] = 0;
+    }
+}
