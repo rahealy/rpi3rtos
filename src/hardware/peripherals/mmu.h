@@ -43,7 +43,7 @@
 //MMU_TASK_MEMORY_SZ
 // Total amount of memory allocated to a task.
 //
-#define MMU_TASK_MEMORY_SZ (MMU_BLOCKS_PER_TASK / MMU_BLOCK_SZ)
+#define MMU_TASK_MEMORY_SZ (MMU_BLOCKS_PER_TASK * MMU_BLOCK_SZ)
 
 /*
 Memory Layout

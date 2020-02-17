@@ -1,6 +1,18 @@
+ENTRY(start)
+
 SECTIONS
 {
-    . = 0x80000;
+    . = 0x00000000;
+
+    .task_list_item :
+    {
+        KEEP(*(.task_list_item)) ;
+    }
+
+    .task_header :
+    {
+        KEEP(*(.task_header)) ;
+    }
     
     .text : {
         KEEP(*(.text.start)) *(.text .text.*)
@@ -19,18 +31,14 @@ SECTIONS
 
     .bss ALIGN(0x10):
     {
+        __task_end = .;
         __bss_beg = .;
         *(.bss .bss.*)
         *(COMMON)
         __bss_end = .;
     }
 
-    .task_list :
-    {
-        KEEP(*(.task_list)) ;
-    }
-
-   /DISCARD/ : { *(.comment) *(.gnu*) *(.note*) *(.eh_frame*) }
+    /DISCARD/ : { *(.comment) *(.gnu*) *(.note*) *(.eh_frame*) }
 }
 
 __bss_sz = (__bss_end - __bss_beg)>>3;

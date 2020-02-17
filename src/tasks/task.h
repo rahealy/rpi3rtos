@@ -30,6 +30,7 @@
 // A task is a block of code that will be run.
 //
 #include "platform.h"
+#include "mmu.h"
 
 #define TASK_TIMED_OUT 0x00000001 //Set if task is still running after slice expires.
 #define TASK_WORKING   0x00000002 //Task is working on something.
@@ -42,16 +43,15 @@ typedef void (*taskfn)();
 
 //
 //task_list_item
-// List header for each task stored in the executable image.
+// List header for each task stored in the executable image. This is
+// not loaded into the task's address space.
 //
 // magic - always ASCII 'ITEM'
 // next  - byte offset of the next task in the image.
 // sz    - size in bytes of current task.
-// data  - task executable data.
 //
 typedef struct _task_list_item {
     u64_t magic;
-    u64_t next;
     u64_t sz;
 } task_list_item; 
 
@@ -66,6 +66,36 @@ typedef struct _task_header {
     taskfn main;    //Task's main loop.
 } task_header;
 
+//FIXME: Need macros to build & init task_list_item & task_header correctly.
+
+//
+//task_get_base_addr()
+// Tasks are stored at the bottom most 2MB boundary.
+//
+inline u64_t task_get_base_addr(u64_t task) {
+    return ((task + 1) * MMU_TASK_MEMORY_SZ) - MMU_BLOCK_SZ;
+}
+
+//
+//task_get_header()
+// Get a pointer to the task's header.
+//
+inline task_header* task_get_header(u64_t task) {
+    return (task_header *) (task_get_base_addr(task) + sizeof(task_list_item));
+}
+
+//
+//task_header_rebase()
+// After the task has been loaded into memory rebase the header to
+// actual locations rather than relative.
+//
+void task_header_rebase(u64_t task);
+
+
+//
+//task_zero_bss()
+// Task start() must zero the task's bss segment.
+//
 void task_zero_bss(char *bss, u64_t sz);
 
 //

@@ -1,16 +1,8 @@
 #
-# Builds the startup stub that gets loaded by the hardware to 0x00080000
+# Builds the rpi3rtos kernel image which the RPi video core loads from 
+# the SDCard to memory location 0x00080000.
 #
 
-CSRCS        = $(wildcard */*/*.c)
-ASMSRCS      = $(wildcard */*/*.S)
-COBJS        = $(CSRCS:.c=.o)
-ASMOBJS      = $(ASMSRCS:.S=.o)
-CTARGET      = aarch64-elf
-LDTARGET     = aarch64elf
-CFLAGS       = -Wall -O2 -ffreestanding -nostdinc -nostdlib -mcpu=cortex-a53+nosimd
-CINCLUDES    = -I "./hardware" -I "./hardware/peripherals" -I "./hardware/startup"
-KERNEL       = kernel8.elf
 KERNEL_IMAGE = kernel8.img
 
 #######################################################################
@@ -20,21 +12,18 @@ KERNEL_IMAGE = kernel8.img
 all: kernel8.img
 
 kernel8.img: $(COBJS) $(ASMOBJS)
-	ld.lld -m $(LDTARGET) -nostdlib $(ASMOBJS) $(COBJS) -T link.ld -o $(KERNEL)
-	llvm-objcopy -O binary $(KERNEL) $(KERNEL_IMAGE)
-
-%.o: %.c
-	clang $(CINCLUDES) --target=$(CTARGET) $(CFLAGS) -c $< -o $@
-
-%.o: %.S
-	clang --target=$(CTARGET) $(CFLAGS) -c $< -o $@
+	$(MAKE) -C ./startup startup.img objdump
+	$(MAKE) -C ./task0 task0.img objdump
+	$(MAKE) -C ./taskN taskN.img objdump
+	$(shell) cat ./startup/startup.img ./task0/task0.img ./taskN/taskN.img  >> $(KERNEL_IMAGE)
 
 clean:
-	-rm -f ./$(KERNEL)
 	-rm -f ./$(KERNEL_IMAGE)
-	-rm -f *.o
 	$(MAKE) -C ./hardware clean
-	$(MAKE) -C ./kernel clean
+	$(MAKE) -C ./task0 clean
+	$(MAKE) -C ./taskN clean
+	$(MAKE) -C ./tasks clean
+
 
 #######################################################################
 # Experimental Targets
@@ -50,7 +39,7 @@ CONTAINER_UTILS   = andrerichter/raspi3-utils
 DOCKER_CMD        = docker run -p 1234:1234 -it --rm
 DOCKER_ARG_CURDIR = -v $(shell pwd):/work -w /work
 DOCKER_ARG_TTY    = --privileged -v /dev:/dev
-DOCKER_EXEC_QEMU  = qemu-system-aarch64 -s -S -M raspi3 -kernel kernel8.img
+DOCKER_EXEC_QEMU  = qemu-system-aarch64 -s -S -M raspi3 -kernel $(KERNEL_IMAGE)
 
 qemu:
 	$(DOCKER_CMD) $(DOCKER_ARG_CURDIR) $(CONTAINER_UTILS) \
@@ -58,4 +47,4 @@ qemu:
 
 objdump:
 	llvm-objdump --disassemble-all $(KERNEL) > ../debug/list.lst
- 
+

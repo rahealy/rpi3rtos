@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+//FIXME: This should belong in its own ASM (.S) file.
+
 #include "platform.h"
 
 extern void _start(void);

@@ -22,26 +22,13 @@
  * SOFTWARE.
  */
 
-#ifndef STARTUP_H
-#define STARTUP_H
+/*
+Null task compiled and linked to the end of the kernel image. End of task list.
+*/
+#include "task.h"
 
-#include "platform.h"
-
-#define STARTUP_TASK_LIST_MAGIC      0x4B534154 //"TASK"
-
-//
-//startup_task_list_hdr
-// The startup image contains executable startup code followed by a list of
-// executable task code. Task code is loaded last first.
-//
-// magic     - always ASCII 'TASK'
-// num_tasks - total number of tasks packed image.
-// head      - byte offset of the task list head in the image.
-//
-typedef struct _startup_task_list {
-    u32_t magic;
-    u64_t num_tasks;
-    u64_t head;
-} startup_task_list;
-
-#endif
+static task_list_item tasklistitem
+    __attribute__ ((section (".task_list_item"))) 
+    __attribute__ ((__used__)) = {
+    TASK_LIST_ITEM_MAGIC, 0
+};

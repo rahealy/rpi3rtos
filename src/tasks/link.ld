@@ -1,4 +1,4 @@
-ENTRY(start)
+ENTRY(0x0)
 
 SECTIONS
 {

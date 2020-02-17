@@ -34,14 +34,30 @@ void start(void);
 void reset(void);
 void main(void);
 
+//
+//task0_panic()
+// Infinite loop.
+//
+void task0_panic() {
+    while(1) {
+        asm("wfe":::);
+    }
+}
+
+//
+//Used by the loader to copy the task from the initial kernel image to 
+//memory.
+//
 static task_list_item tasklistitem
     __attribute__ ((section (".task_list_item"))) 
     __attribute__ ((__used__)) = {
     TASK_LIST_ITEM_MAGIC,                          //Magic number.
-    0,                                             //This is task 0 so no next in list.
     (u64_t) &__task_end - sizeof(task_list_item)   //Size of task not including this header.
 };
 
+//
+//Header shared by task and kernel to communicate.
+//
 static task_header taskheader
     __attribute__ ((section (".task_header"))) 
     __attribute__ ((__used__)) = {
@@ -61,6 +77,8 @@ void start(void) {
     asm volatile (
         "msr    vbar_el1, %0\n" :: "r"(__exception_vectors_start) :
     );
+
+    task0_panic();
 }
 
 void reset(void) {

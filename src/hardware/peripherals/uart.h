@@ -67,4 +67,10 @@ void uart_puts(const char *str);
 //
 void uart_u64hex(u64_t val);
 
+//
+//uart_u64hex_s()
+// Writes 64 bit number as hex.
+//
+void uart_u64hex_s(u64_t val);
+
 #endif

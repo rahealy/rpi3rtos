@@ -221,3 +221,24 @@ void uart_u64hex(u64_t val) {
         );
     }
 }
+
+void uart_u64hex_s(u64_t val) {
+    int i, b;
+    b = 0;
+    u8_t byte;
+    uart_puts("0x");
+    for(i = 15; i > 0; --i) {
+        byte = (u8_t) (val >> i * 4);
+        if (0 == byte) {
+            if (1 == b) {
+                uart_send(uart_tohex(byte));
+            }
+        } else if (0 == b) {
+            b = 1;
+            uart_send(uart_tohex(byte));
+        } else {
+            uart_send(uart_tohex(byte));
+        }
+    }
+    uart_send(uart_tohex(val));
+}

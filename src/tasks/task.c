@@ -29,6 +29,21 @@
 
 #include "task.h"
 
+
+//
+//task_header_rebase()
+// After the task has been loaded into memory rebase the header to
+// actual locations rather than relative.
+//
+void task_header_rebase(u64_t task) {
+    task_header *th = task_get_header(task);
+    u64_t base = task_get_base_addr(task);
+    th->start = (taskfn)(((char *) th->start) + base);
+    th->reset = (taskfn)(((char *) th->reset) + base);
+    th->main  = (taskfn)(((char *) th->main)  + base);
+}
+
+
 void __attribute__((naked)) task_save_context(void) {
     asm(
         "msr    daifset, #3\n"              //Disable IRQ and FIQ interrupts. 
