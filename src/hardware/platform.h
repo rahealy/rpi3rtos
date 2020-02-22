@@ -38,7 +38,8 @@ typedef long long unsigned int u64_t;
 typedef unsigned int u32_t;
 typedef unsigned short int u16_t;
 typedef unsigned char u8_t;
-
+typedef float f32_t;
+typedef double f64_t;
 
 //
 //Maximum number of allowed tasks.
@@ -73,8 +74,11 @@ typedef unsigned char u8_t;
 //Alternative function select register for GPIO
 //
 #define GPFSEL_OFFSET 0x00200000
-#define GPFSEL0_BASE (MMIO_BASE  + GPFSEL_OFFSET)
-#define GPFSEL1_BASE (GPFSEL0_BASE + sizeof(u32_t))
+#define GPFSEL_0_BASE (MMIO_BASE  + GPFSEL_OFFSET)
+#define GPFSEL_1_BASE (GPFSEL_0_BASE + sizeof(u32_t))
+
+#define GPFSEL_0_REG ((volatile u32_t*) GPFSEL_0_BASE)
+#define GPFSEL_1_REG ((volatile u32_t*) GPFSEL_1_BASE)
 
 //
 //GPPUD GPIO pin clock enable
@@ -82,11 +86,14 @@ typedef unsigned char u8_t;
 #define GPPUD_OFFSET 0x00200094
 #define GPPUD_BASE (MMIO_BASE + GPPUD_OFFSET)
 
+#define GPPUD_REG ((volatile u32_t*) GPPUD_BASE)
+
 //
 //GPPUDCLK GPIO pin clock enable
 //
 #define GPPUDCLK_OFFSET 0x00200098
 #define GPPUDCLK_BASE (MMIO_BASE + GPPUDCLK_OFFSET)
 
+#define GPPUDCLK_REG ((volatile u32_t*) GPPUDCLK_BASE)
 
 #endif

@@ -1,0 +1,60 @@
+#
+# Builds the startup stub that gets loaded by the hardware to 0x00080000
+#
+
+CSRCS        = $(wildcard *.c) 
+CSRCS       += $(wildcard ../hardware/peripherals/*.c) 
+CSRCS       += $(wildcard ../tasks/*.c)
+ASMSRCS      = $(wildcard *.S)
+ASMSRCS     += $(wildcard ../hardware/peripherals/*.S)
+ASMSRCS     += $(wildcard ../tasks/*.S)
+COBJS        = $(CSRCS:.c=.o)
+ASMOBJS      = $(ASMSRCS:.S=.o)
+CTARGET      = aarch64-elf
+LDTARGET     = aarch64elf
+CFLAGS       = -Wall -O2 -ffreestanding -v -nostdinc -nostdlib -mcpu=cortex-a53+nosimd
+CINCLUDES    = -I "." -I "../hardware" -I "../hardware/peripherals" -I "../tasks"
+
+#######################################################################
+# Targets
+#######################################################################
+
+all: startup.img
+
+startup.img: $(COBJS) $(ASMOBJS)
+	ld.lld -m $(LDTARGET) -nostdlib $(ASMOBJS) $(COBJS) -T link.ld -o startup.elf
+	llvm-objcopy -O binary startup.elf startup.img
+
+%.o: %.c
+	clang $(CINCLUDES) --target=$(CTARGET) $(CFLAGS) -c $< -o $@
+
+%.o: %.S
+	clang --target=$(CTARGET) $(CFLAGS) -c $< -o $@
+
+clean:
+	-rm -f *.o
+	-rm -f startup.elf
+	-rm -f startup.img
+
+#######################################################################
+# Experimental Targets
+#######################################################################
+
+#
+#Uses docker container from:
+# https://github.com/rust-embedded/rust-raspi3-OS-tutorials
+# Provided by Andre Richter <andre.o.richter@gmail.com>
+#
+CONTAINER_UTILS   = andrerichter/raspi3-utils
+
+DOCKER_CMD        = docker run -p 1234:1234 -it --rm
+DOCKER_ARG_CURDIR = -v $(shell pwd):/work -w /work
+DOCKER_ARG_TTY    = --privileged -v /dev:/dev
+DOCKER_EXEC_QEMU  = qemu-system-aarch64 -s -S -M raspi3 -kernel startup.img
+
+qemu:
+	$(DOCKER_CMD) $(DOCKER_ARG_CURDIR) $(CONTAINER_UTILS) \
+	$(DOCKER_EXEC_QEMU) -serial stdio
+
+objdump: startup.img
+	llvm-objdump --disassemble-all startup.elf > ../../debug/startup.lst

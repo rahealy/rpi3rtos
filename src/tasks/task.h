@@ -40,28 +40,32 @@
 typedef void (*taskfn)();
 
 #define TASK_LIST_ITEM_MAGIC 0x4D455449 //"ITEM"
+#define TASK_HEADER_MAGIC 0x4B534154    //"TASK"
 
 //
 //task_list_item
 // List header for each task stored in the executable image. This is
 // not loaded into the task's address space.
 //
-// magic - always ASCII 'ITEM'
-// next  - byte offset of the next task in the image.
-// sz    - size in bytes of current task.
-//
 typedef struct _task_list_item {
-    u64_t magic;
-    u64_t sz;
+    u64_t magic;   //Always ASCII 'ITEM'
+    u64_t ro_end;  //End of R/O code + data segment starting at 0x0;
+    u64_t rw_beg;  //4kB aligned beginning of R/W memory.
+    u64_t rw_end;  //End of R/W memory. BSS follows.
+    u64_t bss_beg; //BSS.
+    u64_t bss_end; //BSS.
 } task_list_item; 
 
 //
 //Header shared by kernel and task.
 //
 typedef struct _task_header {
+    u64_t magic;    //Magic value.
     u64_t flags;    //Status flags.
     u64_t sp;       //Saved stack pointer.
-    taskfn start;   //Run once. Zero bss and stuff.
+    u64_t ticks;    //If task is running, incremented each tick slice.
+    u64_t timeout;  //Number of ticks before timeout.
+    taskfn start;   //Run once. Constructor.
     taskfn reset;   //Reset/re-init the task. Check flags for timeout.
     taskfn main;    //Task's main loop.
 } task_header;
@@ -77,11 +81,19 @@ inline u64_t task_get_base_addr(u64_t task) {
 }
 
 //
+//task_get_list_item()
+// Tasks are stored at the bottom most 2MB boundary.
+//
+task_list_item *task_get_list_item(u64_t task);
+
+//
 //task_get_header()
 // Get a pointer to the task's header.
 //
-inline task_header* task_get_header(u64_t task) {
-    return (task_header *) (task_get_base_addr(task) + sizeof(task_list_item));
+task_header *task_get_header(u64_t task);
+
+inline void task_stack_pointer_reset(u64_t task) {
+//    task_get_header(task)->sp = task_get_base_addr(task);
 }
 
 //
@@ -93,21 +105,21 @@ void task_header_rebase(u64_t task);
 
 
 //
-//task_zero_bss()
+//task_bss_zero()
 // Task start() must zero the task's bss segment.
 //
-void task_zero_bss(char *bss, u64_t sz);
+void task_bss_zero(u64_t task);
 
 //
 //task_save_context()
 // Saves the task's state on the current stack.
 //
-void __attribute__((naked)) task_save_context();
+//void __attribute__((naked)) task_save_context();
 
 //
 //task_restore_context()
 // Restores the task's state from the current stack.
 //
-void __attribute__((naked)) task_restore_context();
+//void __attribute__((naked)) task_restore_context();
 
 #endif

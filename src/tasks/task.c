@@ -28,7 +28,28 @@
 //
 
 #include "task.h"
+#include "uart.h"
 
+inline task_list_item *task_get_list_item(u64_t task) {
+    task_list_item *li = (task_list_item *) task_get_base_addr(task);
+    if (TASK_LIST_ITEM_MAGIC == li->magic) {
+        return li;
+    } else {
+        uart_puts("rpi3rtos::task_get_list_item(): Not header!\n");
+        return 0;
+    }
+}
+
+inline task_header *task_get_header(u64_t task) {
+    task_list_item *li = task_get_list_item(task);
+    task_header *th    = (task_header *) ((u64_t) li + li->rw_beg);
+    if (TASK_HEADER_MAGIC == th->magic) {
+        return th;
+    } else {
+        uart_puts("rpi3rtos::task_get_header(): Not header!\n");
+        return 0;
+    }
+}
 
 //
 //task_header_rebase()
@@ -37,14 +58,57 @@
 //
 void task_header_rebase(u64_t task) {
     task_header *th = task_get_header(task);
-    u64_t base = task_get_base_addr(task);
+    u64_t base = (u64_t) task_get_base_addr(task);
+
+    uart_puts("rpi3rtos::task_header_rebase(): Re-basing task ");
+    uart_u64hex_s(task);
+    uart_puts(" header to ");
+    uart_u64hex_s(base);
+    uart_puts("\n");
+
+    uart_puts("rpi3rtos::task_header_rebase(): ");
+    uart_u64hex_s((u64_t) th->start);
+    uart_puts("->");
+    uart_u64hex_s((u64_t) th->start + base);
+    uart_puts("\n");
+
+    uart_puts("rpi3rtos::task_header_rebase(): ");
+    uart_u64hex_s((u64_t) th->reset);
+    uart_puts("->");
+    uart_u64hex_s((u64_t) th->reset + base);
+    uart_puts("\n");
+
+
+    uart_puts("rpi3rtos::task_header_rebase(): ");
+    uart_u64hex_s((u64_t) th->main);
+    uart_puts("->");
+    uart_u64hex_s((u64_t) th->main + base);
+    uart_puts("\n");
+
     th->start = (taskfn)(((char *) th->start) + base);
     th->reset = (taskfn)(((char *) th->reset) + base);
     th->main  = (taskfn)(((char *) th->main)  + base);
 }
 
+void task_bss_zero(u64_t task) {
+    int i;
+    u64_t base = (u64_t) task_get_base_addr(task);
+    task_list_item * li = (task_list_item *) base;
+    char *bss = (char *) li->bss_beg + base;
 
-void __attribute__((naked)) task_save_context(void) {
+    uart_puts("rpi3rtos::task_bss_zero(): ");
+    uart_u64hex_s(li->bss_beg + base);
+    uart_puts("-");
+    uart_u64hex_s(li->bss_end + base);
+    uart_puts("\n");
+
+    for (i = 0; i < li->bss_end - li->bss_beg; ++i) {
+        bss[i] = 0;
+    }
+}
+
+
+void task_save_context(void) {
     asm(
         "msr    daifset, #3\n"              //Disable IRQ and FIQ interrupts. 
         "sub    sp,  sp,  #16 * 16\n"       //Allocate 256 bytes on the stack.
@@ -68,7 +132,7 @@ void __attribute__((naked)) task_save_context(void) {
     );
 }
 
-void __attribute__((naked)) task_restore_context(void) {
+void task_restore_context(void) {
     asm(
         "ldp    x0, x30,  [sp, #16 * 15]\n"
         "msr    ELR_EL1,  x0\n"
@@ -110,9 +174,3 @@ void task_save(task_header *th) {
     );
 }
 
-void task_zero_bss(char *bss, u64_t sz) {
-    int i;
-    for (i = 0; i < sz; ++i) {
-        bss[i] = 0;
-    }
-}

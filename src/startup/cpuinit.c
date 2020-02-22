@@ -52,8 +52,10 @@ void _cpuinit(void) {
 
 //Disable traps to hypervisor (won't be using EL2)
         asm volatile (
+            "mov    %0, 0x300000\n"     //Bits [21:20] 0b11
+            "msr    cpacr_el1, %0\n"    //Don't trap FP or SMID instructions.
             "mov    %0, 0x33ff\n"       //Default 0x33ff is fine.
-            "msr    cptr_el2, %0\n"     //Default 0x33ff is fine.
+            "msr    cptr_el2, %0\n"     //
             "msr    hstr_el2, xzr\n"    //Don't trap anything in the hypervisor.
             : : "r"(reg0):
         );
@@ -87,9 +89,11 @@ void _cpuinit(void) {
         );
 
 //On ERET go to EL1, set stack pointer to sp_el1 and jump to startup()
-        asm volatile ("eret\n" :::);
-    } 
-
-    startup();
+        asm volatile ("eret\n");
+    }
+    
+    while(1) {
+        asm volatile ("wfe\n");
+    }
 }
 

@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+#include "uart.h"
+#include "irq.h"
+#include "timer.h"
+
 void current_el0_irq(void) {
 }
 
@@ -29,12 +33,17 @@ void current_el0_fiq(void) {
 }
 
 void current_elx_irq(void) {
+    if (*TIMER_CTL_AND_STATUS & TIMER_CTL_AND_STATUS_INT_FLG) {
+        timer_clr_and_reload();
+        uart_puts("current_elx_irq(): Timer tick!\n");
+    }
 }
 
 void current_elx_fiq(void) {
 }
 
 void lower_aarch64_irq(void) {
+    uart_puts("lower_aarch64_irq(): HERE!\n");
 }
 
 void lower_aarch64_fiq(void) {

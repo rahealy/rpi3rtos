@@ -35,37 +35,38 @@
 #define MBOX_STATUS_EMPTY       0x40000000
 #define MBOX_RESPONSE_SUCCESS   0x80000000
 #define MBOX_RESPONSE_ERROR     0x80000001
+#define MBOX_REG_BLK            ((volatile mbox_register_block *) VIDEOCORE_MBOX)
 
-
-typedef struct _mbox_registers {
+typedef struct _mbox_register_block {
     u32_t read;
     u32_t res0[5];
     u32_t status;
     u32_t res1;
     u32_t write;
-} mbox_registers;
+} mbox_register_block;
 
-int mbox_call(mbox_buf *buf, u32_t ch) {
-    mbox_registers *mbox = (mbox_registers *) VIDEOCORE_MBOX;
+int mbox_call(mbox_buf *buf, u64_t ch) {
+    u32_t addr;
     u32_t resp;
     
 //Wait until mailbox is ready.
-    while(mbox->status &  MBOX_STATUS_FULL) {
+    while(MBOX_REG_BLK->status &  MBOX_STATUS_FULL) {
         asm volatile ("nop\n" :::);
     }
 
 //Send buffer. Buffer struct is 16 byte aligned so last 4 bits always 0. 
 //Last 4 bits used to indicate channel.
-    mbox->write = ((u32_t) buf & (~0xF)) | (ch & 0xF);
+    addr = (u32_t) (((u64_t) buf & (~0xF)) | (ch & 0xF));
+    MBOX_REG_BLK->write = addr;
 
 //Wait for response.
     while(1) {
-        while(mbox->status &  MBOX_STATUS_EMPTY) {
+        while(MBOX_REG_BLK->status &  MBOX_STATUS_EMPTY) {
             asm volatile ("nop\n" :::);
         }
 
-        resp = mbox->read;
-        if (((resp & 0xF) == ch) && ((resp & (~0xF)) == (u32_t) buf)) {
+        resp = MBOX_REG_BLK->read;
+        if (resp == addr) {
 //Response to this sent message.
             switch(buf->buffer[1]) {
                 case MBOX_RESPONSE_SUCCESS:

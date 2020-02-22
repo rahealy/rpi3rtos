@@ -1,0 +1,46 @@
+#
+# Compile to object files.
+#
+
+#
+# Builds the startup stub that gets loaded by the hardware to 0x00080000
+#
+
+CSRCS        = $(wildcard *.c) 
+CSRCS       += $(wildcard ../hardware/peripherals/*.c) 
+CSRCS       += $(wildcard ../tasks/*.c)
+
+ASMSRCS      = $(wildcard *.S)
+ASMSRCS     += $(wildcard ../hardware/peripherals/*.S)
+ASMSRCS     += $(wildcard ../tasks/*.S)
+
+COBJS        = $(CSRCS:.c=.o)
+ASMOBJS      = $(ASMSRCS:.S=.o)
+#-fPIC
+CFLAGS       = -Wall -O2 -fno-stack-protector -nodefaultlibs -nostartfiles 
+CFLAGS      += -ffreestanding -nostdinc -nostdlib -nostartfiles
+CINCLUDES    = -I "." -I "../hardware" -I "../hardware/peripherals" -I "../tasks"
+
+#######################################################################
+# Targets
+#######################################################################
+
+all: task0.img
+
+task0.img: $(COBJS) $(ASMOBJS)
+	aarch64-elf-ld -nostdlib -nostartfiles $(ASMOBJS) $(COBJS) -T link.ld -o task0.elf
+	aarch64-elf-objcopy -O binary task0.elf task0.img
+
+%.o: %.c
+	aarch64-elf-gcc $(CFLAGS) $(CINCLUDES) -c $< -o $@
+
+%.o: %.S
+	aarch64-elf-gcc $(CFLAGS) -c $< -o $@
+
+clean:
+	-rm -f task0.elf
+	-rm -f task0.img
+	-rm -f *.o
+
+objdump:
+	aarch64-elf-objdump --disassemble --file-headers --section-headers task0.elf > ../../debug/task0.lst

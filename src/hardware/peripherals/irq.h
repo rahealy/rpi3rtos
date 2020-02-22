@@ -22,4 +22,41 @@
  * SOFTWARE.
  */
 
-void kernel_init(void); 
+#ifndef IRQ_H
+#define IRQ_H
+
+#include "platform.h"
+
+#define IRQ_OFFSET 0x0000B000
+#define IRQ_BASE (MMIO_BASE + IRQ_OFFSET + 0x200)
+
+typedef struct _irq_register_block {
+    u32_t BASIC_PENDING;
+    u32_t PENDING_1;
+    u32_t PENDING_2;
+    u32_t FIQ;
+    u32_t ENABLE_1;
+    u32_t ENABLE_2;
+    u32_t ENABLE_BASIC;
+    u32_t DISABLE_1;
+    u32_t DISABLE_2;
+    u32_t DISABLE_BASIC;
+} irq_register_block;
+
+#define IRQ_REG_BLK ((irq_register_block *) IRQ_BASE)
+
+inline void irq_enable(void) {
+    asm volatile ("msr  daifclr, #2\n");
+}
+
+inline void irq_disable(void) {
+    asm volatile ("msr  daifset, #2\n");
+}
+
+//
+//irq_enable_system_timer()
+// Enable system timer 1 or 3 interrupts
+//
+void irq_enable_system_timer(u64_t timer);
+
+#endif

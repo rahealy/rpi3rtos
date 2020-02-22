@@ -4,6 +4,8 @@
 #
 
 KERNEL_IMAGE = kernel8.img
+COMPLIER = gcc
+#COMPLILER = llvm
 
 #######################################################################
 # Targets
@@ -12,18 +14,24 @@ KERNEL_IMAGE = kernel8.img
 all: kernel8.img
 
 kernel8.img: $(COBJS) $(ASMOBJS)
-	$(MAKE) -C ./startup startup.img objdump
-	$(MAKE) -C ./task0 task0.img objdump
-	$(MAKE) -C ./taskN taskN.img objdump
+	$(MAKE) -f Makefile.gcc -C ./startup startup.img objdump
+	$(MAKE) -f Makefile.gcc -C ./task0 task0.img objdump
+	$(MAKE) -f Makefile.gcc -C ./taskN taskN.img objdump
 	$(shell) cat ./startup/startup.img ./task0/task0.img ./taskN/taskN.img  >> $(KERNEL_IMAGE)
 
 clean:
 	-rm -f ./$(KERNEL_IMAGE)
 	$(MAKE) -C ./hardware clean
-	$(MAKE) -C ./task0 clean
-	$(MAKE) -C ./taskN clean
+	$(MAKE) -f Makefile.gcc -C ./startup clean
+	$(MAKE) -f Makefile.gcc -C ./task0 clean
+	$(MAKE) -f Makefile.gcc -C ./taskN clean
 	$(MAKE) -C ./tasks clean
 
+objdump:
+	$(MAKE) -f Makefile.gcc -C ./startup objdump
+	$(MAKE) -f Makefile.gcc -C ./task0 objdump
+	$(MAKE) -f Makefile.gcc -C ./taskN objdump
+	
 
 #######################################################################
 # Experimental Targets
@@ -44,7 +52,4 @@ DOCKER_EXEC_QEMU  = qemu-system-aarch64 -s -S -M raspi3 -kernel $(KERNEL_IMAGE)
 qemu:
 	$(DOCKER_CMD) $(DOCKER_ARG_CURDIR) $(CONTAINER_UTILS) \
 	$(DOCKER_EXEC_QEMU) -serial stdio
-
-objdump:
-	llvm-objdump --disassemble-all $(KERNEL) > ../debug/list.lst
 

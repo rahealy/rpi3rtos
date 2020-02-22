@@ -51,7 +51,7 @@
 //
 #define UART_FR_TXFF_FLAG 0x00000020 //TXFF [5:5] 
 
-typedef struct _uart0 {
+typedef struct _uart0_register_block {
 //Data register.
     u32_t DR;       // 0x00
 //Undocumented
@@ -82,14 +82,12 @@ typedef struct _uart0 {
     u32_t MIS;      // 0x40
 //Interupt Clear Register
     u32_t ICR;      // 0x44
-} uart0;
+} uart0_register_block;
+
+#define UART_0_REG_BLK ((volatile uart0_register_block*) UART0_BASE)
 
 int uart_init(void) {
     int i;
-    uart0 *uart      = (uart0 *) UART0_BASE;
-    u32_t *gpfsel1   = (u32_t *) GPFSEL1_BASE;
-    u32_t *gppud     = (u32_t *) GPPUD_BASE;
-    u32_t *gppudclk0 = (u32_t *) GPPUDCLK_BASE;
     mbox_buf buf;
 
     buf.buffer[0] = 9 * sizeof(u32_t);
@@ -112,42 +110,42 @@ int uart_init(void) {
 
 //Select UART function for the GPIO pins.
     //Reset to Input
-    *gpfsel1 = *gpfsel1 & (~UART_FSEL14_MASK); 
-    *gpfsel1 = *gpfsel1 & (~UART_FSEL15_MASK);
+    *GPFSEL_1_REG = *GPFSEL_1_REG & (~UART_FSEL14_MASK); 
+    *GPFSEL_1_REG = *GPFSEL_1_REG & (~UART_FSEL15_MASK);
 
     //Set to TXD0, RXD0 (UART0)
-    *gpfsel1 = *gpfsel1 | UART_FSEL14_TXD0;    
-    *gpfsel1 = *gpfsel1 | UART_FSEL15_RXD0;    
+    *GPFSEL_1_REG = *GPFSEL_1_REG | UART_FSEL14_TXD0;    
+    *GPFSEL_1_REG = *GPFSEL_1_REG | UART_FSEL15_RXD0;    
     
 //Turn off GPIO pull up/down for UART.
-    *gppud = *gppud & (~UART_GPPUD_MASK); //[1:0] = 0b00
+    *GPPUD_REG = *GPPUD_REG & (~UART_GPPUD_MASK); //[1:0] = 0b00
 
     for(i = 0; i < 150; ++i) {
         asm volatile ("nop\n" :::);
     }
 
 //Clock in the new GPIO settings.
-    *gppudclk0 = *gppudclk0 |
-                 UART_PUDCLK14_MASK | 
-                 UART_PUDCLK15_MASK;
+    *GPPUDCLK_REG = *GPPUDCLK_REG |
+                    UART_PUDCLK14_MASK | 
+                    UART_PUDCLK15_MASK;
 
     for(i = 0; i < 150; ++i) {
         asm volatile ("nop\n" :::);
     }
 
-    *gppudclk0 = 0x00000000;
+    *GPPUDCLK_REG = 0x00000000;
 
 //Set up UART.
     //Clear interrupt control reg.
-    uart->ICR  = uart->ICR   & (~UART_ICR_MASK);            //[10:0] = 0. 
+    UART_0_REG_BLK->ICR  = UART_0_REG_BLK->ICR   & (~UART_ICR_MASK);            //[10:0] = 0. 
     //Results in 115200 baud.
-    uart->IBRD = (uart->IBRD & (~UART_IBRD_MASK)) | 0x0002; //[15:0] = 0x0002. 
+    UART_0_REG_BLK->IBRD = (UART_0_REG_BLK->IBRD & (~UART_IBRD_MASK)) | 0x0002; //[15:0] = 0x0002. 
     //Fractional baud rate.
-    uart->FBRD = (uart->FBRD & (~UART_FBRD_MASK)) | 0xB;    //[5:0] = 0xB
+    UART_0_REG_BLK->FBRD = (UART_0_REG_BLK->FBRD & (~UART_FBRD_MASK)) | 0xB;    //[5:0] = 0xB
     //Bit and parity
-    uart->LCRH = (uart->LCRH | UART_LCRH_8N1);              //[6:5] = 0b11
+    UART_0_REG_BLK->LCRH = (UART_0_REG_BLK->LCRH | UART_LCRH_8N1);              //[6:5] = 0b11
     //Enable UART, RX & TX
-    uart->CR   = uart->CR |
+    UART_0_REG_BLK->CR   = UART_0_REG_BLK->CR |
                  UART_CR_RXE |
                  UART_CR_TXE |
                  UART_CR_UARTEN;
@@ -156,13 +154,12 @@ int uart_init(void) {
 }
 
 void uart_send(char c) {
-    uart0 *uart = (uart0 *) UART0_BASE;
     //Wait until UART is not transmitting.
-    while(uart->FR & UART_FR_TXFF_FLAG) {
+    while(UART_0_REG_BLK->FR & UART_FR_TXFF_FLAG) {
         asm volatile ("nop\n" :::);
     }
     //Write character to UART buffer.
-    uart->DR = (u32_t) c;
+    UART_0_REG_BLK->DR = (u32_t) c;
 }
 
 void uart_puts(const char *str) {
@@ -230,15 +227,13 @@ void uart_u64hex_s(u64_t val) {
     for(i = 15; i > 0; --i) {
         byte = (u8_t) (val >> i * 4);
         if (0 == byte) {
-            if (1 == b) {
-                uart_send(uart_tohex(byte));
+            if (0 == b) {
+                continue;
             }
         } else if (0 == b) {
             b = 1;
-            uart_send(uart_tohex(byte));
-        } else {
-            uart_send(uart_tohex(byte));
         }
+        uart_send(uart_tohex(byte));
     }
     uart_send(uart_tohex(val));
 }

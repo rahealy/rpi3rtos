@@ -1,1967 +1,1480 @@
 
-task0.elf:	file format ELF64-aarch64-little
+task0.elf:     file format elf64-littleaarch64
+architecture: aarch64, flags 0x00000112:
+EXEC_P, HAS_SYMS, D_PAGED
+start address 0x0000000000000040
 
-architecture: aarch64
-start address: 0x0000000000000040
-
+Sections:
+Idx Name          Size      VMA               LMA               File off  Algn
+  0 .task_list_item 00000030  0000000000000000  0000000000000000  00001000  2**3
+                  CONTENTS, ALLOC, LOAD, DATA
+  1 .text         00000f34  0000000000000030  0000000000000030  00001030  2**3
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .vectors      00000828  0000000000001000  0000000000001000  00002000  2**11
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  3 .rodata       0000037a  0000000000001828  0000000000001828  00002828  2**3
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  4 .task_header  00000040  0000000000002000  0000000000002000  00003000  2**3
+                  CONTENTS, ALLOC, LOAD, DATA
+  5 .got          00000038  0000000000002040  0000000000002040  00003040  2**3
+                  CONTENTS, ALLOC, LOAD, DATA
+  6 .bss          00009f80  0000000000002080  0000000000002080  00003078  2**12
+                  ALLOC
 
 Disassembly of section .text:
 
-0000000000000040 start:
-      40: fd 7b bf a9                  	stp	x29, x30, [sp, #-16]!
-      44: 00 00 00 b0                  	adrp	x0, #4096
-      48: fd 03 00 91                  	mov	x29, sp
-      4c: 00 e0 20 91                  	add	x0, x0, #2104
-      50: 52 02 00 94                  	bl	#2376 <uart_puts>
-      54: 00 00 00 d0                  	adrp	x0, #8192
-      58: 01 00 00 b0                  	adrp	x1, #4096
-      5c: 00 00 00 91                  	add	x0, x0, #0
-      60: 21 00 08 91                  	add	x1, x1, #512
-      64: 28 03 00 94                  	bl	#3232 <task_zero_bss>
-      68: 08 00 00 b0                  	adrp	x8, #4096
-      6c: 08 01 00 91                  	add	x8, x8, #0
-      70: 08 c0 18 d5                  	msr	VBAR_EL1, x8
-      74: fd 7b c1 a8                  	ldp	x29, x30, [sp], #16
-      78: c0 03 5f d6                  	ret
+0000000000000030 <reset>:
+  30:	b0000000 	adrp	x0, 1000 <__exception_vectors_start>
+  34:	9120a000 	add	x0, x0, #0x828
+  38:	140001de 	b	7b0 <uart_puts>
+  3c:	d503201f 	nop
 
-000000000000007c reset:
-      7c: 00 00 00 b0                  	adrp	x0, #4096
-      80: 00 b4 21 91                  	add	x0, x0, #2157
-      84: 45 02 00 14                  	b	#2324 <uart_puts>
+0000000000000040 <start>:
+  40:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
+  44:	910003fd 	mov	x29, sp
+  48:	a90153f3 	stp	x19, x20, [sp, #16]
+  4c:	b0000013 	adrp	x19, 1000 <__exception_vectors_start>
+  50:	d0000014 	adrp	x20, 2000 <task0_header>
+  54:	9120a273 	add	x19, x19, #0x828
+  58:	9101c260 	add	x0, x19, #0x70
+  5c:	940001d5 	bl	7b0 <uart_puts>
+  60:	9102a260 	add	x0, x19, #0xa8
+  64:	940001d3 	bl	7b0 <uart_puts>
+  68:	f9402a94 	ldr	x20, [x20, #80]
+  6c:	91480294 	add	x20, x20, #0x200, lsl #12
+  70:	aa1403e0 	mov	x0, x20
+  74:	9400022f 	bl	930 <uart_u64hex_s>
+  78:	9103a260 	add	x0, x19, #0xe8
+  7c:	940001cd 	bl	7b0 <uart_puts>
+  80:	d518c014 	msr	vbar_el1, x20
+  84:	9103c260 	add	x0, x19, #0xf0
+  88:	940001ca 	bl	7b0 <uart_puts>
+  8c:	d2803e80 	mov	x0, #0x1f4                 	// #500
+  90:	94000268 	bl	a30 <timer_init_core0>
+  94:	d50342ff 	msr	daifclr, #0x2
+  98:	91046260 	add	x0, x19, #0x118
+  9c:	940001c5 	bl	7b0 <uart_puts>
+  a0:	d503205f 	wfe
+  a4:	d503205f 	wfe
+  a8:	17fffffe 	b	a0 <start+0x60>
+  ac:	d503201f 	nop
 
-0000000000000088 main:
-      88: 00 00 00 b0                  	adrp	x0, #4096
-      8c: 00 48 24 91                  	add	x0, x0, #2322
-      90: 42 02 00 14                  	b	#2312 <uart_puts>
+00000000000000b0 <task0_panic>:
+  b0:	d503205f 	wfe
+  b4:	17ffffff 	b	b0 <task0_panic>
 
-0000000000000094 current_el0_irq:
-      94: c0 03 5f d6                  	ret
+00000000000000b8 <main>:
+  b8:	b0000000 	adrp	x0, 1000 <__exception_vectors_start>
+  bc:	9120a000 	add	x0, x0, #0x828
+  c0:	9100e000 	add	x0, x0, #0x38
+  c4:	140001bb 	b	7b0 <uart_puts>
 
-0000000000000098 current_el0_fiq:
-      98: c0 03 5f d6                  	ret
+00000000000000c8 <current_el0_irq>:
+  c8:	d65f03c0 	ret
+  cc:	d503201f 	nop
 
-000000000000009c current_elx_irq:
-      9c: c0 03 5f d6                  	ret
+00000000000000d0 <current_el0_fiq>:
+  d0:	d65f03c0 	ret
+  d4:	d503201f 	nop
 
-00000000000000a0 current_elx_fiq:
-      a0: c0 03 5f d6                  	ret
+00000000000000d8 <current_elx_irq>:
+  d8:	d2800680 	mov	x0, #0x34                  	// #52
+  dc:	f2a80000 	movk	x0, #0x4000, lsl #16
+  e0:	b9400000 	ldr	w0, [x0]
+  e4:	37f80040 	tbnz	w0, #31, ec <current_elx_irq+0x14>
+  e8:	d65f03c0 	ret
+  ec:	d2800701 	mov	x1, #0x38                  	// #56
+  f0:	52b80002 	mov	w2, #0xc0000000            	// #-1073741824
+  f4:	f2a80001 	movk	x1, #0x4000, lsl #16
+  f8:	b0000000 	adrp	x0, 1000 <__exception_vectors_start>
+  fc:	9125c000 	add	x0, x0, #0x970
+ 100:	b9000022 	str	w2, [x1]
+ 104:	140001ab 	b	7b0 <uart_puts>
 
-00000000000000a4 lower_aarch64_irq:
-      a4: c0 03 5f d6                  	ret
+0000000000000108 <current_elx_fiq>:
+ 108:	d65f03c0 	ret
+ 10c:	d503201f 	nop
 
-00000000000000a8 lower_aarch64_fiq:
-      a8: c0 03 5f d6                  	ret
+0000000000000110 <lower_aarch64_irq>:
+ 110:	b0000000 	adrp	x0, 1000 <__exception_vectors_start>
+ 114:	9125c000 	add	x0, x0, #0x970
+ 118:	91008000 	add	x0, x0, #0x20
+ 11c:	140001a5 	b	7b0 <uart_puts>
 
-00000000000000ac lower_aarch32_irq:
-      ac: c0 03 5f d6                  	ret
+0000000000000120 <lower_aarch64_fiq>:
+ 120:	d65f03c0 	ret
+ 124:	d503201f 	nop
 
-00000000000000b0 lower_aarch32_fiq:
-      b0: c0 03 5f d6                  	ret
+0000000000000128 <lower_aarch32_irq>:
+ 128:	d65f03c0 	ret
+ 12c:	d503201f 	nop
 
-00000000000000b4 current_el0_synchronous:
-      b4: c0 03 5f d6                  	ret
+0000000000000130 <lower_aarch32_fiq>:
+ 130:	d65f03c0 	ret
+ 134:	00000000 	.inst	0x00000000 ; undefined
 
-00000000000000b8 current_el0_serror:
-      b8: c0 03 5f d6                  	ret
+0000000000000138 <current_el0_synchronous>:
+ 138:	d65f03c0 	ret
+ 13c:	d503201f 	nop
 
-00000000000000bc current_elx_synchronous:
-      bc: c0 03 5f d6                  	ret
+0000000000000140 <current_el0_serror>:
+ 140:	d65f03c0 	ret
+ 144:	d503201f 	nop
 
-00000000000000c0 current_elx_serror:
-      c0: c0 03 5f d6                  	ret
+0000000000000148 <current_elx_synchronous>:
+ 148:	d65f03c0 	ret
+ 14c:	d503201f 	nop
 
-00000000000000c4 lower_aarch64_synchronous:
-      c4: c0 03 5f d6                  	ret
+0000000000000150 <current_elx_serror>:
+ 150:	d65f03c0 	ret
+ 154:	d503201f 	nop
 
-00000000000000c8 lower_aarch64_serror:
-      c8: c0 03 5f d6                  	ret
+0000000000000158 <lower_aarch64_synchronous>:
+ 158:	d65f03c0 	ret
+ 15c:	d503201f 	nop
 
-00000000000000cc lower_aarch32_synchronous:
-      cc: c0 03 5f d6                  	ret
+0000000000000160 <lower_aarch64_serror>:
+ 160:	d65f03c0 	ret
+ 164:	d503201f 	nop
 
-00000000000000d0 lower_aarch32_serror:
-      d0: c0 03 5f d6                  	ret
+0000000000000168 <lower_aarch32_synchronous>:
+ 168:	d65f03c0 	ret
+ 16c:	d503201f 	nop
 
-00000000000000d4 mmu_print_range:
-      d4: f7 0f 1c f8                  	str	x23, [sp, #-64]!
-      d8: f6 57 01 a9                  	stp	x22, x21, [sp, #16]
-      dc: f5 03 00 aa                  	mov	x21, x0
-      e0: f4 4f 02 a9                  	stp	x20, x19, [sp, #32]
-      e4: f3 03 02 aa                  	mov	x19, x2
-      e8: fd 7b 03 a9                  	stp	x29, x30, [sp, #48]
-      ec: fd c3 00 91                  	add	x29, sp, #48
-      f0: f4 03 01 aa                  	mov	x20, x1
-      f4: 57 04 00 d1                  	sub	x23, x2, #1
-      f8: 84 02 00 94                  	bl	#2576 <uart_u64hex>
-      fc: 16 00 00 b0                  	adrp	x22, #4096
-     100: d6 ba 20 91                  	add	x22, x22, #2094
-     104: e0 03 16 aa                  	mov	x0, x22
-     108: 24 02 00 94                  	bl	#2192 <uart_puts>
-     10c: e0 03 14 aa                  	mov	x0, x20
-     110: 7e 02 00 94                  	bl	#2552 <uart_u64hex>
-     114: 00 00 00 b0                  	adrp	x0, #4096
-     118: 00 e0 25 91                  	add	x0, x0, #2424
-     11c: 1f 02 00 94                  	bl	#2172 <uart_puts>
-     120: e8 02 15 8b                  	add	x8, x23, x21
-     124: 00 09 d3 9a                  	udiv	x0, x8, x19
-     128: 78 02 00 94                  	bl	#2528 <uart_u64hex>
-     12c: e0 03 16 aa                  	mov	x0, x22
-     130: 1a 02 00 94                  	bl	#2152 <uart_puts>
-     134: e8 02 14 8b                  	add	x8, x23, x20
-     138: 00 09 d3 9a                  	udiv	x0, x8, x19
-     13c: 73 02 00 94                  	bl	#2508 <uart_u64hex>
-     140: fd 7b 43 a9                  	ldp	x29, x30, [sp, #48]
-     144: 00 00 00 b0                  	adrp	x0, #4096
-     148: f4 4f 42 a9                  	ldp	x20, x19, [sp, #32]
-     14c: 00 d8 20 91                  	add	x0, x0, #2102
-     150: f6 57 41 a9                  	ldp	x22, x21, [sp, #16]
-     154: f7 07 44 f8                  	ldr	x23, [sp], #64
-     158: 10 02 00 14                  	b	#2112 <uart_puts>
+0000000000000170 <lower_aarch32_serror>:
+ 170:	d65f03c0 	ret
+ 174:	00000000 	.inst	0x00000000 ; undefined
 
-000000000000015c mmu_enable_level_3_table_rw_blks:
-     15c: 48 00 01 8b                  	add	x8, x2, x1
-     160: 1f 01 01 eb                  	cmp	x8, x1
-     164: 09 04 00 54                  	b.ls	#128 <mmu_enable_level_3_table_rw_blks+0x88>
-     168: e9 e0 80 d2                  	mov	x9, #1799
-     16c: 0a 00 00 f0                  	adrp	x10, #12288
-     170: 09 04 e0 f2                  	movk	x9, #32, lsl #48
-     174: 4a 01 00 91                  	add	x10, x10, #0
-     178: 5f 08 00 f1                  	cmp	x2, #2
-     17c: 62 00 00 54                  	b.hs	#12 <mmu_enable_level_3_table_rw_blks+0x2c>
-     180: eb 03 01 aa                  	mov	x11, x1
-     184: 10 00 00 14                  	b	#64 <mmu_enable_level_3_table_rw_blks+0x68>
-     188: 4e 31 00 8b                  	add	x14, x10, x0, lsl #12
-     18c: 4c f8 7f 92                  	and	x12, x2, #0xfffffffffffffffe
-     190: ce 0d 01 8b                  	add	x14, x14, x1, lsl #3
-     194: 8b 01 01 8b                  	add	x11, x12, x1
-     198: 2d 31 01 8b                  	add	x13, x9, x1, lsl #12
-     19c: ce 21 00 91                  	add	x14, x14, #8
-     1a0: ef 03 0c aa                  	mov	x15, x12
-     1a4: b0 05 40 91                  	add	x16, x13, #1, lsl #12
-     1a8: ef 09 00 f1                  	subs	x15, x15, #2
-     1ac: cd c1 3f a9                  	stp	x13, x16, [x14, #-8]
-     1b0: ad 09 40 91                  	add	x13, x13, #2, lsl #12
-     1b4: ce 41 00 91                  	add	x14, x14, #16
-     1b8: 61 ff ff 54                  	b.ne	#-20 <mmu_enable_level_3_table_rw_blks+0x48>
-     1bc: 9f 01 02 eb                  	cmp	x12, x2
-     1c0: 20 01 00 54                  	b.eq	#36 <mmu_enable_level_3_table_rw_blks+0x88>
-     1c4: 4a 31 00 8b                  	add	x10, x10, x0, lsl #12
-     1c8: 08 01 0b cb                  	sub	x8, x8, x11
-     1cc: 29 31 0b 8b                  	add	x9, x9, x11, lsl #12
-     1d0: 4a 0d 0b 8b                  	add	x10, x10, x11, lsl #3
-     1d4: 49 85 00 f8                  	str	x9, [x10], #8
-     1d8: 08 05 00 f1                  	subs	x8, x8, #1
-     1dc: 29 05 40 91                  	add	x9, x9, #1, lsl #12
-     1e0: a1 ff ff 54                  	b.ne	#-12 <mmu_enable_level_3_table_rw_blks+0x78>
-     1e4: c0 03 5f d6                  	ret
+0000000000000178 <mmu_print_range>:
+ 178:	a9bc7bfd 	stp	x29, x30, [sp, #-64]!
+ 17c:	910003fd 	mov	x29, sp
+ 180:	a90153f3 	stp	x19, x20, [sp, #16]
+ 184:	aa0203f4 	mov	x20, x2
+ 188:	b0000013 	adrp	x19, 1000 <__exception_vectors_start>
+ 18c:	9126c273 	add	x19, x19, #0x9b0
+ 190:	a9025bf5 	stp	x21, x22, [sp, #32]
+ 194:	d1000456 	sub	x22, x2, #0x1
+ 198:	aa0003f5 	mov	x21, x0
+ 19c:	f9001bf7 	str	x23, [sp, #48]
+ 1a0:	aa0103f7 	mov	x23, x1
+ 1a4:	940001c3 	bl	8b0 <uart_u64hex>
+ 1a8:	aa1303e0 	mov	x0, x19
+ 1ac:	94000181 	bl	7b0 <uart_puts>
+ 1b0:	aa1703e0 	mov	x0, x23
+ 1b4:	940001bf 	bl	8b0 <uart_u64hex>
+ 1b8:	91002260 	add	x0, x19, #0x8
+ 1bc:	9400017d 	bl	7b0 <uart_puts>
+ 1c0:	8b1502c0 	add	x0, x22, x21
+ 1c4:	9ad40800 	udiv	x0, x0, x20
+ 1c8:	940001ba 	bl	8b0 <uart_u64hex>
+ 1cc:	aa1303e0 	mov	x0, x19
+ 1d0:	94000178 	bl	7b0 <uart_puts>
+ 1d4:	8b1702c0 	add	x0, x22, x23
+ 1d8:	9ad40800 	udiv	x0, x0, x20
+ 1dc:	940001b5 	bl	8b0 <uart_u64hex>
+ 1e0:	91004260 	add	x0, x19, #0x10
+ 1e4:	a94153f3 	ldp	x19, x20, [sp, #16]
+ 1e8:	a9425bf5 	ldp	x21, x22, [sp, #32]
+ 1ec:	f9401bf7 	ldr	x23, [sp, #48]
+ 1f0:	a8c47bfd 	ldp	x29, x30, [sp], #64
+ 1f4:	1400016f 	b	7b0 <uart_puts>
 
-00000000000001e8 mmu_enable_level_3_table_rox_blks:
-     1e8: 49 00 01 8b                  	add	x9, x2, x1
-     1ec: 3f 01 01 eb                  	cmp	x9, x1
-     1f0: 09 04 00 54                  	b.ls	#128 <mmu_enable_level_3_table_rox_blks+0x88>
-     1f4: 08 00 00 f0                  	adrp	x8, #12288
-     1f8: 5f 08 00 f1                  	cmp	x2, #2
-     1fc: 08 01 00 91                  	add	x8, x8, #0
-     200: 62 00 00 54                  	b.hs	#12 <mmu_enable_level_3_table_rox_blks+0x24>
-     204: ea 03 01 aa                  	mov	x10, x1
-     208: 11 00 00 14                  	b	#68 <mmu_enable_level_3_table_rox_blks+0x64>
-     20c: 0d 31 00 8b                  	add	x13, x8, x0, lsl #12
-     210: 4b f8 7f 92                  	and	x11, x2, #0xfffffffffffffffe
-     214: ec f0 82 52                  	mov	w12, #6023
-     218: ad 0d 01 8b                  	add	x13, x13, x1, lsl #3
-     21c: 6a 01 01 8b                  	add	x10, x11, x1
-     220: 8c 31 01 8b                  	add	x12, x12, x1, lsl #12
-     224: ad 21 00 91                  	add	x13, x13, #8
-     228: ee 03 0b aa                  	mov	x14, x11
-     22c: 8f 05 40 d1                  	sub	x15, x12, #1, lsl #12
-     230: ce 09 00 f1                  	subs	x14, x14, #2
-     234: af b1 3f a9                  	stp	x15, x12, [x13, #-8]
-     238: 8c 09 40 91                  	add	x12, x12, #2, lsl #12
-     23c: ad 41 00 91                  	add	x13, x13, #16
-     240: 61 ff ff 54                  	b.ne	#-20 <mmu_enable_level_3_table_rox_blks+0x44>
-     244: 7f 01 02 eb                  	cmp	x11, x2
-     248: 40 01 00 54                  	b.eq	#40 <mmu_enable_level_3_table_rox_blks+0x88>
-     24c: 0b 31 00 8b                  	add	x11, x8, x0, lsl #12
-     250: 29 01 0a cb                  	sub	x9, x9, x10
-     254: e8 f0 80 52                  	mov	w8, #1927
-     258: 6b 0d 0a 8b                  	add	x11, x11, x10, lsl #3
-     25c: 48 cd 74 b3                  	bfi	x8, x10, #12, #52
-     260: 68 85 00 f8                  	str	x8, [x11], #8
-     264: 29 05 00 f1                  	subs	x9, x9, #1
-     268: 08 05 40 91                  	add	x8, x8, #1, lsl #12
-     26c: a1 ff ff 54                  	b.ne	#-12 <mmu_enable_level_3_table_rox_blks+0x78>
-     270: c0 03 5f d6                  	ret
+00000000000001f8 <mmu_enable_level_3_table_rw_blks>:
+ 1f8:	8b020022 	add	x2, x1, x2
+ 1fc:	eb02003f 	cmp	x1, x2
+ 200:	540001c2 	b.cs	238 <mmu_enable_level_3_table_rw_blks+0x40>  // b.hs, b.nlast
+ 204:	d0000004 	adrp	x4, 2000 <task0_header>
+ 208:	8b002423 	add	x3, x1, x0, lsl #9
+ 20c:	d280e0e5 	mov	x5, #0x707                 	// #1799
+ 210:	f9402c84 	ldr	x4, [x4, #88]
+ 214:	f2e00405 	movk	x5, #0x20, lsl #48
+ 218:	8b0130a0 	add	x0, x5, x1, lsl #12
+ 21c:	8b0230a2 	add	x2, x5, x2, lsl #12
+ 220:	8b030c81 	add	x1, x4, x3, lsl #3
+ 224:	d503201f 	nop
+ 228:	f8008420 	str	x0, [x1], #8
+ 22c:	91400400 	add	x0, x0, #0x1, lsl #12
+ 230:	eb02001f 	cmp	x0, x2
+ 234:	54ffffa1 	b.ne	228 <mmu_enable_level_3_table_rw_blks+0x30>  // b.any
+ 238:	d65f03c0 	ret
+ 23c:	d503201f 	nop
 
-0000000000000274 mmu_enable_level_3_table:
-     274: fc 6f ba a9                  	stp	x28, x27, [sp, #-96]!
-     278: f4 4f 04 a9                  	stp	x20, x19, [sp, #64]
-     27c: f3 03 00 aa                  	mov	x19, x0
-     280: 00 00 00 b0                  	adrp	x0, #4096
-     284: 28 fc 3f 91                  	add	x8, x1, #4095
-     288: 00 2c 23 91                  	add	x0, x0, #2251
-     28c: 1c fd 4c d3                  	lsr	x28, x8, #12
-     290: 48 fc 3f 91                  	add	x8, x2, #4095
-     294: fa 67 01 a9                  	stp	x26, x25, [sp, #16]
-     298: f8 5f 02 a9                  	stp	x24, x23, [sp, #32]
-     29c: f4 03 02 aa                  	mov	x20, x2
-     2a0: f6 57 03 a9                  	stp	x22, x21, [sp, #48]
-     2a4: f5 03 01 aa                  	mov	x21, x1
-     2a8: fd 7b 05 a9                  	stp	x29, x30, [sp, #80]
-     2ac: fd 43 01 91                  	add	x29, sp, #80
-     2b0: f6 03 1c aa                  	mov	x22, x28
-     2b4: 1a fd 4c d3                  	lsr	x26, x8, #12
-     2b8: b8 01 00 94                  	bl	#1760 <uart_puts>
-     2bc: 19 00 00 f0                  	adrp	x25, #12288
-     2c0: 39 03 00 91                  	add	x25, x25, #0
-     2c4: bc 06 00 b4                  	cbz	x28, #212 <mmu_enable_level_3_table+0x124>
-     2c8: 00 00 00 b0                  	adrp	x0, #4096
-     2cc: f8 e0 80 d2                  	mov	x24, #1799
-     2d0: 00 a0 20 91                  	add	x0, x0, #2088
-     2d4: 18 04 e0 f2                  	movk	x24, #32, lsl #48
-     2d8: b0 01 00 94                  	bl	#1728 <uart_puts>
-     2dc: e0 03 1f aa                  	mov	x0, xzr
-     2e0: 0a 02 00 94                  	bl	#2088 <uart_u64hex>
-     2e4: 17 00 00 b0                  	adrp	x23, #4096
-     2e8: f7 ba 20 91                  	add	x23, x23, #2094
-     2ec: e0 03 17 aa                  	mov	x0, x23
-     2f0: aa 01 00 94                  	bl	#1704 <uart_puts>
-     2f4: e0 03 15 aa                  	mov	x0, x21
-     2f8: 04 02 00 94                  	bl	#2064 <uart_u64hex>
-     2fc: 00 00 00 b0                  	adrp	x0, #4096
-     300: 00 e0 25 91                  	add	x0, x0, #2424
-     304: a5 01 00 94                  	bl	#1684 <uart_puts>
-     308: e0 03 1f aa                  	mov	x0, xzr
-     30c: ff 01 00 94                  	bl	#2044 <uart_u64hex>
-     310: e0 03 17 aa                  	mov	x0, x23
-     314: a1 01 00 94                  	bl	#1668 <uart_puts>
-     318: e0 03 16 aa                  	mov	x0, x22
-     31c: fb 01 00 94                  	bl	#2028 <uart_u64hex>
-     320: 00 00 00 b0                  	adrp	x0, #4096
-     324: 00 d8 20 91                  	add	x0, x0, #2102
-     328: 9c 01 00 94                  	bl	#1648 <uart_puts>
-     32c: 00 00 00 b0                  	adrp	x0, #4096
-     330: 00 f8 23 91                  	add	x0, x0, #2302
-     334: 99 01 00 94                  	bl	#1636 <uart_puts>
-     338: e8 03 1f aa                  	mov	x8, xzr
-     33c: 9f 07 00 f1                  	cmp	x28, #1
-     340: c0 01 00 54                  	b.eq	#56 <mmu_enable_level_3_table+0x104>
-     344: 88 cb 7f 92                  	and	x8, x28, #0xffffffffffffe
-     348: 29 33 13 8b                  	add	x9, x25, x19, lsl #12
-     34c: 29 21 00 91                  	add	x9, x9, #8
-     350: 0a 07 40 91                  	add	x10, x24, #1, lsl #12
-     354: eb 03 08 aa                  	mov	x11, x8
-     358: 4c 05 40 d1                  	sub	x12, x10, #1, lsl #12
-     35c: 6b 09 00 f1                  	subs	x11, x11, #2
-     360: 2c a9 3f a9                  	stp	x12, x10, [x9, #-8]
-     364: 4a 09 40 91                  	add	x10, x10, #2, lsl #12
-     368: 29 41 00 91                  	add	x9, x9, #16
-     36c: 61 ff ff 54                  	b.ne	#-20 <mmu_enable_level_3_table+0xe4>
-     370: 9f 03 08 eb                  	cmp	x28, x8
-     374: 20 01 00 54                  	b.eq	#36 <mmu_enable_level_3_table+0x124>
-     378: 2a 33 13 8b                  	add	x10, x25, x19, lsl #12
-     37c: 89 03 08 cb                  	sub	x9, x28, x8
-     380: 4a 0d 08 8b                  	add	x10, x10, x8, lsl #3
-     384: 08 33 08 8b                  	add	x8, x24, x8, lsl #12
-     388: 48 85 00 f8                  	str	x8, [x10], #8
-     38c: 29 05 00 f1                  	subs	x9, x9, #1
-     390: 08 05 40 91                  	add	x8, x8, #1, lsl #12
-     394: a1 ff ff 54                  	b.ne	#-12 <mmu_enable_level_3_table+0x114>
-     398: 5b 03 1c 8b                  	add	x27, x26, x28
-     39c: 1a 07 00 b4                  	cbz	x26, #224 <mmu_enable_level_3_table+0x208>
-     3a0: 00 00 00 b0                  	adrp	x0, #4096
-     3a4: 00 c0 20 91                  	add	x0, x0, #2096
-     3a8: 7c 01 00 94                  	bl	#1520 <uart_puts>
-     3ac: e0 03 15 aa                  	mov	x0, x21
-     3b0: 97 02 15 8b                  	add	x23, x20, x21
-     3b4: d5 01 00 94                  	bl	#1876 <uart_u64hex>
-     3b8: 18 00 00 b0                  	adrp	x24, #4096
-     3bc: 18 bb 20 91                  	add	x24, x24, #2094
-     3c0: e0 03 18 aa                  	mov	x0, x24
-     3c4: 75 01 00 94                  	bl	#1492 <uart_puts>
-     3c8: e0 03 17 aa                  	mov	x0, x23
-     3cc: cf 01 00 94                  	bl	#1852 <uart_u64hex>
-     3d0: 00 00 00 b0                  	adrp	x0, #4096
-     3d4: 00 e0 25 91                  	add	x0, x0, #2424
-     3d8: 70 01 00 94                  	bl	#1472 <uart_puts>
-     3dc: e0 03 16 aa                  	mov	x0, x22
-     3e0: ca 01 00 94                  	bl	#1832 <uart_u64hex>
-     3e4: e0 03 18 aa                  	mov	x0, x24
-     3e8: 6c 01 00 94                  	bl	#1456 <uart_puts>
-     3ec: e8 fe 3f 91                  	add	x8, x23, #4095
-     3f0: 00 fd 4c d3                  	lsr	x0, x8, #12
-     3f4: c5 01 00 94                  	bl	#1812 <uart_u64hex>
-     3f8: 00 00 00 b0                  	adrp	x0, #4096
-     3fc: 00 d8 20 91                  	add	x0, x0, #2102
-     400: 66 01 00 94                  	bl	#1432 <uart_puts>
-     404: 00 00 00 b0                  	adrp	x0, #4096
-     408: 00 f8 23 91                  	add	x0, x0, #2302
-     40c: 63 01 00 94                  	bl	#1420 <uart_puts>
-     410: 5f 07 00 f1                  	cmp	x26, #1
-     414: 20 02 00 54                  	b.eq	#68 <mmu_enable_level_3_table+0x1e4>
-     418: 2a 33 13 8b                  	add	x10, x25, x19, lsl #12
-     41c: 48 cb 7f 92                  	and	x8, x26, #0xffffffffffffe
-     420: e9 f0 82 52                  	mov	w9, #6023
-     424: 4a 0d 1c 8b                  	add	x10, x10, x28, lsl #3
-     428: 96 03 08 8b                  	add	x22, x28, x8
-     42c: 29 31 1c 8b                  	add	x9, x9, x28, lsl #12
-     430: 4a 21 00 91                  	add	x10, x10, #8
-     434: eb 03 08 aa                  	mov	x11, x8
-     438: 2c 05 40 d1                  	sub	x12, x9, #1, lsl #12
-     43c: 6b 09 00 f1                  	subs	x11, x11, #2
-     440: 4c a5 3f a9                  	stp	x12, x9, [x10, #-8]
-     444: 29 09 40 91                  	add	x9, x9, #2, lsl #12
-     448: 4a 41 00 91                  	add	x10, x10, #16
-     44c: 61 ff ff 54                  	b.ne	#-20 <mmu_enable_level_3_table+0x1c4>
-     450: 5f 03 08 eb                  	cmp	x26, x8
-     454: 40 01 00 54                  	b.eq	#40 <mmu_enable_level_3_table+0x208>
-     458: 29 33 13 8b                  	add	x9, x25, x19, lsl #12
-     45c: 68 03 16 cb                  	sub	x8, x27, x22
-     460: 29 0d 16 8b                  	add	x9, x9, x22, lsl #3
-     464: ea f0 80 52                  	mov	w10, #1927
-     468: ca ce 74 b3                  	bfi	x10, x22, #12, #52
-     46c: 2a 85 00 f8                  	str	x10, [x9], #8
-     470: 08 05 00 f1                  	subs	x8, x8, #1
-     474: 4a 05 40 91                  	add	x10, x10, #1, lsl #12
-     478: a1 ff ff 54                  	b.ne	#-12 <mmu_enable_level_3_table+0x1f8>
-     47c: 7f 03 08 f1                  	cmp	x27, #512
-     480: 80 07 00 54                  	b.eq	#240 <mmu_enable_level_3_table+0x2fc>
-     484: 00 00 00 b0                  	adrp	x0, #4096
-     488: 00 a0 20 91                  	add	x0, x0, #2088
-     48c: 43 01 00 94                  	bl	#1292 <uart_puts>
-     490: 94 02 15 8b                  	add	x20, x20, x21
-     494: e0 03 14 aa                  	mov	x0, x20
-     498: 9c 01 00 94                  	bl	#1648 <uart_u64hex>
-     49c: 15 00 00 b0                  	adrp	x21, #4096
-     4a0: b5 ba 20 91                  	add	x21, x21, #2094
-     4a4: e0 03 15 aa                  	mov	x0, x21
-     4a8: 3c 01 00 94                  	bl	#1264 <uart_puts>
-     4ac: 00 04 a0 52                  	mov	w0, #2097152
-     4b0: 96 01 00 94                  	bl	#1624 <uart_u64hex>
-     4b4: 00 00 00 b0                  	adrp	x0, #4096
-     4b8: 00 e0 25 91                  	add	x0, x0, #2424
-     4bc: 37 01 00 94                  	bl	#1244 <uart_puts>
-     4c0: 88 fe 3f 91                  	add	x8, x20, #4095
-     4c4: 00 fd 4c d3                  	lsr	x0, x8, #12
-     4c8: 90 01 00 94                  	bl	#1600 <uart_u64hex>
-     4cc: e0 03 15 aa                  	mov	x0, x21
-     4d0: 32 01 00 94                  	bl	#1224 <uart_puts>
-     4d4: 00 40 80 52                  	mov	w0, #512
-     4d8: 8c 01 00 94                  	bl	#1584 <uart_u64hex>
-     4dc: 00 00 00 b0                  	adrp	x0, #4096
-     4e0: 00 d8 20 91                  	add	x0, x0, #2102
-     4e4: 2d 01 00 94                  	bl	#1204 <uart_puts>
-     4e8: 00 00 00 b0                  	adrp	x0, #4096
-     4ec: 00 f8 23 91                  	add	x0, x0, #2302
-     4f0: 2a 01 00 94                  	bl	#1192 <uart_puts>
-     4f4: 7f ff 07 f1                  	cmp	x27, #511
-     4f8: c8 03 00 54                  	b.hi	#120 <mmu_enable_level_3_table+0x2fc>
-     4fc: e9 e0 80 d2                  	mov	x9, #1799
-     500: 08 40 80 52                  	mov	w8, #512
-     504: 09 04 e0 f2                  	movk	x9, #32, lsl #48
-     508: 0a 01 1b cb                  	sub	x10, x8, x27
-     50c: e8 03 1b aa                  	mov	x8, x27
-     510: 5f 09 00 f1                  	cmp	x10, #2
-     514: 03 02 00 54                  	b.lo	#64 <mmu_enable_level_3_table+0x2e0>
-     518: 2d 33 13 8b                  	add	x13, x25, x19, lsl #12
-     51c: 4b f9 7f 92                  	and	x11, x10, #0xfffffffffffffffe
-     520: ad 0d 1b 8b                  	add	x13, x13, x27, lsl #3
-     524: 68 03 0b 8b                  	add	x8, x27, x11
-     528: 2c 31 1b 8b                  	add	x12, x9, x27, lsl #12
-     52c: ad 21 00 91                  	add	x13, x13, #8
-     530: ee 03 0b aa                  	mov	x14, x11
-     534: 8f 05 40 91                  	add	x15, x12, #1, lsl #12
-     538: ce 09 00 f1                  	subs	x14, x14, #2
-     53c: ac bd 3f a9                  	stp	x12, x15, [x13, #-8]
-     540: 8c 09 40 91                  	add	x12, x12, #2, lsl #12
-     544: ad 41 00 91                  	add	x13, x13, #16
-     548: 61 ff ff 54                  	b.ne	#-20 <mmu_enable_level_3_table+0x2c0>
-     54c: 5f 01 0b eb                  	cmp	x10, x11
-     550: 00 01 00 54                  	b.eq	#32 <mmu_enable_level_3_table+0x2fc>
-     554: 2a 33 13 8b                  	add	x10, x25, x19, lsl #12
-     558: 29 31 08 8b                  	add	x9, x9, x8, lsl #12
-     55c: 49 79 28 f8                  	str	x9, [x10, x8, lsl #3]
-     560: 08 05 00 91                  	add	x8, x8, #1
-     564: 29 05 40 91                  	add	x9, x9, #1, lsl #12
-     568: 1f 01 08 f1                  	cmp	x8, #512
-     56c: 81 ff ff 54                  	b.ne	#-16 <mmu_enable_level_3_table+0x2e8>
-     570: fd 7b 45 a9                  	ldp	x29, x30, [sp, #80]
-     574: f4 4f 44 a9                  	ldp	x20, x19, [sp, #64]
-     578: f6 57 43 a9                  	ldp	x22, x21, [sp, #48]
-     57c: f8 5f 42 a9                  	ldp	x24, x23, [sp, #32]
-     580: fa 67 41 a9                  	ldp	x26, x25, [sp, #16]
-     584: fc 6f c6 a8                  	ldp	x28, x27, [sp], #96
-     588: c0 03 5f d6                  	ret
+0000000000000240 <mmu_enable_level_3_table_rox_blks>:
+ 240:	8b020022 	add	x2, x1, x2
+ 244:	eb02003f 	cmp	x1, x2
+ 248:	540001c2 	b.cs	280 <mmu_enable_level_3_table_rox_blks+0x40>  // b.hs, b.nlast
+ 24c:	d0000004 	adrp	x4, 2000 <task0_header>
+ 250:	8b002423 	add	x3, x1, x0, lsl #9
+ 254:	d374cc20 	lsl	x0, x1, #12
+ 258:	d374cc42 	lsl	x2, x2, #12
+ 25c:	f9402c81 	ldr	x1, [x4, #88]
+ 260:	911e1c00 	add	x0, x0, #0x787
+ 264:	911e1c42 	add	x2, x2, #0x787
+ 268:	8b030c21 	add	x1, x1, x3, lsl #3
+ 26c:	d503201f 	nop
+ 270:	f8008420 	str	x0, [x1], #8
+ 274:	91400400 	add	x0, x0, #0x1, lsl #12
+ 278:	eb02001f 	cmp	x0, x2
+ 27c:	54ffffa1 	b.ne	270 <mmu_enable_level_3_table_rox_blks+0x30>  // b.any
+ 280:	d65f03c0 	ret
+ 284:	d503201f 	nop
 
-000000000000058c mmu_enable_level_2_table:
-     58c: f9 0f 1b f8                  	str	x25, [sp, #-80]!
-     590: f8 5f 01 a9                  	stp	x24, x23, [sp, #16]
-     594: 17 f8 7f d3                  	lsl	x23, x0, #1
-     598: f4 4f 03 a9                  	stp	x20, x19, [sp, #48]
-     59c: f3 03 00 aa                  	mov	x19, x0
-     5a0: 00 00 00 b0                  	adrp	x0, #4096
-     5a4: f6 57 02 a9                  	stp	x22, x21, [sp, #32]
-     5a8: 00 8c 22 91                  	add	x0, x0, #2211
-     5ac: fd 7b 04 a9                  	stp	x29, x30, [sp, #64]
-     5b0: fd 03 01 91                  	add	x29, sp, #64
-     5b4: f4 03 01 aa                  	mov	x20, x1
-     5b8: f8 00 00 94                  	bl	#992 <uart_puts>
-     5bc: 00 00 00 b0                  	adrp	x0, #4096
-     5c0: 00 a0 20 91                  	add	x0, x0, #2088
-     5c4: f5 00 00 94                  	bl	#980 <uart_puts>
-     5c8: e0 03 1f aa                  	mov	x0, xzr
-     5cc: 4f 01 00 94                  	bl	#1340 <uart_u64hex>
-     5d0: 15 00 00 b0                  	adrp	x21, #4096
-     5d4: b5 ba 20 91                  	add	x21, x21, #2094
-     5d8: e0 03 15 aa                  	mov	x0, x21
-     5dc: ef 00 00 94                  	bl	#956 <uart_puts>
-     5e0: 00 04 a0 52                  	mov	w0, #2097152
-     5e4: 49 01 00 94                  	bl	#1316 <uart_u64hex>
-     5e8: 00 00 00 b0                  	adrp	x0, #4096
-     5ec: 00 e0 25 91                  	add	x0, x0, #2424
-     5f0: ea 00 00 94                  	bl	#936 <uart_puts>
-     5f4: e0 03 1f aa                  	mov	x0, xzr
-     5f8: 44 01 00 94                  	bl	#1296 <uart_u64hex>
-     5fc: e0 03 15 aa                  	mov	x0, x21
-     600: e6 00 00 94                  	bl	#920 <uart_puts>
-     604: 20 00 80 52                  	mov	w0, #1
-     608: 40 01 00 94                  	bl	#1280 <uart_u64hex>
-     60c: 00 00 00 b0                  	adrp	x0, #4096
-     610: 00 d8 20 91                  	add	x0, x0, #2102
-     614: e1 00 00 94                  	bl	#900 <uart_puts>
-     618: 00 00 00 b0                  	adrp	x0, #4096
-     61c: 00 f8 23 91                  	add	x0, x0, #2302
-     620: de 00 00 94                  	bl	#888 <uart_puts>
-     624: 08 00 00 f0                  	adrp	x8, #12288
-     628: 16 00 00 d0                  	adrp	x22, #8192
-     62c: 08 01 00 91                  	add	x8, x8, #0
-     630: d6 02 00 91                  	add	x22, x22, #0
-     634: 08 31 13 8b                  	add	x8, x8, x19, lsl #12
-     638: 60 a6 6a d3                  	lsl	x0, x19, #22
-     63c: 18 05 40 b2                  	orr	x24, x8, #0x3
-     640: b4 04 00 b4                  	cbz	x20, #148 <mmu_enable_level_2_table+0x148>
-     644: a8 e0 80 52                  	mov	w8, #1797
-     648: 09 04 e0 d2                  	mov	x9, #9007199254740992
-     64c: 08 00 08 aa                  	orr	x8, x0, x8
-     650: f9 02 40 b2                  	orr	x25, x23, #0x1
-     654: 08 01 09 8b                  	add	x8, x8, x9
-     658: 33 ab 6b d3                  	lsl	x19, x25, #21
-     65c: 9f 06 00 f1                  	cmp	x20, #1
-     660: c8 7a 37 f8                  	str	x8, [x22, x23, lsl #3]
-     664: e1 06 00 54                  	b.ne	#220 <mmu_enable_level_2_table+0x1b4>
-     668: e0 03 13 aa                  	mov	x0, x19
-     66c: 74 02 48 91                  	add	x20, x19, #512, lsl #12
-     670: 26 01 00 94                  	bl	#1176 <uart_u64hex>
-     674: 15 00 00 b0                  	adrp	x21, #4096
-     678: b5 ba 20 91                  	add	x21, x21, #2094
-     67c: e0 03 15 aa                  	mov	x0, x21
-     680: c6 00 00 94                  	bl	#792 <uart_puts>
-     684: e0 03 14 aa                  	mov	x0, x20
-     688: 20 01 00 94                  	bl	#1152 <uart_u64hex>
-     68c: 00 00 00 b0                  	adrp	x0, #4096
-     690: 00 e0 25 91                  	add	x0, x0, #2424
-     694: c1 00 00 94                  	bl	#772 <uart_puts>
-     698: 20 ab 40 92                  	and	x0, x25, #0x7ffffffffff
-     69c: 1b 01 00 94                  	bl	#1132 <uart_u64hex>
-     6a0: e0 03 15 aa                  	mov	x0, x21
-     6a4: bd 00 00 94                  	bl	#756 <uart_puts>
-     6a8: 08 f8 bf 12                  	mov	w8, #4194303
-     6ac: 68 02 08 8b                  	add	x8, x19, x8
-     6b0: 00 fd 55 d3                  	lsr	x0, x8, #21
-     6b4: 15 01 00 94                  	bl	#1108 <uart_u64hex>
-     6b8: 00 00 00 b0                  	adrp	x0, #4096
-     6bc: 00 d8 20 91                  	add	x0, x0, #2102
-     6c0: b6 00 00 94                  	bl	#728 <uart_puts>
-     6c4: 00 00 00 b0                  	adrp	x0, #4096
-     6c8: 00 00 24 91                  	add	x0, x0, #2304
-     6cc: b3 00 00 94                  	bl	#716 <uart_puts>
-     6d0: 20 00 00 14                  	b	#128 <mmu_enable_level_2_table+0x1c4>
-     6d4: 14 00 6b b2                  	orr	x20, x0, #0x200000
-     6d8: 0c 01 00 94                  	bl	#1072 <uart_u64hex>
-     6dc: 15 00 00 b0                  	adrp	x21, #4096
-     6e0: b5 ba 20 91                  	add	x21, x21, #2094
-     6e4: e0 03 15 aa                  	mov	x0, x21
-     6e8: ac 00 00 94                  	bl	#688 <uart_puts>
-     6ec: e0 03 14 aa                  	mov	x0, x20
-     6f0: 06 01 00 94                  	bl	#1048 <uart_u64hex>
-     6f4: 00 00 00 b0                  	adrp	x0, #4096
-     6f8: 00 e0 25 91                  	add	x0, x0, #2424
-     6fc: a7 00 00 94                  	bl	#668 <uart_puts>
-     700: e0 a6 7f 92                  	and	x0, x23, #0x7fffffffffe
-     704: 01 01 00 94                  	bl	#1028 <uart_u64hex>
-     708: e0 03 15 aa                  	mov	x0, x21
-     70c: a3 00 00 94                  	bl	#652 <uart_puts>
-     710: 20 00 80 52                  	mov	w0, #1
-     714: 60 a6 7f b3                  	bfi	x0, x19, #1, #42
-     718: fc 00 00 94                  	bl	#1008 <uart_u64hex>
-     71c: 00 00 00 b0                  	adrp	x0, #4096
-     720: 00 d8 20 91                  	add	x0, x0, #2102
-     724: 9d 00 00 94                  	bl	#628 <uart_puts>
-     728: 00 00 00 b0                  	adrp	x0, #4096
-     72c: 00 00 24 91                  	add	x0, x0, #2304
-     730: 9a 00 00 94                  	bl	#616 <uart_puts>
-     734: f9 02 40 b2                  	orr	x25, x23, #0x1
-     738: d8 7a 37 f8                  	str	x24, [x22, x23, lsl #3]
-     73c: 33 ab 6b d3                  	lsl	x19, x25, #21
-     740: a8 e0 80 52                  	mov	w8, #1797
-     744: 09 04 e0 d2                  	mov	x9, #9007199254740992
-     748: 68 02 08 aa                  	orr	x8, x19, x8
-     74c: 18 01 09 8b                  	add	x24, x8, x9
-     750: d8 7a 39 f8                  	str	x24, [x22, x25, lsl #3]
-     754: fd 7b 44 a9                  	ldp	x29, x30, [sp, #64]
-     758: f4 4f 43 a9                  	ldp	x20, x19, [sp, #48]
-     75c: f6 57 42 a9                  	ldp	x22, x21, [sp, #32]
-     760: f8 5f 41 a9                  	ldp	x24, x23, [sp, #16]
-     764: f9 07 45 f8                  	ldr	x25, [sp], #80
-     768: c0 03 5f d6                  	ret
+0000000000000288 <mmu_enable_level_3_table>:
+ 288:	a9ba7bfd 	stp	x29, x30, [sp, #-96]!
+ 28c:	910003fd 	mov	x29, sp
+ 290:	a9046bf9 	stp	x25, x26, [sp, #64]
+ 294:	913ffc39 	add	x25, x1, #0xfff
+ 298:	913ffc5a 	add	x26, x2, #0xfff
+ 29c:	a9025bf5 	stp	x21, x22, [sp, #32]
+ 2a0:	aa0003f5 	mov	x21, x0
+ 2a4:	aa0103f6 	mov	x22, x1
+ 2a8:	a90363f7 	stp	x23, x24, [sp, #48]
+ 2ac:	b0000018 	adrp	x24, 1000 <__exception_vectors_start>
+ 2b0:	aa0203f7 	mov	x23, x2
+ 2b4:	f9002bfb 	str	x27, [sp, #80]
+ 2b8:	9126c31b 	add	x27, x24, #0x9b0
+ 2bc:	91006360 	add	x0, x27, #0x18
+ 2c0:	a90153f3 	stp	x19, x20, [sp, #16]
+ 2c4:	d34cff34 	lsr	x20, x25, #12
+ 2c8:	9400013a 	bl	7b0 <uart_puts>
+ 2cc:	8b5a3293 	add	x19, x20, x26, lsr #12
+ 2d0:	f13fff3f 	cmp	x25, #0xfff
+ 2d4:	d36aa6b9 	lsl	x25, x21, #22
+ 2d8:	540008a8 	b.hi	3ec <mmu_enable_level_3_table+0x164>  // b.pmore
+ 2dc:	f13fff5f 	cmp	x26, #0xfff
+ 2e0:	54000568 	b.hi	38c <mmu_enable_level_3_table+0x104>  // b.pmore
+ 2e4:	f108027f 	cmp	x19, #0x200
+ 2e8:	54000101 	b.ne	308 <mmu_enable_level_3_table+0x80>  // b.any
+ 2ec:	a94153f3 	ldp	x19, x20, [sp, #16]
+ 2f0:	a9425bf5 	ldp	x21, x22, [sp, #32]
+ 2f4:	a94363f7 	ldp	x23, x24, [sp, #48]
+ 2f8:	a9446bf9 	ldp	x25, x26, [sp, #64]
+ 2fc:	f9402bfb 	ldr	x27, [sp, #80]
+ 300:	a8c67bfd 	ldp	x29, x30, [sp], #96
+ 304:	d65f03c0 	ret
+ 308:	9126c318 	add	x24, x24, #0x9b0
+ 30c:	91014300 	add	x0, x24, #0x50
+ 310:	94000128 	bl	7b0 <uart_puts>
+ 314:	91480321 	add	x1, x25, #0x200, lsl #12
+ 318:	d2820002 	mov	x2, #0x1000                	// #4096
+ 31c:	8b1702c0 	add	x0, x22, x23
+ 320:	8b190000 	add	x0, x0, x25
+ 324:	97ffff95 	bl	178 <mmu_print_range>
+ 328:	91016300 	add	x0, x24, #0x58
+ 32c:	94000121 	bl	7b0 <uart_puts>
+ 330:	f107fe7f 	cmp	x19, #0x1ff
+ 334:	54fffdc8 	b.hi	2ec <mmu_enable_level_3_table+0x64>  // b.pmore
+ 338:	d0000001 	adrp	x1, 2000 <task0_header>
+ 33c:	8b152675 	add	x21, x19, x21, lsl #9
+ 340:	d280e0e0 	mov	x0, #0x707                 	// #1799
+ 344:	b20b03e2 	mov	x2, #0x20000000200000      	// #9007199256838144
+ 348:	f9402c21 	ldr	x1, [x1, #88]
+ 34c:	f2e00400 	movk	x0, #0x20, lsl #48
+ 350:	8b133000 	add	x0, x0, x19, lsl #12
+ 354:	f280e0e2 	movk	x2, #0x707
+ 358:	8b150c21 	add	x1, x1, x21, lsl #3
+ 35c:	d503201f 	nop
+ 360:	f8008420 	str	x0, [x1], #8
+ 364:	91400400 	add	x0, x0, #0x1, lsl #12
+ 368:	eb02001f 	cmp	x0, x2
+ 36c:	54ffffa1 	b.ne	360 <mmu_enable_level_3_table+0xd8>  // b.any
+ 370:	a94153f3 	ldp	x19, x20, [sp, #16]
+ 374:	a9425bf5 	ldp	x21, x22, [sp, #32]
+ 378:	a94363f7 	ldp	x23, x24, [sp, #48]
+ 37c:	a9446bf9 	ldp	x25, x26, [sp, #64]
+ 380:	f9402bfb 	ldr	x27, [sp, #80]
+ 384:	a8c67bfd 	ldp	x29, x30, [sp], #96
+ 388:	d65f03c0 	ret
+ 38c:	9126c31a 	add	x26, x24, #0x9b0
+ 390:	91018340 	add	x0, x26, #0x60
+ 394:	94000107 	bl	7b0 <uart_puts>
+ 398:	8b160320 	add	x0, x25, x22
+ 39c:	d2820002 	mov	x2, #0x1000                	// #4096
+ 3a0:	8b170001 	add	x1, x0, x23
+ 3a4:	97ffff75 	bl	178 <mmu_print_range>
+ 3a8:	91016340 	add	x0, x26, #0x58
+ 3ac:	94000101 	bl	7b0 <uart_puts>
+ 3b0:	eb14027f 	cmp	x19, x20
+ 3b4:	54fff989 	b.ls	2e4 <mmu_enable_level_3_table+0x5c>  // b.plast
+ 3b8:	d0000002 	adrp	x2, 2000 <task0_header>
+ 3bc:	8b152680 	add	x0, x20, x21, lsl #9
+ 3c0:	d374ce83 	lsl	x3, x20, #12
+ 3c4:	d374ce61 	lsl	x1, x19, #12
+ 3c8:	f9402c42 	ldr	x2, [x2, #88]
+ 3cc:	911e1c63 	add	x3, x3, #0x787
+ 3d0:	911e1c21 	add	x1, x1, #0x787
+ 3d4:	8b000c40 	add	x0, x2, x0, lsl #3
+ 3d8:	f8008403 	str	x3, [x0], #8
+ 3dc:	91400463 	add	x3, x3, #0x1, lsl #12
+ 3e0:	eb01007f 	cmp	x3, x1
+ 3e4:	54ffffa1 	b.ne	3d8 <mmu_enable_level_3_table+0x150>  // b.any
+ 3e8:	17ffffbf 	b	2e4 <mmu_enable_level_3_table+0x5c>
+ 3ec:	91014360 	add	x0, x27, #0x50
+ 3f0:	940000f0 	bl	7b0 <uart_puts>
+ 3f4:	8b160321 	add	x1, x25, x22
+ 3f8:	d2820002 	mov	x2, #0x1000                	// #4096
+ 3fc:	aa1903e0 	mov	x0, x25
+ 400:	97ffff5e 	bl	178 <mmu_print_range>
+ 404:	91016360 	add	x0, x27, #0x58
+ 408:	940000ea 	bl	7b0 <uart_puts>
+ 40c:	b4fff694 	cbz	x20, 2dc <mmu_enable_level_3_table+0x54>
+ 410:	d0000001 	adrp	x1, 2000 <task0_header>
+ 414:	d280e0e0 	mov	x0, #0x707                 	// #1799
+ 418:	f2e00400 	movk	x0, #0x20, lsl #48
+ 41c:	f9402c21 	ldr	x1, [x1, #88]
+ 420:	8b143002 	add	x2, x0, x20, lsl #12
+ 424:	8b153021 	add	x1, x1, x21, lsl #12
+ 428:	f8008420 	str	x0, [x1], #8
+ 42c:	91400400 	add	x0, x0, #0x1, lsl #12
+ 430:	eb02001f 	cmp	x0, x2
+ 434:	54ffffa1 	b.ne	428 <mmu_enable_level_3_table+0x1a0>  // b.any
+ 438:	17ffffa9 	b	2dc <mmu_enable_level_3_table+0x54>
+ 43c:	d503201f 	nop
 
-000000000000076c mmu_enable:
-     76c: f5 0f 1d f8                  	str	x21, [sp, #-48]!
-     770: f4 4f 01 a9                  	stp	x20, x19, [sp, #16]
-     774: 88 e0 9f 52                  	mov	w8, #65284
-     778: fd 7b 02 a9                  	stp	x29, x30, [sp, #32]
-     77c: fd 83 00 91                  	add	x29, sp, #32
-     780: 08 a2 18 d5                  	msr	MAIR_EL1, x8
-     784: c1 01 00 b4                  	cbz	x1, #56 <mmu_enable+0x50>
-     788: f3 03 01 aa                  	mov	x19, x1
-     78c: f4 03 1f aa                  	mov	x20, xzr
-     790: 15 20 00 91                  	add	x21, x0, #8
-     794: e0 03 14 aa                  	mov	x0, x20
-     798: 21 00 80 52                  	mov	w1, #1
-     79c: 7c ff ff 97                  	bl	#-528 <mmu_enable_level_2_table>
-     7a0: a1 8a 7f a9                  	ldp	x1, x2, [x21, #-8]
-     7a4: e0 03 14 aa                  	mov	x0, x20
-     7a8: b3 fe ff 97                  	bl	#-1332 <mmu_enable_level_3_table>
-     7ac: 94 06 00 91                  	add	x20, x20, #1
-     7b0: b5 42 00 91                  	add	x21, x21, #16
-     7b4: 7f 02 14 eb                  	cmp	x19, x20
-     7b8: e1 fe ff 54                  	b.ne	#-36 <mmu_enable+0x28>
-     7bc: 00 00 00 b0                  	adrp	x0, #4096
-     7c0: 00 10 25 91                  	add	x0, x0, #2372
-     7c4: 75 00 00 94                  	bl	#468 <uart_puts>
-     7c8: 00 e0 a7 52                  	mov	w0, #1056964608
-     7cc: cf 00 00 94                  	bl	#828 <uart_u64hex>
-     7d0: 13 00 00 b0                  	adrp	x19, #4096
-     7d4: 73 ba 20 91                  	add	x19, x19, #2094
-     7d8: e0 03 13 aa                  	mov	x0, x19
-     7dc: 6f 00 00 94                  	bl	#444 <uart_puts>
-     7e0: 00 00 a8 52                  	mov	w0, #1073741824
-     7e4: c9 00 00 94                  	bl	#804 <uart_u64hex>
-     7e8: 00 00 00 b0                  	adrp	x0, #4096
-     7ec: 00 e0 25 91                  	add	x0, x0, #2424
-     7f0: 6a 00 00 94                  	bl	#424 <uart_puts>
-     7f4: 00 3f 80 52                  	mov	w0, #504
-     7f8: c4 00 00 94                  	bl	#784 <uart_u64hex>
-     7fc: e0 03 13 aa                  	mov	x0, x19
-     800: 66 00 00 94                  	bl	#408 <uart_puts>
-     804: 00 40 80 52                  	mov	w0, #512
-     808: c0 00 00 94                  	bl	#768 <uart_u64hex>
-     80c: 00 00 00 b0                  	adrp	x0, #4096
-     810: 00 d8 20 91                  	add	x0, x0, #2102
-     814: 61 00 00 94                  	bl	#388 <uart_puts>
-     818: 00 00 00 b0                  	adrp	x0, #4096
-     81c: 00 f8 23 91                  	add	x0, x0, #2302
-     820: 5e 00 00 94                  	bl	#376 <uart_puts>
-     824: 29 c0 80 d2                  	mov	x9, #1537
-     828: 08 00 00 d0                  	adrp	x8, #8192
-     82c: 09 e0 a7 f2                  	movk	x9, #16128, lsl #16
-     830: 08 01 3f 91                  	add	x8, x8, #4032
-     834: 09 04 e0 f2                  	movk	x9, #32, lsl #48
-     838: 0b 14 a0 52                  	mov	w11, #10485760
-     83c: 2a 01 6b b2                  	orr	x10, x9, #0x200000
-     840: 2c 01 6a b2                  	orr	x12, x9, #0x400000
-     844: 2d 05 6b b2                  	orr	x13, x9, #0x600000
-     848: 2b 01 0b aa                  	orr	x11, x9, x11
-     84c: fd 7b 42 a9                  	ldp	x29, x30, [sp, #32]
-     850: f4 4f 41 a9                  	ldp	x20, x19, [sp, #16]
-     854: 09 29 00 a9                  	stp	x9, x10, [x8]
-     858: 2a 01 69 b2                  	orr	x10, x9, #0x800000
-     85c: 0c 35 01 a9                  	stp	x12, x13, [x8, #16]
-     860: 2c 05 6a b2                  	orr	x12, x9, #0xc00000
-     864: 29 09 6b b2                  	orr	x9, x9, #0xe00000
-     868: 0a 2d 02 a9                  	stp	x10, x11, [x8, #32]
-     86c: 0c 25 03 a9                  	stp	x12, x9, [x8, #48]
-     870: f5 07 43 f8                  	ldr	x21, [sp], #48
-     874: c0 03 5f d6                  	ret
+0000000000000440 <mmu_enable_level_2_table>:
+ 440:	a9bb7bfd 	stp	x29, x30, [sp, #-80]!
+ 444:	910003fd 	mov	x29, sp
+ 448:	a90153f3 	stp	x19, x20, [sp, #16]
+ 44c:	aa0003f3 	mov	x19, x0
+ 450:	b0000014 	adrp	x20, 1000 <__exception_vectors_start>
+ 454:	9126c294 	add	x20, x20, #0x9b0
+ 458:	a9025bf5 	stp	x21, x22, [sp, #32]
+ 45c:	9101a280 	add	x0, x20, #0x68
+ 460:	a90363f7 	stp	x23, x24, [sp, #48]
+ 464:	aa0103f8 	mov	x24, x1
+ 468:	d280e0b7 	mov	x23, #0x705                 	// #1797
+ 46c:	f90023f9 	str	x25, [sp, #64]
+ 470:	940000d0 	bl	7b0 <uart_puts>
+ 474:	d36aa679 	lsl	x25, x19, #22
+ 478:	91014280 	add	x0, x20, #0x50
+ 47c:	940000cd 	bl	7b0 <uart_puts>
+ 480:	f2e00417 	movk	x23, #0x20, lsl #48
+ 484:	91480321 	add	x1, x25, #0x200, lsl #12
+ 488:	d2a00402 	mov	x2, #0x200000              	// #2097152
+ 48c:	aa1903e0 	mov	x0, x25
+ 490:	97ffff3a 	bl	178 <mmu_print_range>
+ 494:	91016280 	add	x0, x20, #0x58
+ 498:	cb1902f7 	sub	x23, x23, x25
+ 49c:	940000c5 	bl	7b0 <uart_puts>
+ 4a0:	91024296 	add	x22, x20, #0x90
+ 4a4:	d0000002 	adrp	x2, 2000 <task0_header>
+ 4a8:	d0000001 	adrp	x1, 2000 <task0_header>
+ 4ac:	d369a260 	lsl	x0, x19, #23
+ 4b0:	d2800015 	mov	x21, #0x0                   	// #0
+ 4b4:	f9402c42 	ldr	x2, [x2, #88]
+ 4b8:	91480019 	add	x25, x0, #0x200, lsl #12
+ 4bc:	f9402421 	ldr	x1, [x1, #72]
+ 4c0:	eb15031f 	cmp	x24, x21
+ 4c4:	8b133042 	add	x2, x2, x19, lsl #12
+ 4c8:	91000c54 	add	x20, x2, #0x3
+ 4cc:	8b131033 	add	x19, x1, x19, lsl #4
+ 4d0:	8b0002e1 	add	x1, x23, x0
+ 4d4:	54000200 	b.eq	514 <mmu_enable_level_2_table+0xd4>  // b.none
+ 4d8:	f9000261 	str	x1, [x19]
+ 4dc:	aa1903e0 	mov	x0, x25
+ 4e0:	91002273 	add	x19, x19, #0x8
+ 4e4:	b40000f5 	cbz	x21, 500 <mmu_enable_level_2_table+0xc0>
+ 4e8:	a94153f3 	ldp	x19, x20, [sp, #16]
+ 4ec:	a9425bf5 	ldp	x21, x22, [sp, #32]
+ 4f0:	a94363f7 	ldp	x23, x24, [sp, #48]
+ 4f4:	f94023f9 	ldr	x25, [sp, #64]
+ 4f8:	a8c57bfd 	ldp	x29, x30, [sp], #80
+ 4fc:	d65f03c0 	ret
+ 500:	d2800035 	mov	x21, #0x1                   	// #1
+ 504:	91480019 	add	x25, x0, #0x200, lsl #12
+ 508:	8b0002e1 	add	x1, x23, x0
+ 50c:	eb15031f 	cmp	x24, x21
+ 510:	54fffe41 	b.ne	4d8 <mmu_enable_level_2_table+0x98>  // b.any
+ 514:	aa1903e1 	mov	x1, x25
+ 518:	d2a00402 	mov	x2, #0x200000              	// #2097152
+ 51c:	97ffff17 	bl	178 <mmu_print_range>
+ 520:	aa1603e0 	mov	x0, x22
+ 524:	940000a3 	bl	7b0 <uart_puts>
+ 528:	f9000274 	str	x20, [x19]
+ 52c:	17ffffec 	b	4dc <mmu_enable_level_2_table+0x9c>
 
-0000000000000878 uart_init:
-     878: ff c3 02 d1                  	sub	sp, sp, #176
-     87c: 48 00 90 d2                  	mov	x8, #32770
-     880: 09 20 81 52                  	mov	w9, #2304
-     884: 68 00 a0 f2                  	movk	x8, #3, lsl #16
-     888: 0a 01 80 d2                  	mov	x10, #8
-     88c: f3 4b 00 f9                  	str	x19, [sp, #144]
-     890: 88 01 c0 f2                  	movk	x8, #12, lsl #32
-     894: 93 04 80 52                  	mov	w19, #36
-     898: a9 07 a0 72                  	movk	w9, #61, lsl #16
-     89c: 4a 00 c0 f2                  	movk	x10, #2, lsl #32
-     8a0: e0 03 00 91                  	mov	x0, sp
-     8a4: 01 01 80 52                  	mov	w1, #8
-     8a8: fd 7b 0a a9                  	stp	x29, x30, [sp, #160]
-     8ac: fd 83 02 91                  	add	x29, sp, #160
-     8b0: f3 23 00 a9                  	stp	x19, x8, [sp]
-     8b4: ea 27 01 a9                  	stp	x10, x9, [sp, #16]
-     8b8: ff 23 00 b9                  	str	wzr, [sp, #32]
-     8bc: bf 3f 03 d5                  	dmb	sy
-     8c0: be 00 00 94                  	bl	#760 <mbox_call>
-     8c4: 1f 04 00 31                  	cmn	w0, #1
-     8c8: c0 04 00 54                  	b.eq	#152 <uart_init+0xe8>
-     8cc: 08 13 80 52                  	mov	w8, #152
-     8d0: 08 e4 a7 72                  	movk	w8, #16160, lsl #16
-     8d4: 09 c1 5f b8                  	ldur	w9, [x8, #-4]
-     8d8: 0a c1 56 b8                  	ldur	w10, [x8, #-148]
-     8dc: 2b 75 1e 12                  	and	w11, w9, #0xfffffffc
-     8e0: c9 12 80 52                  	mov	w9, #150
-     8e4: 6a 16 14 33                  	bfi	w10, w19, #12, #6
-     8e8: 0a c1 16 b8                  	stur	w10, [x8, #-148]
-     8ec: 0b c1 1f b8                  	stur	w11, [x8, #-4]
-     8f0: 29 05 00 71                  	subs	w9, w9, #1
-     8f4: 1f 20 03 d5                  	nop
-     8f8: c1 ff ff 54                  	b.ne	#-8 <uart_init+0x78>
-     8fc: 09 01 40 b9                  	ldr	w9, [x8]
-     900: 2a 05 12 32                  	orr	w10, w9, #0xc000
-     904: c9 12 80 52                  	mov	w9, #150
-     908: 0a 01 00 b9                  	str	w10, [x8]
-     90c: 29 05 00 71                  	subs	w9, w9, #1
-     910: 1f 20 03 d5                  	nop
-     914: c1 ff ff 54                  	b.ne	#-8 <uart_init+0x94>
-     918: 89 04 82 52                  	mov	w9, #4132
-     91c: 1f 01 00 b9                  	str	wzr, [x8]
-     920: 09 e4 a7 72                  	movk	w9, #16160, lsl #16
-     924: 4a 00 80 52                  	mov	w10, #2
-     928: 6c 01 80 52                  	mov	w12, #11
-     92c: e0 03 1f 2a                  	mov	w0, wzr
-     930: 28 21 40 b9                  	ldr	w8, [x9, #32]
-     934: 2b b5 40 29                  	ldp	w11, w13, [x9, #4]
-     938: 2e 0d 40 b9                  	ldr	w14, [x9, #12]
-     93c: 2a 01 00 79                  	strh	w10, [x9]
-     940: 2a 60 80 52                  	mov	w10, #769
-     944: 08 51 15 12                  	and	w8, w8, #0xfffff800
-     948: 8b 11 00 33                  	bfxil	w11, w12, #0, #5
-     94c: ac 05 1b 32                  	orr	w12, w13, #0x60
-     950: ca 01 0a 2a                  	orr	w10, w14, w10
-     954: 28 21 00 b9                  	str	w8, [x9, #32]
-     958: 2b b1 00 29                  	stp	w11, w12, [x9, #4]
-     95c: 2a 0d 00 b9                  	str	w10, [x9, #12]
-     960: fd 7b 4a a9                  	ldp	x29, x30, [sp, #160]
-     964: f3 4b 40 f9                  	ldr	x19, [sp, #144]
-     968: ff c3 02 91                  	add	sp, sp, #176
-     96c: c0 03 5f d6                  	ret
+0000000000000530 <mmu_enable>:
+ 530:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
+ 534:	910003fd 	mov	x29, sp
+ 538:	a90153f3 	stp	x19, x20, [sp, #16]
+ 53c:	f90013f5 	str	x21, [sp, #32]
+ 540:	aa0103f5 	mov	x21, x1
+ 544:	d29fe081 	mov	x1, #0xff04                	// #65284
+ 548:	d518a201 	msr	mair_el1, x1
+ 54c:	b40001b5 	cbz	x21, 580 <mmu_enable+0x50>
+ 550:	aa0003f4 	mov	x20, x0
+ 554:	d2800013 	mov	x19, #0x0                   	// #0
+ 558:	aa1303e0 	mov	x0, x19
+ 55c:	d2800021 	mov	x1, #0x1                   	// #1
+ 560:	97ffffb8 	bl	440 <mmu_enable_level_2_table>
+ 564:	f9400682 	ldr	x2, [x20, #8]
+ 568:	aa1303e0 	mov	x0, x19
+ 56c:	f8410681 	ldr	x1, [x20], #16
+ 570:	91000673 	add	x19, x19, #0x1
+ 574:	97ffff45 	bl	288 <mmu_enable_level_3_table>
+ 578:	eb1302bf 	cmp	x21, x19
+ 57c:	54fffee1 	b.ne	558 <mmu_enable+0x28>  // b.any
+ 580:	b0000013 	adrp	x19, 1000 <__exception_vectors_start>
+ 584:	9126c273 	add	x19, x19, #0x9b0
+ 588:	9102a260 	add	x0, x19, #0xa8
+ 58c:	94000089 	bl	7b0 <uart_puts>
+ 590:	d2a00402 	mov	x2, #0x200000              	// #2097152
+ 594:	d2a80001 	mov	x1, #0x40000000            	// #1073741824
+ 598:	d2a7e000 	mov	x0, #0x3f000000            	// #1056964608
+ 59c:	97fffef7 	bl	178 <mmu_print_range>
+ 5a0:	91016260 	add	x0, x19, #0x58
+ 5a4:	94000083 	bl	7b0 <uart_puts>
+ 5a8:	d0000000 	adrp	x0, 2000 <task0_header>
+ 5ac:	d280c028 	mov	x8, #0x601                 	// #1537
+ 5b0:	d280c027 	mov	x7, #0x601                 	// #1537
+ 5b4:	d280c026 	mov	x6, #0x601                 	// #1537
+ 5b8:	f9402400 	ldr	x0, [x0, #72]
+ 5bc:	d280c025 	mov	x5, #0x601                 	// #1537
+ 5c0:	d280c024 	mov	x4, #0x601                 	// #1537
+ 5c4:	d280c023 	mov	x3, #0x601                 	// #1537
+ 5c8:	913f0009 	add	x9, x0, #0xfc0
+ 5cc:	913f800a 	add	x10, x0, #0xfe0
+ 5d0:	d280c022 	mov	x2, #0x601                 	// #1537
+ 5d4:	d280c021 	mov	x1, #0x601                 	// #1537
+ 5d8:	f2a7e008 	movk	x8, #0x3f00, lsl #16
+ 5dc:	f2a7e407 	movk	x7, #0x3f20, lsl #16
+ 5e0:	f2a7e806 	movk	x6, #0x3f40, lsl #16
+ 5e4:	f2a7ec05 	movk	x5, #0x3f60, lsl #16
+ 5e8:	f2a7f004 	movk	x4, #0x3f80, lsl #16
+ 5ec:	f2a7f403 	movk	x3, #0x3fa0, lsl #16
+ 5f0:	f2a7f802 	movk	x2, #0x3fc0, lsl #16
+ 5f4:	f2a7fc01 	movk	x1, #0x3fe0, lsl #16
+ 5f8:	f2e00408 	movk	x8, #0x20, lsl #48
+ 5fc:	f2e00407 	movk	x7, #0x20, lsl #48
+ 600:	f2e00406 	movk	x6, #0x20, lsl #48
+ 604:	f2e00405 	movk	x5, #0x20, lsl #48
+ 608:	f2e00404 	movk	x4, #0x20, lsl #48
+ 60c:	f2e00403 	movk	x3, #0x20, lsl #48
+ 610:	f2e00402 	movk	x2, #0x20, lsl #48
+ 614:	f2e00401 	movk	x1, #0x20, lsl #48
+ 618:	a94153f3 	ldp	x19, x20, [sp, #16]
+ 61c:	f94013f5 	ldr	x21, [sp, #32]
+ 620:	a9001d28 	stp	x8, x7, [x9]
+ 624:	a9000d44 	stp	x4, x3, [x10]
+ 628:	a9011526 	stp	x6, x5, [x9, #16]
+ 62c:	a9010542 	stp	x2, x1, [x10, #16]
+ 630:	a8c37bfd 	ldp	x29, x30, [sp], #48
+ 634:	d65f03c0 	ret
 
-0000000000000970 uart_send:
-     970: 08 03 82 52                  	mov	w8, #4120
-     974: 08 e4 a7 72                  	movk	w8, #16160, lsl #16
-     978: 09 01 40 39                  	ldrb	w9, [x8]
-     97c: 89 00 28 36                  	tbz	w9, #5, #16 <uart_send+0x1c>
-     980: 1f 20 03 d5                  	nop
-     984: 09 01 40 39                  	ldrb	w9, [x8]
-     988: c9 ff 2f 37                  	tbnz	w9, #5, #-8 <uart_send+0x10>
-     98c: 09 1c 00 12                  	and	w9, w0, #0xff
-     990: 09 81 1e b8                  	stur	w9, [x8, #-24]
-     994: c0 03 5f d6                  	ret
+0000000000000638 <uart_init>:
+ 638:	a9b67bfd 	stp	x29, x30, [sp, #-160]!
+ 63c:	d2900042 	mov	x2, #0x8002                	// #32770
+ 640:	f2a00062 	movk	x2, #0x3, lsl #16
+ 644:	910003fd 	mov	x29, sp
+ 648:	d2800101 	mov	x1, #0x8                   	// #8
+ 64c:	d2812000 	mov	x0, #0x900                 	// #2304
+ 650:	d2800483 	mov	x3, #0x24                  	// #36
+ 654:	f2c00182 	movk	x2, #0xc, lsl #32
+ 658:	f2c00041 	movk	x1, #0x2, lsl #32
+ 65c:	f2a007a0 	movk	x0, #0x3d, lsl #16
+ 660:	a9010be3 	stp	x3, x2, [sp, #16]
+ 664:	a90203e1 	stp	x1, x0, [sp, #32]
+ 668:	b90033ff 	str	wzr, [sp, #48]
+ 66c:	d5033fbf 	dmb	sy
+ 670:	d2800101 	mov	x1, #0x8                   	// #8
+ 674:	910043e0 	add	x0, sp, #0x10
+ 678:	9400012c 	bl	b28 <mbox_call>
+ 67c:	3100041f 	cmn	w0, #0x1
+ 680:	54000780 	b.eq	770 <uart_init+0x138>  // b.none
+ 684:	d2800081 	mov	x1, #0x4                   	// #4
+ 688:	d2801283 	mov	x3, #0x94                  	// #148
+ 68c:	f2a7e401 	movk	x1, #0x3f20, lsl #16
+ 690:	f2a7e403 	movk	x3, #0x3f20, lsl #16
+ 694:	528012c0 	mov	w0, #0x96                  	// #150
+ 698:	b9400022 	ldr	w2, [x1]
+ 69c:	12117042 	and	w2, w2, #0xffff8fff
+ 6a0:	b9000022 	str	w2, [x1]
+ 6a4:	b9400022 	ldr	w2, [x1]
+ 6a8:	120e7042 	and	w2, w2, #0xfffc7fff
+ 6ac:	b9000022 	str	w2, [x1]
+ 6b0:	b9400022 	ldr	w2, [x1]
+ 6b4:	32120042 	orr	w2, w2, #0x4000
+ 6b8:	b9000022 	str	w2, [x1]
+ 6bc:	b9400022 	ldr	w2, [x1]
+ 6c0:	320f0042 	orr	w2, w2, #0x20000
+ 6c4:	b9000022 	str	w2, [x1]
+ 6c8:	b9400061 	ldr	w1, [x3]
+ 6cc:	121e7421 	and	w1, w1, #0xfffffffc
+ 6d0:	b9000061 	str	w1, [x3]
+ 6d4:	d503201f 	nop
+ 6d8:	d503201f 	nop
+ 6dc:	71000400 	subs	w0, w0, #0x1
+ 6e0:	54ffffc1 	b.ne	6d8 <uart_init+0xa0>  // b.any
+ 6e4:	d2801302 	mov	x2, #0x98                  	// #152
+ 6e8:	528012c0 	mov	w0, #0x96                  	// #150
+ 6ec:	f2a7e402 	movk	x2, #0x3f20, lsl #16
+ 6f0:	b9400041 	ldr	w1, [x2]
+ 6f4:	32120421 	orr	w1, w1, #0xc000
+ 6f8:	b9000041 	str	w1, [x2]
+ 6fc:	d503201f 	nop
+ 700:	d503201f 	nop
+ 704:	71000400 	subs	w0, w0, #0x1
+ 708:	54ffffc1 	b.ne	700 <uart_init+0xc8>  // b.any
+ 70c:	d2801300 	mov	x0, #0x98                  	// #152
+ 710:	d2820001 	mov	x1, #0x1000                	// #4096
+ 714:	f2a7e400 	movk	x0, #0x3f20, lsl #16
+ 718:	f2a7e401 	movk	x1, #0x3f20, lsl #16
+ 71c:	52800164 	mov	w4, #0xb                   	// #11
+ 720:	52806023 	mov	w3, #0x301                 	// #769
+ 724:	b900001f 	str	wzr, [x0]
+ 728:	52800000 	mov	w0, #0x0                   	// #0
+ 72c:	b9404422 	ldr	w2, [x1, #68]
+ 730:	12155042 	and	w2, w2, #0xfffff800
+ 734:	b9004422 	str	w2, [x1, #68]
+ 738:	b9402422 	ldr	w2, [x1, #36]
+ 73c:	12103c42 	and	w2, w2, #0xffff0000
+ 740:	321f0042 	orr	w2, w2, #0x2
+ 744:	b9002422 	str	w2, [x1, #36]
+ 748:	b9402822 	ldr	w2, [x1, #40]
+ 74c:	121b6842 	and	w2, w2, #0xffffffe0
+ 750:	2a040042 	orr	w2, w2, w4
+ 754:	b9002822 	str	w2, [x1, #40]
+ 758:	b9402c22 	ldr	w2, [x1, #44]
+ 75c:	321b0442 	orr	w2, w2, #0x60
+ 760:	b9002c22 	str	w2, [x1, #44]
+ 764:	b9403022 	ldr	w2, [x1, #48]
+ 768:	2a030042 	orr	w2, w2, w3
+ 76c:	b9003022 	str	w2, [x1, #48]
+ 770:	a8ca7bfd 	ldp	x29, x30, [sp], #160
+ 774:	d65f03c0 	ret
 
-0000000000000998 uart_puts:
-     998: 08 03 82 52                  	mov	w8, #4120
-     99c: a9 01 80 52                  	mov	w9, #13
-     9a0: 08 e4 a7 72                  	movk	w8, #16160, lsl #16
-     9a4: 03 00 00 14                  	b	#12 <uart_puts+0x18>
-     9a8: 00 04 00 91                  	add	x0, x0, #1
-     9ac: 0a 81 1e b8                  	stur	w10, [x8, #-24]
-     9b0: 0a 00 40 39                  	ldrb	w10, [x0]
-     9b4: 5f 29 00 71                  	cmp	w10, #10
-     9b8: c0 00 00 54                  	b.eq	#24 <uart_puts+0x38>
-     9bc: ca 01 00 34                  	cbz	w10, #56 <uart_puts+0x5c>
-     9c0: 0b 01 40 b9                  	ldr	w11, [x8]
-     9c4: 0b 01 28 37                  	tbnz	w11, #5, #32 <uart_puts+0x4c>
-     9c8: f8 ff ff 17                  	b	#-32 <uart_puts+0x10>
-     9cc: 1f 20 03 d5                  	nop
-     9d0: 0b 01 40 b9                  	ldr	w11, [x8]
-     9d4: cb ff 2f 37                  	tbnz	w11, #5, #-8 <uart_puts+0x34>
-     9d8: 09 81 1e b8                  	stur	w9, [x8, #-24]
-     9dc: 0a 00 40 39                  	ldrb	w10, [x0]
-     9e0: 4b fe 2f 36                  	tbz	w11, #5, #-56 <uart_puts+0x10>
-     9e4: 1f 20 03 d5                  	nop
-     9e8: 0b 01 40 39                  	ldrb	w11, [x8]
-     9ec: cb ff 2f 37                  	tbnz	w11, #5, #-8 <uart_puts+0x4c>
-     9f0: ee ff ff 17                  	b	#-72 <uart_puts+0x10>
-     9f4: c0 03 5f d6                  	ret
+0000000000000778 <uart_send>:
+ 778:	d2820002 	mov	x2, #0x1000                	// #4096
+ 77c:	12001c00 	and	w0, w0, #0xff
+ 780:	f2a7e402 	movk	x2, #0x3f20, lsl #16
+ 784:	b9401841 	ldr	w1, [x2, #24]
+ 788:	362800a1 	tbz	w1, #5, 79c <uart_send+0x24>
+ 78c:	d503201f 	nop
+ 790:	d503201f 	nop
+ 794:	b9401841 	ldr	w1, [x2, #24]
+ 798:	372fffc1 	tbnz	w1, #5, 790 <uart_send+0x18>
+ 79c:	d2820001 	mov	x1, #0x1000                	// #4096
+ 7a0:	f2a7e401 	movk	x1, #0x3f20, lsl #16
+ 7a4:	b9000020 	str	w0, [x1]
+ 7a8:	d65f03c0 	ret
+ 7ac:	d503201f 	nop
 
-00000000000009f8 uart_nputs:
-     9f8: 81 03 00 34                  	cbz	w1, #112 <uart_nputs+0x70>
-     9fc: 09 03 82 52                  	mov	w9, #4120
-     a00: e8 03 1f 2a                  	mov	w8, wzr
-     a04: 09 e4 a7 72                  	movk	w9, #16160, lsl #16
-     a08: aa 01 80 52                  	mov	w10, #13
-     a0c: 06 00 00 14                  	b	#24 <uart_nputs+0x2c>
-     a10: 00 04 00 91                  	add	x0, x0, #1
-     a14: 08 05 00 11                  	add	w8, w8, #1
-     a18: 1f 01 01 6b                  	cmp	w8, w1
-     a1c: 2b 81 1e b8                  	stur	w11, [x9, #-24]
-     a20: 40 02 00 54                  	b.eq	#72 <uart_nputs+0x70>
-     a24: 0b 00 40 39                  	ldrb	w11, [x0]
-     a28: 7f 29 00 71                  	cmp	w11, #10
-     a2c: c0 00 00 54                  	b.eq	#24 <uart_nputs+0x4c>
-     a30: cb 01 00 34                  	cbz	w11, #56 <uart_nputs+0x70>
-     a34: 2c 01 40 b9                  	ldr	w12, [x9]
-     a38: 0c 01 28 37                  	tbnz	w12, #5, #32 <uart_nputs+0x60>
-     a3c: f5 ff ff 17                  	b	#-44 <uart_nputs+0x18>
-     a40: 1f 20 03 d5                  	nop
-     a44: 2c 01 40 b9                  	ldr	w12, [x9]
-     a48: cc ff 2f 37                  	tbnz	w12, #5, #-8 <uart_nputs+0x48>
-     a4c: 2a 81 1e b8                  	stur	w10, [x9, #-24]
-     a50: 0b 00 40 39                  	ldrb	w11, [x0]
-     a54: ec fd 2f 36                  	tbz	w12, #5, #-68 <uart_nputs+0x18>
-     a58: 1f 20 03 d5                  	nop
-     a5c: 2c 01 40 39                  	ldrb	w12, [x9]
-     a60: cc ff 2f 37                  	tbnz	w12, #5, #-8 <uart_nputs+0x60>
-     a64: eb ff ff 17                  	b	#-84 <uart_nputs+0x18>
-     a68: c0 03 5f d6                  	ret
+00000000000007b0 <uart_puts>:
+ 7b0:	39400001 	ldrb	w1, [x0]
+ 7b4:	34000221 	cbz	w1, 7f8 <uart_puts+0x48>
+ 7b8:	d2820002 	mov	x2, #0x1000                	// #4096
+ 7bc:	528001a4 	mov	w4, #0xd                   	// #13
+ 7c0:	f2a7e402 	movk	x2, #0x3f20, lsl #16
+ 7c4:	d503201f 	nop
+ 7c8:	7100283f 	cmp	w1, #0xa
+ 7cc:	540001a0 	b.eq	800 <uart_puts+0x50>  // b.none
+ 7d0:	b9401841 	ldr	w1, [x2, #24]
+ 7d4:	39400003 	ldrb	w3, [x0]
+ 7d8:	362800a1 	tbz	w1, #5, 7ec <uart_puts+0x3c>
+ 7dc:	d503201f 	nop
+ 7e0:	d503201f 	nop
+ 7e4:	b9401841 	ldr	w1, [x2, #24]
+ 7e8:	372fffc1 	tbnz	w1, #5, 7e0 <uart_puts+0x30>
+ 7ec:	b9000043 	str	w3, [x2]
+ 7f0:	38401c01 	ldrb	w1, [x0, #1]!
+ 7f4:	35fffea1 	cbnz	w1, 7c8 <uart_puts+0x18>
+ 7f8:	d65f03c0 	ret
+ 7fc:	d503201f 	nop
+ 800:	b9401841 	ldr	w1, [x2, #24]
+ 804:	372fffc1 	tbnz	w1, #5, 7fc <uart_puts+0x4c>
+ 808:	b9000044 	str	w4, [x2]
+ 80c:	17fffff1 	b	7d0 <uart_puts+0x20>
 
-0000000000000a6c uart_tohex:
-     a6c: e8 03 00 2a                  	mov	w8, w0
-     a70: 09 00 00 b0                  	adrp	x9, #4096
-     a74: 08 0d 40 92                  	and	x8, x8, #0xf
-     a78: 29 f1 25 91                  	add	x9, x9, #2428
-     a7c: 00 06 80 52                  	mov	w0, #48
-     a80: 8a 00 00 10                  	adr	x10, #16
-     a84: 2b 69 68 38                  	ldrb	w11, [x9, x8]
-     a88: 4a 09 0b 8b                  	add	x10, x10, x11, lsl #2
-     a8c: 40 01 1f d6                  	br	x10
-     a90: 20 06 80 52                  	mov	w0, #49
-     a94: c0 03 5f d6                  	ret
-     a98: 40 06 80 52                  	mov	w0, #50
-     a9c: c0 03 5f d6                  	ret
-     aa0: 60 06 80 52                  	mov	w0, #51
-     aa4: c0 03 5f d6                  	ret
-     aa8: 80 06 80 52                  	mov	w0, #52
-     aac: c0 03 5f d6                  	ret
-     ab0: a0 06 80 52                  	mov	w0, #53
-     ab4: c0 03 5f d6                  	ret
-     ab8: c0 06 80 52                  	mov	w0, #54
-     abc: c0 03 5f d6                  	ret
-     ac0: e0 06 80 52                  	mov	w0, #55
-     ac4: c0 03 5f d6                  	ret
-     ac8: 00 07 80 52                  	mov	w0, #56
-     acc: c0 03 5f d6                  	ret
-     ad0: 20 07 80 52                  	mov	w0, #57
-     ad4: c0 03 5f d6                  	ret
-     ad8: 20 08 80 52                  	mov	w0, #65
-     adc: c0 03 5f d6                  	ret
-     ae0: 40 08 80 52                  	mov	w0, #66
-     ae4: c0 03 5f d6                  	ret
-     ae8: 60 08 80 52                  	mov	w0, #67
-     aec: c0 03 5f d6                  	ret
-     af0: 80 08 80 52                  	mov	w0, #68
-     af4: c0 03 5f d6                  	ret
-     af8: a0 08 80 52                  	mov	w0, #69
-     afc: c0 03 5f d6                  	ret
-     b00: c0 08 80 52                  	mov	w0, #70
-     b04: c0 03 5f d6                  	ret
+0000000000000810 <uart_nputs>:
+ 810:	34000281 	cbz	w1, 860 <uart_nputs+0x50>
+ 814:	51000424 	sub	w4, w1, #0x1
+ 818:	d2820002 	mov	x2, #0x1000                	// #4096
+ 81c:	91000484 	add	x4, x4, #0x1
+ 820:	f2a7e402 	movk	x2, #0x3f20, lsl #16
+ 824:	8b040004 	add	x4, x0, x4
+ 828:	528001a5 	mov	w5, #0xd                   	// #13
+ 82c:	d503201f 	nop
+ 830:	39400003 	ldrb	w3, [x0]
+ 834:	34000163 	cbz	w3, 860 <uart_nputs+0x50>
+ 838:	7100287f 	cmp	w3, #0xa
+ 83c:	54000061 	b.ne	848 <uart_nputs+0x38>  // b.any
+ 840:	1400000a 	b	868 <uart_nputs+0x58>
+ 844:	d503201f 	nop
+ 848:	b9401841 	ldr	w1, [x2, #24]
+ 84c:	372fffc1 	tbnz	w1, #5, 844 <uart_nputs+0x34>
+ 850:	b9000043 	str	w3, [x2]
+ 854:	91000400 	add	x0, x0, #0x1
+ 858:	eb04001f 	cmp	x0, x4
+ 85c:	54fffea1 	b.ne	830 <uart_nputs+0x20>  // b.any
+ 860:	d65f03c0 	ret
+ 864:	d503201f 	nop
+ 868:	b9401841 	ldr	w1, [x2, #24]
+ 86c:	372fffc1 	tbnz	w1, #5, 864 <uart_nputs+0x54>
+ 870:	b9000045 	str	w5, [x2]
+ 874:	39400003 	ldrb	w3, [x0]
+ 878:	17fffff4 	b	848 <uart_nputs+0x38>
+ 87c:	d503201f 	nop
 
-0000000000000b08 uart_u64hex:
-     b08: 08 03 82 52                  	mov	w8, #4120
-     b0c: 0a 00 00 b0                  	adrp	x10, #4096
-     b10: 08 e4 a7 72                  	movk	w8, #16160, lsl #16
-     b14: a9 01 80 52                  	mov	w9, #13
-     b18: 4a 81 22 91                  	add	x10, x10, #2208
-     b1c: 03 00 00 14                  	b	#12 <uart_u64hex+0x20>
-     b20: 4a 05 00 91                  	add	x10, x10, #1
-     b24: 0b 81 1e b8                  	stur	w11, [x8, #-24]
-     b28: 4b 01 40 39                  	ldrb	w11, [x10]
-     b2c: 7f 29 00 71                  	cmp	w11, #10
-     b30: c0 00 00 54                  	b.eq	#24 <uart_u64hex+0x40>
-     b34: cb 01 00 34                  	cbz	w11, #56 <uart_u64hex+0x64>
-     b38: 0c 01 40 b9                  	ldr	w12, [x8]
-     b3c: 0c 01 28 37                  	tbnz	w12, #5, #32 <uart_u64hex+0x54>
-     b40: f8 ff ff 17                  	b	#-32 <uart_u64hex+0x18>
-     b44: 1f 20 03 d5                  	nop
-     b48: 0c 01 40 b9                  	ldr	w12, [x8]
-     b4c: cc ff 2f 37                  	tbnz	w12, #5, #-8 <uart_u64hex+0x3c>
-     b50: 09 81 1e b8                  	stur	w9, [x8, #-24]
-     b54: 4b 01 40 39                  	ldrb	w11, [x10]
-     b58: 4c fe 2f 36                  	tbz	w12, #5, #-56 <uart_u64hex+0x18>
-     b5c: 1f 20 03 d5                  	nop
-     b60: 0c 01 40 39                  	ldrb	w12, [x8]
-     b64: cc ff 2f 37                  	tbnz	w12, #5, #-8 <uart_u64hex+0x54>
-     b68: ee ff ff 17                  	b	#-72 <uart_u64hex+0x18>
-     b6c: 09 00 00 b0                  	adrp	x9, #4096
-     b70: ec 01 80 52                  	mov	w12, #15
-     b74: 29 31 26 91                  	add	x9, x9, #2444
-     b78: 04 00 00 14                  	b	#16 <uart_u64hex+0x80>
-     b7c: 4c 05 00 d1                  	sub	x12, x10, #1
-     b80: 0b 81 1e b8                  	stur	w11, [x8, #-24]
-     b84: 8a 01 00 b4                  	cbz	x10, #48 <uart_u64hex+0xac>
-     b88: 8b f5 7e d3                  	lsl	x11, x12, #2
-     b8c: ea 03 0c aa                  	mov	x10, x12
-     b90: 0c 01 40 39                  	ldrb	w12, [x8]
-     b94: 0b 24 cb 9a                  	lsr	x11, x0, x11
-     b98: 6b 0d 40 92                  	and	x11, x11, #0xf
-     b9c: 2b 79 6b b8                  	ldr	w11, [x9, x11, lsl #2]
-     ba0: ec fe 2f 36                  	tbz	w12, #5, #-36 <uart_u64hex+0x74>
-     ba4: 1f 20 03 d5                  	nop
-     ba8: 0c 01 40 39                  	ldrb	w12, [x8]
-     bac: cc ff 2f 37                  	tbnz	w12, #5, #-8 <uart_u64hex+0x9c>
-     bb0: f3 ff ff 17                  	b	#-52 <uart_u64hex+0x74>
-     bb4: c0 03 5f d6                  	ret
+0000000000000880 <uart_tohex>:
+ 880:	12000c00 	and	w0, w0, #0xf
+ 884:	51000400 	sub	w0, w0, #0x1
+ 888:	12001c00 	and	w0, w0, #0xff
+ 88c:	7100381f 	cmp	w0, #0xe
+ 890:	540000c8 	b.hi	8a8 <uart_tohex+0x28>  // b.pmore
+ 894:	92401c00 	and	x0, x0, #0xff
+ 898:	b0000001 	adrp	x1, 1000 <__exception_vectors_start>
+ 89c:	912a4021 	add	x1, x1, #0xa90
+ 8a0:	38606820 	ldrb	w0, [x1, x0]
+ 8a4:	d65f03c0 	ret
+ 8a8:	52800600 	mov	w0, #0x30                  	// #48
+ 8ac:	d65f03c0 	ret
 
-0000000000000bb8 mbox_call:
-     bb8: 08 13 97 52                  	mov	w8, #47256
-     bbc: 08 e0 a7 72                  	movk	w8, #16128, lsl #16
-     bc0: 09 01 40 b9                  	ldr	w9, [x8]
-     bc4: 89 00 f8 36                  	tbz	w9, #31, #16 <mbox_call+0x1c>
-     bc8: 1f 20 03 d5                  	nop
-     bcc: 09 01 40 b9                  	ldr	w9, [x8]
-     bd0: c9 ff ff 37                  	tbnz	w9, #31, #-8 <mbox_call+0x10>
-     bd4: ec 03 00 2a                  	mov	w12, w0
-     bd8: ea 07 01 32                  	mov	w10, #-2147483647
-     bdc: 0b 00 b0 52                  	mov	w11, #-2147483648
-     be0: 2c 0c 00 33                  	bfxil	w12, w1, #0, #4
-     be4: 0c 09 00 b9                  	str	w12, [x8, #8]
-     be8: 89 00 f0 36                  	tbz	w9, #30, #16 <mbox_call+0x40>
-     bec: 1f 20 03 d5                  	nop
-     bf0: 09 01 40 b9                  	ldr	w9, [x8]
-     bf4: c9 ff f7 37                  	tbnz	w9, #30, #-8 <mbox_call+0x34>
-     bf8: 0c 81 5e b8                  	ldur	w12, [x8, #-24]
-     bfc: 8d 0d 00 12                  	and	w13, w12, #0xf
-     c00: 8c 6d 1c 12                  	and	w12, w12, #0xfffffff0
-     c04: bf 01 01 6b                  	cmp	w13, w1
-     c08: 80 01 40 7a                  	ccmp	w12, w0, #0, eq
-     c0c: e1 fe ff 54                  	b.ne	#-36 <mbox_call+0x30>
-     c10: 0c 04 40 b9                  	ldr	w12, [x0, #4]
-     c14: 9f 01 0a 6b                  	cmp	w12, w10
-     c18: a0 00 00 54                  	b.eq	#20 <mbox_call+0x74>
-     c1c: 9f 01 0b 6b                  	cmp	w12, w11
-     c20: 41 fe ff 54                  	b.ne	#-56 <mbox_call+0x30>
-     c24: e0 03 1f 2a                  	mov	w0, wzr
-     c28: c0 03 5f d6                  	ret
-     c2c: 00 00 80 12                  	mov	w0, #-1
-     c30: c0 03 5f d6                  	ret
+00000000000008b0 <uart_u64hex>:
+ 8b0:	aa0003e5 	mov	x5, x0
+ 8b4:	b0000006 	adrp	x6, 1000 <__exception_vectors_start>
+ 8b8:	912a40c6 	add	x6, x6, #0xa90
+ 8bc:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
+ 8c0:	910040c0 	add	x0, x6, #0x10
+ 8c4:	910003fd 	mov	x29, sp
+ 8c8:	97ffffba 	bl	7b0 <uart_puts>
+ 8cc:	aa0603e0 	mov	x0, x6
+ 8d0:	d2820002 	mov	x2, #0x1000                	// #4096
+ 8d4:	52800783 	mov	w3, #0x3c                  	// #60
+ 8d8:	f2a7e402 	movk	x2, #0x3f20, lsl #16
+ 8dc:	d503201f 	nop
+ 8e0:	9ac324a1 	lsr	x1, x5, x3
+ 8e4:	12000c21 	and	w1, w1, #0xf
+ 8e8:	51000421 	sub	w1, w1, #0x1
+ 8ec:	52800604 	mov	w4, #0x30                  	// #48
+ 8f0:	12001c21 	and	w1, w1, #0xff
+ 8f4:	7100383f 	cmp	w1, #0xe
+ 8f8:	540000a8 	b.hi	90c <uart_u64hex+0x5c>  // b.pmore
+ 8fc:	92401c21 	and	x1, x1, #0xff
+ 900:	38616804 	ldrb	w4, [x0, x1]
+ 904:	14000002 	b	90c <uart_u64hex+0x5c>
+ 908:	d503201f 	nop
+ 90c:	b9401841 	ldr	w1, [x2, #24]
+ 910:	372fffc1 	tbnz	w1, #5, 908 <uart_u64hex+0x58>
+ 914:	b9000044 	str	w4, [x2]
+ 918:	51001063 	sub	w3, w3, #0x4
+ 91c:	3100107f 	cmn	w3, #0x4
+ 920:	54fffe01 	b.ne	8e0 <uart_u64hex+0x30>  // b.any
+ 924:	a8c17bfd 	ldp	x29, x30, [sp], #16
+ 928:	d65f03c0 	ret
+ 92c:	d503201f 	nop
 
-0000000000000c34 task_save_context:
-     c34: df 43 03 d5                  	msr	DAIFSet, #3
-     c38: ff 03 04 d1                  	sub	sp, sp, #256
-     c3c: e0 07 00 a9                  	stp	x0, x1, [sp]
-     c40: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-     c44: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-     c48: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-     c4c: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-     c50: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-     c54: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-     c58: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-     c5c: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-     c60: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-     c64: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-     c68: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-     c6c: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-     c70: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-     c74: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-     c78: 20 40 38 d5                  	mrs	x0, ELR_EL1
-     c7c: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
+0000000000000930 <uart_u64hex_s>:
+ 930:	aa0003e6 	mov	x6, x0
+ 934:	b0000008 	adrp	x8, 1000 <__exception_vectors_start>
+ 938:	912a4107 	add	x7, x8, #0xa90
+ 93c:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
+ 940:	910040e0 	add	x0, x7, #0x10
+ 944:	910003fd 	mov	x29, sp
+ 948:	97ffff9a 	bl	7b0 <uart_puts>
+ 94c:	d2820002 	mov	x2, #0x1000                	// #4096
+ 950:	52800783 	mov	w3, #0x3c                  	// #60
+ 954:	52800005 	mov	w5, #0x0                   	// #0
+ 958:	f2a7e402 	movk	x2, #0x3f20, lsl #16
+ 95c:	d503201f 	nop
+ 960:	520000a4 	eor	w4, w5, #0x1
+ 964:	9ac324c1 	lsr	x1, x6, x3
+ 968:	72001c21 	ands	w1, w1, #0xff
+ 96c:	52800005 	mov	w5, #0x0                   	// #0
+ 970:	1a9f0084 	csel	w4, w4, wzr, eq  // eq = none
+ 974:	350001e4 	cbnz	w4, 9b0 <uart_u64hex_s+0x80>
+ 978:	12000c21 	and	w1, w1, #0xf
+ 97c:	52800600 	mov	w0, #0x30                  	// #48
+ 980:	51000421 	sub	w1, w1, #0x1
+ 984:	12001c21 	and	w1, w1, #0xff
+ 988:	7100383f 	cmp	w1, #0xe
+ 98c:	540000a8 	b.hi	9a0 <uart_u64hex_s+0x70>  // b.pmore
+ 990:	92401c21 	and	x1, x1, #0xff
+ 994:	386168e0 	ldrb	w0, [x7, x1]
+ 998:	14000002 	b	9a0 <uart_u64hex_s+0x70>
+ 99c:	d503201f 	nop
+ 9a0:	b9401841 	ldr	w1, [x2, #24]
+ 9a4:	372fffc1 	tbnz	w1, #5, 99c <uart_u64hex_s+0x6c>
+ 9a8:	52800025 	mov	w5, #0x1                   	// #1
+ 9ac:	b9000040 	str	w0, [x2]
+ 9b0:	71001063 	subs	w3, w3, #0x4
+ 9b4:	54fffd61 	b.ne	960 <uart_u64hex_s+0x30>  // b.any
+ 9b8:	12000cc0 	and	w0, w6, #0xf
+ 9bc:	52800602 	mov	w2, #0x30                  	// #48
+ 9c0:	51000400 	sub	w0, w0, #0x1
+ 9c4:	12001c00 	and	w0, w0, #0xff
+ 9c8:	7100381f 	cmp	w0, #0xe
+ 9cc:	54000088 	b.hi	9dc <uart_u64hex_s+0xac>  // b.pmore
+ 9d0:	912a4108 	add	x8, x8, #0xa90
+ 9d4:	92401c00 	and	x0, x0, #0xff
+ 9d8:	38606902 	ldrb	w2, [x8, x0]
+ 9dc:	d2820001 	mov	x1, #0x1000                	// #4096
+ 9e0:	f2a7e401 	movk	x1, #0x3f20, lsl #16
+ 9e4:	b9401820 	ldr	w0, [x1, #24]
+ 9e8:	362800a0 	tbz	w0, #5, 9fc <uart_u64hex_s+0xcc>
+ 9ec:	d503201f 	nop
+ 9f0:	d503201f 	nop
+ 9f4:	b9401820 	ldr	w0, [x1, #24]
+ 9f8:	372fffc0 	tbnz	w0, #5, 9f0 <uart_u64hex_s+0xc0>
+ 9fc:	d2820000 	mov	x0, #0x1000                	// #4096
+ a00:	f2a7e400 	movk	x0, #0x3f20, lsl #16
+ a04:	b9000002 	str	w2, [x0]
+ a08:	a8c17bfd 	ldp	x29, x30, [sp], #16
+ a0c:	d65f03c0 	ret
 
-0000000000000c80 task_restore_context:
-     c80: e0 7b 4f a9                  	ldp	x0, x30, [sp, #240]
-     c84: 20 40 18 d5                  	msr	ELR_EL1, x0
-     c88: e0 07 40 a9                  	ldp	x0, x1, [sp]
-     c8c: e2 0f 41 a9                  	ldp	x2, x3, [sp, #16]
-     c90: e4 17 42 a9                  	ldp	x4, x5, [sp, #32]
-     c94: e6 1f 43 a9                  	ldp	x6, x7, [sp, #48]
-     c98: e8 27 44 a9                  	ldp	x8, x9, [sp, #64]
-     c9c: ea 2f 45 a9                  	ldp	x10, x11, [sp, #80]
-     ca0: ec 37 46 a9                  	ldp	x12, x13, [sp, #96]
-     ca4: ee 3f 47 a9                  	ldp	x14, x15, [sp, #112]
-     ca8: f0 47 48 a9                  	ldp	x16, x17, [sp, #128]
-     cac: f2 4f 49 a9                  	ldp	x18, x19, [sp, #144]
-     cb0: f4 57 4a a9                  	ldp	x20, x21, [sp, #160]
-     cb4: f6 5f 4b a9                  	ldp	x22, x23, [sp, #176]
-     cb8: f8 67 4c a9                  	ldp	x24, x25, [sp, #192]
-     cbc: fa 6f 4d a9                  	ldp	x26, x27, [sp, #208]
-     cc0: fc 77 4e a9                  	ldp	x28, x29, [sp, #224]
-     cc4: ff 03 04 91                  	add	sp, sp, #256
-     cc8: ff 43 03 d5                  	msr	DAIFClr, #3
+0000000000000a10 <irq_enable_system_timer>:
+ a10:	d2964001 	mov	x1, #0xb200                	// #45568
+ a14:	f100041f 	cmp	x0, #0x1
+ a18:	f2a7e001 	movk	x1, #0x3f00, lsl #16
+ a1c:	52800082 	mov	w2, #0x4                   	// #4
+ a20:	52800040 	mov	w0, #0x2                   	// #2
+ a24:	1a820000 	csel	w0, w0, w2, eq  // eq = none
+ a28:	b9001020 	str	w0, [x1, #16]
+ a2c:	d65f03c0 	ret
 
-0000000000000ccc task_save:
-     ccc: f4 4f be a9                  	stp	x20, x19, [sp, #-32]!
-     cd0: fd 7b 01 a9                  	stp	x29, x30, [sp, #16]
-     cd4: fd 43 00 91                  	add	x29, sp, #16
-     cd8: f3 03 00 aa                  	mov	x19, x0
-     cdc: 08 04 40 f9                  	ldr	x8, [x0, #8]
-     ce0: f4 03 00 91                  	mov	x20, sp
-     ce4: 1f 01 00 91                  	mov	sp, x8
-     ce8: d3 ff ff 97                  	bl	#-180 <task_save_context>
-     cec: e8 03 00 91                  	mov	x8, sp
-     cf0: 9f 02 00 91                  	mov	sp, x20
-     cf4: 68 06 00 f9                  	str	x8, [x19, #8]
-     cf8: fd 7b 41 a9                  	ldp	x29, x30, [sp, #16]
-     cfc: f4 4f c2 a8                  	ldp	x20, x19, [sp], #32
-     d00: c0 03 5f d6                  	ret
+0000000000000a30 <timer_init_core0>:
+ a30:	9e630000 	ucvtf	d0, x0
+ a34:	d2c80001 	mov	x1, #0x400000000000        	// #70368744177664
+ a38:	f2e811e1 	movk	x1, #0x408f, lsl #48
+ a3c:	9e670022 	fmov	d2, x1
+ a40:	d2c9f001 	mov	x1, #0x4f8000000000        	// #87411174408192
+ a44:	d2800685 	mov	x5, #0x34                  	// #52
+ a48:	f2e83041 	movk	x1, #0x4182, lsl #48
+ a4c:	9e670021 	fmov	d1, x1
+ a50:	1e621800 	fdiv	d0, d0, d2
+ a54:	d2800481 	mov	x1, #0x24                  	// #36
+ a58:	f2a80001 	movk	x1, #0x4000, lsl #16
+ a5c:	f2a80005 	movk	x5, #0x4000, lsl #16
+ a60:	d2800803 	mov	x3, #0x40                  	// #64
+ a64:	52a60006 	mov	w6, #0x30000000            	// #805306368
+ a68:	f2a80003 	movk	x3, #0x4000, lsl #16
+ a6c:	b900003f 	str	wzr, [x1]
+ a70:	52800044 	mov	w4, #0x2                   	// #2
+ a74:	52b80002 	mov	w2, #0xc0000000            	// #-1073741824
+ a78:	1e610800 	fmul	d0, d0, d1
+ a7c:	9e790000 	fcvtzu	x0, d0
+ a80:	0b060000 	add	w0, w0, w6
+ a84:	b90000a0 	str	w0, [x5]
+ a88:	b9000064 	str	w4, [x3]
+ a8c:	b9001422 	str	w2, [x1, #20]
+ a90:	d65f03c0 	ret
+ a94:	d503201f 	nop
 
-0000000000000d04 task_zero_bss:
-     d04: 61 02 00 b4                  	cbz	x1, #76 <task_zero_bss+0x4c>
-     d08: 3f 04 00 f1                  	cmp	x1, #1
-     d0c: 61 00 00 54                  	b.ne	#12 <task_zero_bss+0x14>
-     d10: e8 03 1f aa                  	mov	x8, xzr
-     d14: 0a 00 00 14                  	b	#40 <task_zero_bss+0x38>
-     d18: 28 f8 7f 92                  	and	x8, x1, #0xfffffffffffffffe
-     d1c: 09 04 00 91                  	add	x9, x0, #1
-     d20: ea 03 08 aa                  	mov	x10, x8
-     d24: 3f f1 1f 78                  	sturh	wzr, [x9, #-1]
-     d28: 29 09 00 91                  	add	x9, x9, #2
-     d2c: 4a 09 00 f1                  	subs	x10, x10, #2
-     d30: a1 ff ff 54                  	b.ne	#-12 <task_zero_bss+0x20>
-     d34: 1f 01 01 eb                  	cmp	x8, x1
-     d38: c0 00 00 54                  	b.eq	#24 <task_zero_bss+0x4c>
-     d3c: 09 00 08 8b                  	add	x9, x0, x8
-     d40: 28 00 08 cb                  	sub	x8, x1, x8
-     d44: 08 05 00 f1                  	subs	x8, x8, #1
-     d48: 3f 15 00 38                  	strb	wzr, [x9], #1
-     d4c: c1 ff ff 54                  	b.ne	#-8 <task_zero_bss+0x40>
-     d50: c0 03 5f d6                  	ret
+0000000000000a98 <timer_one_shot_sys>:
+ a98:	d2860002 	mov	x2, #0x3000                	// #12288
+ a9c:	f100041f 	cmp	x0, #0x1
+ aa0:	f2a7e002 	movk	x2, #0x3f00, lsl #16
+ aa4:	b9400440 	ldr	w0, [x2, #4]
+ aa8:	0b010000 	add	w0, w0, w1
+ aac:	540000a0 	b.eq	ac0 <timer_one_shot_sys+0x28>  // b.none
+ ab0:	b9001840 	str	w0, [x2, #24]
+ ab4:	52800100 	mov	w0, #0x8                   	// #8
+ ab8:	b9000040 	str	w0, [x2]
+ abc:	d65f03c0 	ret
+ ac0:	b9001040 	str	w0, [x2, #16]
+ ac4:	52800040 	mov	w0, #0x2                   	// #2
+ ac8:	b9000040 	str	w0, [x2]
+ acc:	d65f03c0 	ret
+
+0000000000000ad0 <timer_delay_sys>:
+ ad0:	d2860003 	mov	x3, #0x3000                	// #12288
+ ad4:	f100041f 	cmp	x0, #0x1
+ ad8:	f2a7e003 	movk	x3, #0x3f00, lsl #16
+ adc:	b9400460 	ldr	w0, [x3, #4]
+ ae0:	0b010000 	add	w0, w0, w1
+ ae4:	54000100 	b.eq	b04 <timer_delay_sys+0x34>  // b.none
+ ae8:	aa0303e2 	mov	x2, x3
+ aec:	b9001860 	str	w0, [x3, #24]
+ af0:	52800100 	mov	w0, #0x8                   	// #8
+ af4:	b9000060 	str	w0, [x3]
+ af8:	b9400040 	ldr	w0, [x2]
+ afc:	361fffe0 	tbz	w0, #3, af8 <timer_delay_sys+0x28>
+ b00:	d65f03c0 	ret
+ b04:	aa0303e1 	mov	x1, x3
+ b08:	b9001060 	str	w0, [x3, #16]
+ b0c:	52800040 	mov	w0, #0x2                   	// #2
+ b10:	b9000060 	str	w0, [x3]
+ b14:	d503201f 	nop
+ b18:	b9400020 	ldr	w0, [x1]
+ b1c:	360fffe0 	tbz	w0, #1, b18 <timer_delay_sys+0x48>
+ b20:	d65f03c0 	ret
+ b24:	00000000 	.inst	0x00000000 ; undefined
+
+0000000000000b28 <mbox_call>:
+ b28:	d2971003 	mov	x3, #0xb880                	// #47232
+ b2c:	f2a7e003 	movk	x3, #0x3f00, lsl #16
+ b30:	b9401862 	ldr	w2, [x3, #24]
+ b34:	36f80082 	tbz	w2, #31, b44 <mbox_call+0x1c>
+ b38:	d503201f 	nop
+ b3c:	b9401862 	ldr	w2, [x3, #24]
+ b40:	37ffffc2 	tbnz	w2, #31, b38 <mbox_call+0x10>
+ b44:	d2971003 	mov	x3, #0xb880                	// #47232
+ b48:	2a0003e2 	mov	w2, w0
+ b4c:	f2a7e003 	movk	x3, #0x3f00, lsl #16
+ b50:	52b00005 	mov	w5, #0x80000000            	// #-2147483648
+ b54:	33000c22 	bfxil	w2, w1, #0, #4
+ b58:	aa0303e1 	mov	x1, x3
+ b5c:	b9002062 	str	w2, [x3, #32]
+ b60:	320107e4 	mov	w4, #0x80000001            	// #-2147483647
+ b64:	b9400403 	ldr	w3, [x0, #4]
+ b68:	b9401820 	ldr	w0, [x1, #24]
+ b6c:	37f00140 	tbnz	w0, #30, b94 <mbox_call+0x6c>
+ b70:	b9400020 	ldr	w0, [x1]
+ b74:	6b00005f 	cmp	w2, w0
+ b78:	54ffff81 	b.ne	b68 <mbox_call+0x40>  // b.any
+ b7c:	6b05007f 	cmp	w3, w5
+ b80:	540000e0 	b.eq	b9c <mbox_call+0x74>  // b.none
+ b84:	6b04007f 	cmp	w3, w4
+ b88:	54ffff01 	b.ne	b68 <mbox_call+0x40>  // b.any
+ b8c:	12800000 	mov	w0, #0xffffffff            	// #-1
+ b90:	d65f03c0 	ret
+ b94:	d503201f 	nop
+ b98:	17fffff4 	b	b68 <mbox_call+0x40>
+ b9c:	52800000 	mov	w0, #0x0                   	// #0
+ ba0:	d65f03c0 	ret
+ ba4:	00000000 	.inst	0x00000000 ; undefined
+
+0000000000000ba8 <task_get_list_item>:
+ ba8:	d36aa400 	lsl	x0, x0, #22
+ bac:	d28a8921 	mov	x1, #0x5449                	// #21577
+ bb0:	91480000 	add	x0, x0, #0x200, lsl #12
+ bb4:	f2a9a8a1 	movk	x1, #0x4d45, lsl #16
+ bb8:	f9400002 	ldr	x2, [x0]
+ bbc:	eb01005f 	cmp	x2, x1
+ bc0:	54000041 	b.ne	bc8 <task_get_list_item+0x20>  // b.any
+ bc4:	d65f03c0 	ret
+ bc8:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
+ bcc:	b0000000 	adrp	x0, 1000 <__exception_vectors_start>
+ bd0:	912aa000 	add	x0, x0, #0xaa8
+ bd4:	910003fd 	mov	x29, sp
+ bd8:	97fffef6 	bl	7b0 <uart_puts>
+ bdc:	d2800000 	mov	x0, #0x0                   	// #0
+ be0:	a8c17bfd 	ldp	x29, x30, [sp], #16
+ be4:	d65f03c0 	ret
+
+0000000000000be8 <task_get_header>:
+ be8:	d36aa401 	lsl	x1, x0, #22
+ bec:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
+ bf0:	91480021 	add	x1, x1, #0x200, lsl #12
+ bf4:	910003fd 	mov	x29, sp
+ bf8:	d28a8922 	mov	x2, #0x5449                	// #21577
+ bfc:	f9400020 	ldr	x0, [x1]
+ c00:	f2a9a8a2 	movk	x2, #0x4d45, lsl #16
+ c04:	eb02001f 	cmp	x0, x2
+ c08:	540001e1 	b.ne	c44 <task_get_header+0x5c>  // b.any
+ c0c:	f9400822 	ldr	x2, [x1, #16]
+ c10:	d2882a83 	mov	x3, #0x4154                	// #16724
+ c14:	f2a96a63 	movk	x3, #0x4b53, lsl #16
+ c18:	8b020020 	add	x0, x1, x2
+ c1c:	f8626821 	ldr	x1, [x1, x2]
+ c20:	eb03003f 	cmp	x1, x3
+ c24:	540000c0 	b.eq	c3c <task_get_header+0x54>  // b.none
+ c28:	b0000000 	adrp	x0, 1000 <__exception_vectors_start>
+ c2c:	912aa000 	add	x0, x0, #0xaa8
+ c30:	9100c000 	add	x0, x0, #0x30
+ c34:	97fffedf 	bl	7b0 <uart_puts>
+ c38:	d2800000 	mov	x0, #0x0                   	// #0
+ c3c:	a8c17bfd 	ldp	x29, x30, [sp], #16
+ c40:	d65f03c0 	ret
+ c44:	b0000000 	adrp	x0, 1000 <__exception_vectors_start>
+ c48:	912aa000 	add	x0, x0, #0xaa8
+ c4c:	97fffed9 	bl	7b0 <uart_puts>
+ c50:	d2800000 	mov	x0, #0x0                   	// #0
+ c54:	f9400800 	ldr	x0, [x0, #16]
+ c58:	d4207d00 	brk	#0x3e8
+ c5c:	d503201f 	nop
+
+0000000000000c60 <task_header_rebase>:
+ c60:	a9bc7bfd 	stp	x29, x30, [sp, #-64]!
+ c64:	d28a8921 	mov	x1, #0x5449                	// #21577
+ c68:	f2a9a8a1 	movk	x1, #0x4d45, lsl #16
+ c6c:	910003fd 	mov	x29, sp
+ c70:	a90153f3 	stp	x19, x20, [sp, #16]
+ c74:	d36aa413 	lsl	x19, x0, #22
+ c78:	91480273 	add	x19, x19, #0x200, lsl #12
+ c7c:	a9025bf5 	stp	x21, x22, [sp, #32]
+ c80:	aa0003f6 	mov	x22, x0
+ c84:	f9400260 	ldr	x0, [x19]
+ c88:	f9001bf7 	str	x23, [sp, #48]
+ c8c:	eb01001f 	cmp	x0, x1
+ c90:	54000881 	b.ne	da0 <task_header_rebase+0x140>  // b.any
+ c94:	f9400a60 	ldr	x0, [x19, #16]
+ c98:	d2882a81 	mov	x1, #0x4154                	// #16724
+ c9c:	f2a96a61 	movk	x1, #0x4b53, lsl #16
+ ca0:	8b000274 	add	x20, x19, x0
+ ca4:	f8606a60 	ldr	x0, [x19, x0]
+ ca8:	eb01001f 	cmp	x0, x1
+ cac:	54000861 	b.ne	db8 <task_header_rebase+0x158>  // b.any
+ cb0:	b0000015 	adrp	x21, 1000 <__exception_vectors_start>
+ cb4:	912aa2b5 	add	x21, x21, #0xaa8
+ cb8:	910182a0 	add	x0, x21, #0x60
+ cbc:	97fffebd 	bl	7b0 <uart_puts>
+ cc0:	aa1603e0 	mov	x0, x22
+ cc4:	97ffff1b 	bl	930 <uart_u64hex_s>
+ cc8:	910242a0 	add	x0, x21, #0x90
+ ccc:	97fffeb9 	bl	7b0 <uart_puts>
+ cd0:	910282b6 	add	x22, x21, #0xa0
+ cd4:	aa1303e0 	mov	x0, x19
+ cd8:	97ffff16 	bl	930 <uart_u64hex_s>
+ cdc:	9102a2b7 	add	x23, x21, #0xa8
+ ce0:	aa1603e0 	mov	x0, x22
+ ce4:	97fffeb3 	bl	7b0 <uart_puts>
+ ce8:	aa1703e0 	mov	x0, x23
+ cec:	97fffeb1 	bl	7b0 <uart_puts>
+ cf0:	f9401680 	ldr	x0, [x20, #40]
+ cf4:	910342b5 	add	x21, x21, #0xd0
+ cf8:	97ffff0e 	bl	930 <uart_u64hex_s>
+ cfc:	aa1503e0 	mov	x0, x21
+ d00:	97fffeac 	bl	7b0 <uart_puts>
+ d04:	f9401680 	ldr	x0, [x20, #40]
+ d08:	8b130000 	add	x0, x0, x19
+ d0c:	97ffff09 	bl	930 <uart_u64hex_s>
+ d10:	aa1603e0 	mov	x0, x22
+ d14:	97fffea7 	bl	7b0 <uart_puts>
+ d18:	aa1703e0 	mov	x0, x23
+ d1c:	97fffea5 	bl	7b0 <uart_puts>
+ d20:	f9401a80 	ldr	x0, [x20, #48]
+ d24:	97ffff03 	bl	930 <uart_u64hex_s>
+ d28:	aa1503e0 	mov	x0, x21
+ d2c:	97fffea1 	bl	7b0 <uart_puts>
+ d30:	f9401a80 	ldr	x0, [x20, #48]
+ d34:	8b130000 	add	x0, x0, x19
+ d38:	97fffefe 	bl	930 <uart_u64hex_s>
+ d3c:	aa1603e0 	mov	x0, x22
+ d40:	97fffe9c 	bl	7b0 <uart_puts>
+ d44:	aa1703e0 	mov	x0, x23
+ d48:	97fffe9a 	bl	7b0 <uart_puts>
+ d4c:	f9401e80 	ldr	x0, [x20, #56]
+ d50:	97fffef8 	bl	930 <uart_u64hex_s>
+ d54:	aa1503e0 	mov	x0, x21
+ d58:	97fffe96 	bl	7b0 <uart_puts>
+ d5c:	f9401e80 	ldr	x0, [x20, #56]
+ d60:	8b130000 	add	x0, x0, x19
+ d64:	97fffef3 	bl	930 <uart_u64hex_s>
+ d68:	aa1603e0 	mov	x0, x22
+ d6c:	97fffe91 	bl	7b0 <uart_puts>
+ d70:	a9428682 	ldp	x2, x1, [x20, #40]
+ d74:	f9401e80 	ldr	x0, [x20, #56]
+ d78:	a9425bf5 	ldp	x21, x22, [sp, #32]
+ d7c:	8b130042 	add	x2, x2, x19
+ d80:	8b130021 	add	x1, x1, x19
+ d84:	8b130013 	add	x19, x0, x19
+ d88:	f9401bf7 	ldr	x23, [sp, #48]
+ d8c:	a9028682 	stp	x2, x1, [x20, #40]
+ d90:	f9001e93 	str	x19, [x20, #56]
+ d94:	a94153f3 	ldp	x19, x20, [sp, #16]
+ d98:	a8c47bfd 	ldp	x29, x30, [sp], #64
+ d9c:	d65f03c0 	ret
+ da0:	b0000000 	adrp	x0, 1000 <__exception_vectors_start>
+ da4:	912aa000 	add	x0, x0, #0xaa8
+ da8:	97fffe82 	bl	7b0 <uart_puts>
+ dac:	d2800000 	mov	x0, #0x0                   	// #0
+ db0:	f9400800 	ldr	x0, [x0, #16]
+ db4:	d4207d00 	brk	#0x3e8
+ db8:	b0000014 	adrp	x20, 1000 <__exception_vectors_start>
+ dbc:	912aa294 	add	x20, x20, #0xaa8
+ dc0:	9100c280 	add	x0, x20, #0x30
+ dc4:	97fffe7b 	bl	7b0 <uart_puts>
+ dc8:	91018280 	add	x0, x20, #0x60
+ dcc:	97fffe79 	bl	7b0 <uart_puts>
+ dd0:	aa1603e0 	mov	x0, x22
+ dd4:	97fffed7 	bl	930 <uart_u64hex_s>
+ dd8:	91024280 	add	x0, x20, #0x90
+ ddc:	97fffe75 	bl	7b0 <uart_puts>
+ de0:	aa1303e0 	mov	x0, x19
+ de4:	97fffed3 	bl	930 <uart_u64hex_s>
+ de8:	91028280 	add	x0, x20, #0xa0
+ dec:	97fffe71 	bl	7b0 <uart_puts>
+ df0:	9102a280 	add	x0, x20, #0xa8
+ df4:	97fffe6f 	bl	7b0 <uart_puts>
+ df8:	d2800000 	mov	x0, #0x0                   	// #0
+ dfc:	f9401400 	ldr	x0, [x0, #40]
+ e00:	d4207d00 	brk	#0x3e8
+ e04:	d503201f 	nop
+
+0000000000000e08 <task_bss_zero>:
+ e08:	a9bd7bfd 	stp	x29, x30, [sp, #-48]!
+ e0c:	910003fd 	mov	x29, sp
+ e10:	a90153f3 	stp	x19, x20, [sp, #16]
+ e14:	d36aa413 	lsl	x19, x0, #22
+ e18:	91480273 	add	x19, x19, #0x200, lsl #12
+ e1c:	f9401274 	ldr	x20, [x19, #32]
+ e20:	f90013f5 	str	x21, [sp, #32]
+ e24:	b0000015 	adrp	x21, 1000 <__exception_vectors_start>
+ e28:	912aa2b5 	add	x21, x21, #0xaa8
+ e2c:	910362a0 	add	x0, x21, #0xd8
+ e30:	97fffe60 	bl	7b0 <uart_puts>
+ e34:	f9401260 	ldr	x0, [x19, #32]
+ e38:	8b140274 	add	x20, x19, x20
+ e3c:	8b000260 	add	x0, x19, x0
+ e40:	97fffebc 	bl	930 <uart_u64hex_s>
+ e44:	9103e2a0 	add	x0, x21, #0xf8
+ e48:	97fffe5a 	bl	7b0 <uart_puts>
+ e4c:	f9401660 	ldr	x0, [x19, #40]
+ e50:	8b000260 	add	x0, x19, x0
+ e54:	97fffeb7 	bl	930 <uart_u64hex_s>
+ e58:	910282a0 	add	x0, x21, #0xa0
+ e5c:	97fffe55 	bl	7b0 <uart_puts>
+ e60:	a9420660 	ldp	x0, x1, [x19, #32]
+ e64:	eb00003f 	cmp	x1, x0
+ e68:	54000100 	b.eq	e88 <task_bss_zero+0x80>  // b.none
+ e6c:	d2800000 	mov	x0, #0x0                   	// #0
+ e70:	38206a9f 	strb	wzr, [x20, x0]
+ e74:	91000400 	add	x0, x0, #0x1
+ e78:	a9420662 	ldp	x2, x1, [x19, #32]
+ e7c:	cb020021 	sub	x1, x1, x2
+ e80:	eb00003f 	cmp	x1, x0
+ e84:	54ffff68 	b.hi	e70 <task_bss_zero+0x68>  // b.pmore
+ e88:	a94153f3 	ldp	x19, x20, [sp, #16]
+ e8c:	f94013f5 	ldr	x21, [sp, #32]
+ e90:	a8c37bfd 	ldp	x29, x30, [sp], #48
+ e94:	d65f03c0 	ret
+
+0000000000000e98 <task_save_context>:
+ e98:	d50343df 	msr	daifset, #0x3
+ e9c:	d10403ff 	sub	sp, sp, #0x100
+ ea0:	a90007e0 	stp	x0, x1, [sp]
+ ea4:	a9010fe2 	stp	x2, x3, [sp, #16]
+ ea8:	a90217e4 	stp	x4, x5, [sp, #32]
+ eac:	a9031fe6 	stp	x6, x7, [sp, #48]
+ eb0:	a90427e8 	stp	x8, x9, [sp, #64]
+ eb4:	a9052fea 	stp	x10, x11, [sp, #80]
+ eb8:	a90637ec 	stp	x12, x13, [sp, #96]
+ ebc:	a9073fee 	stp	x14, x15, [sp, #112]
+ ec0:	a90847f0 	stp	x16, x17, [sp, #128]
+ ec4:	a9094ff2 	stp	x18, x19, [sp, #144]
+ ec8:	a90a57f4 	stp	x20, x21, [sp, #160]
+ ecc:	a90b5ff6 	stp	x22, x23, [sp, #176]
+ ed0:	a90c67f8 	stp	x24, x25, [sp, #192]
+ ed4:	a90d6ffa 	stp	x26, x27, [sp, #208]
+ ed8:	a90e77fc 	stp	x28, x29, [sp, #224]
+ edc:	d5384020 	mrs	x0, elr_el1
+ ee0:	a90f7be0 	stp	x0, x30, [sp, #240]
+ ee4:	d65f03c0 	ret
+
+0000000000000ee8 <task_restore_context>:
+ ee8:	a94f7be0 	ldp	x0, x30, [sp, #240]
+ eec:	d5184020 	msr	elr_el1, x0
+ ef0:	a94007e0 	ldp	x0, x1, [sp]
+ ef4:	a9410fe2 	ldp	x2, x3, [sp, #16]
+ ef8:	a94217e4 	ldp	x4, x5, [sp, #32]
+ efc:	a9431fe6 	ldp	x6, x7, [sp, #48]
+ f00:	a94427e8 	ldp	x8, x9, [sp, #64]
+ f04:	a9452fea 	ldp	x10, x11, [sp, #80]
+ f08:	a94637ec 	ldp	x12, x13, [sp, #96]
+ f0c:	a9473fee 	ldp	x14, x15, [sp, #112]
+ f10:	a94847f0 	ldp	x16, x17, [sp, #128]
+ f14:	a9494ff2 	ldp	x18, x19, [sp, #144]
+ f18:	a94a57f4 	ldp	x20, x21, [sp, #160]
+ f1c:	a94b5ff6 	ldp	x22, x23, [sp, #176]
+ f20:	a94c67f8 	ldp	x24, x25, [sp, #192]
+ f24:	a94d6ffa 	ldp	x26, x27, [sp, #208]
+ f28:	a94e77fc 	ldp	x28, x29, [sp, #224]
+ f2c:	910403ff 	add	sp, sp, #0x100
+ f30:	d50343ff 	msr	daifclr, #0x3
+ f34:	d65f03c0 	ret
+
+0000000000000f38 <task_save>:
+ f38:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
+ f3c:	910003fd 	mov	x29, sp
+ f40:	f9400801 	ldr	x1, [x0, #16]
+ f44:	910003e1 	mov	x1, sp
+ f48:	9100003f 	mov	sp, x1
+ f4c:	97ffffd3 	bl	e98 <task_save_context>
+ f50:	910003e1 	mov	x1, sp
+ f54:	9100003f 	mov	sp, x1
+ f58:	a8c17bfd 	ldp	x29, x30, [sp], #16
+ f5c:	f9000801 	str	x1, [x0, #16]
+ f60:	d65f03c0 	ret
 
 Disassembly of section .vectors:
 
-0000000000001000 __exception_vectors_start:
-    1000: df 43 03 d5                  	msr	DAIFSet, #3
-    1004: ff 03 04 d1                  	sub	sp, sp, #256
-    1008: e0 07 00 a9                  	stp	x0, x1, [sp]
-    100c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1010: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1014: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1018: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    101c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    1020: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    1024: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    1028: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    102c: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    1030: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    1034: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    1038: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    103c: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    1040: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    1044: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    1048: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    104c: e0 03 00 91                  	mov	x0, sp
-    1050: 19 fc ff 97                  	bl	#-3996 <current_el0_synchronous>
-    1054: e1 01 00 14                  	b	#1924 <__restore_context>
-		...
-    1080: df 43 03 d5                  	msr	DAIFSet, #3
-    1084: ff 03 04 d1                  	sub	sp, sp, #256
-    1088: e0 07 00 a9                  	stp	x0, x1, [sp]
-    108c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1090: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1094: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1098: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    109c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    10a0: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    10a4: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    10a8: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    10ac: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    10b0: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    10b4: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    10b8: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    10bc: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    10c0: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    10c4: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    10c8: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    10cc: e0 03 00 91                  	mov	x0, sp
-    10d0: f1 fb ff 97                  	bl	#-4156 <current_el0_irq>
-    10d4: c1 01 00 14                  	b	#1796 <__restore_context>
-		...
-    1100: df 43 03 d5                  	msr	DAIFSet, #3
-    1104: ff 03 04 d1                  	sub	sp, sp, #256
-    1108: e0 07 00 a9                  	stp	x0, x1, [sp]
-    110c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1110: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1114: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1118: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    111c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    1120: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    1124: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    1128: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    112c: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    1130: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    1134: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    1138: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    113c: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    1140: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    1144: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    1148: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    114c: e0 03 00 91                  	mov	x0, sp
-    1150: d2 fb ff 97                  	bl	#-4280 <current_el0_fiq>
-    1154: a1 01 00 14                  	b	#1668 <__restore_context>
-		...
-    1180: df 43 03 d5                  	msr	DAIFSet, #3
-    1184: ff 03 04 d1                  	sub	sp, sp, #256
-    1188: e0 07 00 a9                  	stp	x0, x1, [sp]
-    118c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1190: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1194: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1198: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    119c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    11a0: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    11a4: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    11a8: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    11ac: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    11b0: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    11b4: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    11b8: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    11bc: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    11c0: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    11c4: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    11c8: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    11cc: e0 03 00 91                  	mov	x0, sp
-    11d0: ba fb ff 97                  	bl	#-4376 <current_el0_serror>
-    11d4: 81 01 00 14                  	b	#1540 <__restore_context>
-		...
-    1200: df 43 03 d5                  	msr	DAIFSet, #3
-    1204: ff 03 04 d1                  	sub	sp, sp, #256
-    1208: e0 07 00 a9                  	stp	x0, x1, [sp]
-    120c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1210: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1214: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1218: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    121c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    1220: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    1224: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    1228: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    122c: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    1230: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    1234: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    1238: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    123c: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    1240: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    1244: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    1248: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    124c: e0 03 00 91                  	mov	x0, sp
-    1250: 9b fb ff 97                  	bl	#-4500 <current_elx_synchronous>
-    1254: 61 01 00 14                  	b	#1412 <__restore_context>
-		...
-    1280: df 43 03 d5                  	msr	DAIFSet, #3
-    1284: ff 03 04 d1                  	sub	sp, sp, #256
-    1288: e0 07 00 a9                  	stp	x0, x1, [sp]
-    128c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1290: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1294: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1298: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    129c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    12a0: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    12a4: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    12a8: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    12ac: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    12b0: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    12b4: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    12b8: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    12bc: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    12c0: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    12c4: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    12c8: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    12cc: e0 03 00 91                  	mov	x0, sp
-    12d0: 73 fb ff 97                  	bl	#-4660 <current_elx_irq>
-    12d4: 41 01 00 14                  	b	#1284 <__restore_context>
-		...
-    1300: df 43 03 d5                  	msr	DAIFSet, #3
-    1304: ff 03 04 d1                  	sub	sp, sp, #256
-    1308: e0 07 00 a9                  	stp	x0, x1, [sp]
-    130c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1310: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1314: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1318: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    131c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    1320: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    1324: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    1328: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    132c: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    1330: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    1334: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    1338: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    133c: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    1340: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    1344: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    1348: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    134c: e0 03 00 91                  	mov	x0, sp
-    1350: 54 fb ff 97                  	bl	#-4784 <current_elx_fiq>
-    1354: 21 01 00 14                  	b	#1156 <__restore_context>
-		...
-    1380: df 43 03 d5                  	msr	DAIFSet, #3
-    1384: ff 03 04 d1                  	sub	sp, sp, #256
-    1388: e0 07 00 a9                  	stp	x0, x1, [sp]
-    138c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1390: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1394: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1398: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    139c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    13a0: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    13a4: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    13a8: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    13ac: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    13b0: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    13b4: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    13b8: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    13bc: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    13c0: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    13c4: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    13c8: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    13cc: e0 03 00 91                  	mov	x0, sp
-    13d0: 3c fb ff 97                  	bl	#-4880 <current_elx_serror>
-    13d4: 01 01 00 14                  	b	#1028 <__restore_context>
-		...
-    1400: df 43 03 d5                  	msr	DAIFSet, #3
-    1404: ff 03 04 d1                  	sub	sp, sp, #256
-    1408: e0 07 00 a9                  	stp	x0, x1, [sp]
-    140c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1410: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1414: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1418: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    141c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    1420: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    1424: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    1428: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    142c: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    1430: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    1434: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    1438: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    143c: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    1440: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    1444: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    1448: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    144c: e0 03 00 91                  	mov	x0, sp
-    1450: 1d fb ff 97                  	bl	#-5004 <lower_aarch64_synchronous>
-    1454: e1 00 00 14                  	b	#900 <__restore_context>
-		...
-    1480: df 43 03 d5                  	msr	DAIFSet, #3
-    1484: ff 03 04 d1                  	sub	sp, sp, #256
-    1488: e0 07 00 a9                  	stp	x0, x1, [sp]
-    148c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1490: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1494: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1498: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    149c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    14a0: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    14a4: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    14a8: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    14ac: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    14b0: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    14b4: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    14b8: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    14bc: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    14c0: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    14c4: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    14c8: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    14cc: e0 03 00 91                  	mov	x0, sp
-    14d0: f5 fa ff 97                  	bl	#-5164 <lower_aarch64_irq>
-    14d4: c1 00 00 14                  	b	#772 <__restore_context>
-		...
-    1500: df 43 03 d5                  	msr	DAIFSet, #3
-    1504: ff 03 04 d1                  	sub	sp, sp, #256
-    1508: e0 07 00 a9                  	stp	x0, x1, [sp]
-    150c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1510: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1514: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1518: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    151c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    1520: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    1524: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    1528: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    152c: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    1530: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    1534: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    1538: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    153c: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    1540: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    1544: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    1548: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    154c: e0 03 00 91                  	mov	x0, sp
-    1550: d6 fa ff 97                  	bl	#-5288 <lower_aarch64_fiq>
-    1554: a1 00 00 14                  	b	#644 <__restore_context>
-		...
-    1580: df 43 03 d5                  	msr	DAIFSet, #3
-    1584: ff 03 04 d1                  	sub	sp, sp, #256
-    1588: e0 07 00 a9                  	stp	x0, x1, [sp]
-    158c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1590: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1594: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1598: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    159c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    15a0: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    15a4: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    15a8: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    15ac: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    15b0: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    15b4: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    15b8: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    15bc: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    15c0: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    15c4: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    15c8: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    15cc: e0 03 00 91                  	mov	x0, sp
-    15d0: be fa ff 97                  	bl	#-5384 <lower_aarch64_serror>
-    15d4: 81 00 00 14                  	b	#516 <__restore_context>
-		...
-    1600: df 43 03 d5                  	msr	DAIFSet, #3
-    1604: ff 03 04 d1                  	sub	sp, sp, #256
-    1608: e0 07 00 a9                  	stp	x0, x1, [sp]
-    160c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1610: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1614: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1618: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    161c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    1620: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    1624: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    1628: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    162c: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    1630: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    1634: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    1638: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    163c: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    1640: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    1644: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    1648: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    164c: e0 03 00 91                  	mov	x0, sp
-    1650: 9f fa ff 97                  	bl	#-5508 <lower_aarch32_synchronous>
-    1654: 61 00 00 14                  	b	#388 <__restore_context>
-		...
-    1680: df 43 03 d5                  	msr	DAIFSet, #3
-    1684: ff 03 04 d1                  	sub	sp, sp, #256
-    1688: e0 07 00 a9                  	stp	x0, x1, [sp]
-    168c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1690: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1694: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1698: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    169c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    16a0: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    16a4: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    16a8: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    16ac: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    16b0: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    16b4: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    16b8: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    16bc: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    16c0: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    16c4: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    16c8: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    16cc: e0 03 00 91                  	mov	x0, sp
-    16d0: 77 fa ff 97                  	bl	#-5668 <lower_aarch32_irq>
-    16d4: 41 00 00 14                  	b	#260 <__restore_context>
-		...
-    1700: df 43 03 d5                  	msr	DAIFSet, #3
-    1704: ff 03 04 d1                  	sub	sp, sp, #256
-    1708: e0 07 00 a9                  	stp	x0, x1, [sp]
-    170c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1710: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1714: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1718: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    171c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    1720: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    1724: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    1728: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    172c: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    1730: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    1734: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    1738: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    173c: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    1740: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    1744: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    1748: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    174c: e0 03 00 91                  	mov	x0, sp
-    1750: 58 fa ff 97                  	bl	#-5792 <lower_aarch32_fiq>
-    1754: 21 00 00 14                  	b	#132 <__restore_context>
-		...
-    1780: df 43 03 d5                  	msr	DAIFSet, #3
-    1784: ff 03 04 d1                  	sub	sp, sp, #256
-    1788: e0 07 00 a9                  	stp	x0, x1, [sp]
-    178c: e2 0f 01 a9                  	stp	x2, x3, [sp, #16]
-    1790: e4 17 02 a9                  	stp	x4, x5, [sp, #32]
-    1794: e6 1f 03 a9                  	stp	x6, x7, [sp, #48]
-    1798: e8 27 04 a9                  	stp	x8, x9, [sp, #64]
-    179c: ea 2f 05 a9                  	stp	x10, x11, [sp, #80]
-    17a0: ec 37 06 a9                  	stp	x12, x13, [sp, #96]
-    17a4: ee 3f 07 a9                  	stp	x14, x15, [sp, #112]
-    17a8: f0 47 08 a9                  	stp	x16, x17, [sp, #128]
-    17ac: f2 4f 09 a9                  	stp	x18, x19, [sp, #144]
-    17b0: f4 57 0a a9                  	stp	x20, x21, [sp, #160]
-    17b4: f6 5f 0b a9                  	stp	x22, x23, [sp, #176]
-    17b8: f8 67 0c a9                  	stp	x24, x25, [sp, #192]
-    17bc: fa 6f 0d a9                  	stp	x26, x27, [sp, #208]
-    17c0: fc 77 0e a9                  	stp	x28, x29, [sp, #224]
-    17c4: 20 40 38 d5                  	mrs	x0, ELR_EL1
-    17c8: e0 7b 0f a9                  	stp	x0, x30, [sp, #240]
-    17cc: e0 03 00 91                  	mov	x0, sp
-    17d0: 40 fa ff 97                  	bl	#-5888 <lower_aarch32_serror>
-    17d4: 01 00 00 14                  	b	#4 <__restore_context>
+0000000000001000 <__exception_vectors_start>:
+    1000:	d50343df 	msr	daifset, #0x3
+    1004:	d10403ff 	sub	sp, sp, #0x100
+    1008:	a90007e0 	stp	x0, x1, [sp]
+    100c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1010:	a90217e4 	stp	x4, x5, [sp, #32]
+    1014:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1018:	a90427e8 	stp	x8, x9, [sp, #64]
+    101c:	a9052fea 	stp	x10, x11, [sp, #80]
+    1020:	a90637ec 	stp	x12, x13, [sp, #96]
+    1024:	a9073fee 	stp	x14, x15, [sp, #112]
+    1028:	a90847f0 	stp	x16, x17, [sp, #128]
+    102c:	a9094ff2 	stp	x18, x19, [sp, #144]
+    1030:	a90a57f4 	stp	x20, x21, [sp, #160]
+    1034:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    1038:	a90c67f8 	stp	x24, x25, [sp, #192]
+    103c:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    1040:	a90e77fc 	stp	x28, x29, [sp, #224]
+    1044:	d5384020 	mrs	x0, elr_el1
+    1048:	a90f7be0 	stp	x0, x30, [sp, #240]
+    104c:	910003e0 	mov	x0, sp
+    1050:	97fffc3a 	bl	138 <current_el0_synchronous>
+    1054:	140001e1 	b	17d8 <__restore_context>
+	...
+    1080:	d50343df 	msr	daifset, #0x3
+    1084:	d10403ff 	sub	sp, sp, #0x100
+    1088:	a90007e0 	stp	x0, x1, [sp]
+    108c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1090:	a90217e4 	stp	x4, x5, [sp, #32]
+    1094:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1098:	a90427e8 	stp	x8, x9, [sp, #64]
+    109c:	a9052fea 	stp	x10, x11, [sp, #80]
+    10a0:	a90637ec 	stp	x12, x13, [sp, #96]
+    10a4:	a9073fee 	stp	x14, x15, [sp, #112]
+    10a8:	a90847f0 	stp	x16, x17, [sp, #128]
+    10ac:	a9094ff2 	stp	x18, x19, [sp, #144]
+    10b0:	a90a57f4 	stp	x20, x21, [sp, #160]
+    10b4:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    10b8:	a90c67f8 	stp	x24, x25, [sp, #192]
+    10bc:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    10c0:	a90e77fc 	stp	x28, x29, [sp, #224]
+    10c4:	d5384020 	mrs	x0, elr_el1
+    10c8:	a90f7be0 	stp	x0, x30, [sp, #240]
+    10cc:	910003e0 	mov	x0, sp
+    10d0:	97fffbfe 	bl	c8 <current_el0_irq>
+    10d4:	140001c1 	b	17d8 <__restore_context>
+	...
+    1100:	d50343df 	msr	daifset, #0x3
+    1104:	d10403ff 	sub	sp, sp, #0x100
+    1108:	a90007e0 	stp	x0, x1, [sp]
+    110c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1110:	a90217e4 	stp	x4, x5, [sp, #32]
+    1114:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1118:	a90427e8 	stp	x8, x9, [sp, #64]
+    111c:	a9052fea 	stp	x10, x11, [sp, #80]
+    1120:	a90637ec 	stp	x12, x13, [sp, #96]
+    1124:	a9073fee 	stp	x14, x15, [sp, #112]
+    1128:	a90847f0 	stp	x16, x17, [sp, #128]
+    112c:	a9094ff2 	stp	x18, x19, [sp, #144]
+    1130:	a90a57f4 	stp	x20, x21, [sp, #160]
+    1134:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    1138:	a90c67f8 	stp	x24, x25, [sp, #192]
+    113c:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    1140:	a90e77fc 	stp	x28, x29, [sp, #224]
+    1144:	d5384020 	mrs	x0, elr_el1
+    1148:	a90f7be0 	stp	x0, x30, [sp, #240]
+    114c:	910003e0 	mov	x0, sp
+    1150:	97fffbe0 	bl	d0 <current_el0_fiq>
+    1154:	140001a1 	b	17d8 <__restore_context>
+	...
+    1180:	d50343df 	msr	daifset, #0x3
+    1184:	d10403ff 	sub	sp, sp, #0x100
+    1188:	a90007e0 	stp	x0, x1, [sp]
+    118c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1190:	a90217e4 	stp	x4, x5, [sp, #32]
+    1194:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1198:	a90427e8 	stp	x8, x9, [sp, #64]
+    119c:	a9052fea 	stp	x10, x11, [sp, #80]
+    11a0:	a90637ec 	stp	x12, x13, [sp, #96]
+    11a4:	a9073fee 	stp	x14, x15, [sp, #112]
+    11a8:	a90847f0 	stp	x16, x17, [sp, #128]
+    11ac:	a9094ff2 	stp	x18, x19, [sp, #144]
+    11b0:	a90a57f4 	stp	x20, x21, [sp, #160]
+    11b4:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    11b8:	a90c67f8 	stp	x24, x25, [sp, #192]
+    11bc:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    11c0:	a90e77fc 	stp	x28, x29, [sp, #224]
+    11c4:	d5384020 	mrs	x0, elr_el1
+    11c8:	a90f7be0 	stp	x0, x30, [sp, #240]
+    11cc:	910003e0 	mov	x0, sp
+    11d0:	97fffbdc 	bl	140 <current_el0_serror>
+    11d4:	14000181 	b	17d8 <__restore_context>
+	...
+    1200:	d50343df 	msr	daifset, #0x3
+    1204:	d10403ff 	sub	sp, sp, #0x100
+    1208:	a90007e0 	stp	x0, x1, [sp]
+    120c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1210:	a90217e4 	stp	x4, x5, [sp, #32]
+    1214:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1218:	a90427e8 	stp	x8, x9, [sp, #64]
+    121c:	a9052fea 	stp	x10, x11, [sp, #80]
+    1220:	a90637ec 	stp	x12, x13, [sp, #96]
+    1224:	a9073fee 	stp	x14, x15, [sp, #112]
+    1228:	a90847f0 	stp	x16, x17, [sp, #128]
+    122c:	a9094ff2 	stp	x18, x19, [sp, #144]
+    1230:	a90a57f4 	stp	x20, x21, [sp, #160]
+    1234:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    1238:	a90c67f8 	stp	x24, x25, [sp, #192]
+    123c:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    1240:	a90e77fc 	stp	x28, x29, [sp, #224]
+    1244:	d5384020 	mrs	x0, elr_el1
+    1248:	a90f7be0 	stp	x0, x30, [sp, #240]
+    124c:	910003e0 	mov	x0, sp
+    1250:	97fffbbe 	bl	148 <current_elx_synchronous>
+    1254:	14000161 	b	17d8 <__restore_context>
+	...
+    1280:	d50343df 	msr	daifset, #0x3
+    1284:	d10403ff 	sub	sp, sp, #0x100
+    1288:	a90007e0 	stp	x0, x1, [sp]
+    128c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1290:	a90217e4 	stp	x4, x5, [sp, #32]
+    1294:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1298:	a90427e8 	stp	x8, x9, [sp, #64]
+    129c:	a9052fea 	stp	x10, x11, [sp, #80]
+    12a0:	a90637ec 	stp	x12, x13, [sp, #96]
+    12a4:	a9073fee 	stp	x14, x15, [sp, #112]
+    12a8:	a90847f0 	stp	x16, x17, [sp, #128]
+    12ac:	a9094ff2 	stp	x18, x19, [sp, #144]
+    12b0:	a90a57f4 	stp	x20, x21, [sp, #160]
+    12b4:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    12b8:	a90c67f8 	stp	x24, x25, [sp, #192]
+    12bc:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    12c0:	a90e77fc 	stp	x28, x29, [sp, #224]
+    12c4:	d5384020 	mrs	x0, elr_el1
+    12c8:	a90f7be0 	stp	x0, x30, [sp, #240]
+    12cc:	910003e0 	mov	x0, sp
+    12d0:	97fffb82 	bl	d8 <current_elx_irq>
+    12d4:	14000141 	b	17d8 <__restore_context>
+	...
+    1300:	d50343df 	msr	daifset, #0x3
+    1304:	d10403ff 	sub	sp, sp, #0x100
+    1308:	a90007e0 	stp	x0, x1, [sp]
+    130c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1310:	a90217e4 	stp	x4, x5, [sp, #32]
+    1314:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1318:	a90427e8 	stp	x8, x9, [sp, #64]
+    131c:	a9052fea 	stp	x10, x11, [sp, #80]
+    1320:	a90637ec 	stp	x12, x13, [sp, #96]
+    1324:	a9073fee 	stp	x14, x15, [sp, #112]
+    1328:	a90847f0 	stp	x16, x17, [sp, #128]
+    132c:	a9094ff2 	stp	x18, x19, [sp, #144]
+    1330:	a90a57f4 	stp	x20, x21, [sp, #160]
+    1334:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    1338:	a90c67f8 	stp	x24, x25, [sp, #192]
+    133c:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    1340:	a90e77fc 	stp	x28, x29, [sp, #224]
+    1344:	d5384020 	mrs	x0, elr_el1
+    1348:	a90f7be0 	stp	x0, x30, [sp, #240]
+    134c:	910003e0 	mov	x0, sp
+    1350:	97fffb6e 	bl	108 <current_elx_fiq>
+    1354:	14000121 	b	17d8 <__restore_context>
+	...
+    1380:	d50343df 	msr	daifset, #0x3
+    1384:	d10403ff 	sub	sp, sp, #0x100
+    1388:	a90007e0 	stp	x0, x1, [sp]
+    138c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1390:	a90217e4 	stp	x4, x5, [sp, #32]
+    1394:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1398:	a90427e8 	stp	x8, x9, [sp, #64]
+    139c:	a9052fea 	stp	x10, x11, [sp, #80]
+    13a0:	a90637ec 	stp	x12, x13, [sp, #96]
+    13a4:	a9073fee 	stp	x14, x15, [sp, #112]
+    13a8:	a90847f0 	stp	x16, x17, [sp, #128]
+    13ac:	a9094ff2 	stp	x18, x19, [sp, #144]
+    13b0:	a90a57f4 	stp	x20, x21, [sp, #160]
+    13b4:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    13b8:	a90c67f8 	stp	x24, x25, [sp, #192]
+    13bc:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    13c0:	a90e77fc 	stp	x28, x29, [sp, #224]
+    13c4:	d5384020 	mrs	x0, elr_el1
+    13c8:	a90f7be0 	stp	x0, x30, [sp, #240]
+    13cc:	910003e0 	mov	x0, sp
+    13d0:	97fffb60 	bl	150 <current_elx_serror>
+    13d4:	14000101 	b	17d8 <__restore_context>
+	...
+    1400:	d50343df 	msr	daifset, #0x3
+    1404:	d10403ff 	sub	sp, sp, #0x100
+    1408:	a90007e0 	stp	x0, x1, [sp]
+    140c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1410:	a90217e4 	stp	x4, x5, [sp, #32]
+    1414:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1418:	a90427e8 	stp	x8, x9, [sp, #64]
+    141c:	a9052fea 	stp	x10, x11, [sp, #80]
+    1420:	a90637ec 	stp	x12, x13, [sp, #96]
+    1424:	a9073fee 	stp	x14, x15, [sp, #112]
+    1428:	a90847f0 	stp	x16, x17, [sp, #128]
+    142c:	a9094ff2 	stp	x18, x19, [sp, #144]
+    1430:	a90a57f4 	stp	x20, x21, [sp, #160]
+    1434:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    1438:	a90c67f8 	stp	x24, x25, [sp, #192]
+    143c:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    1440:	a90e77fc 	stp	x28, x29, [sp, #224]
+    1444:	d5384020 	mrs	x0, elr_el1
+    1448:	a90f7be0 	stp	x0, x30, [sp, #240]
+    144c:	910003e0 	mov	x0, sp
+    1450:	97fffb42 	bl	158 <lower_aarch64_synchronous>
+    1454:	140000e1 	b	17d8 <__restore_context>
+	...
+    1480:	d50343df 	msr	daifset, #0x3
+    1484:	d10403ff 	sub	sp, sp, #0x100
+    1488:	a90007e0 	stp	x0, x1, [sp]
+    148c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1490:	a90217e4 	stp	x4, x5, [sp, #32]
+    1494:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1498:	a90427e8 	stp	x8, x9, [sp, #64]
+    149c:	a9052fea 	stp	x10, x11, [sp, #80]
+    14a0:	a90637ec 	stp	x12, x13, [sp, #96]
+    14a4:	a9073fee 	stp	x14, x15, [sp, #112]
+    14a8:	a90847f0 	stp	x16, x17, [sp, #128]
+    14ac:	a9094ff2 	stp	x18, x19, [sp, #144]
+    14b0:	a90a57f4 	stp	x20, x21, [sp, #160]
+    14b4:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    14b8:	a90c67f8 	stp	x24, x25, [sp, #192]
+    14bc:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    14c0:	a90e77fc 	stp	x28, x29, [sp, #224]
+    14c4:	d5384020 	mrs	x0, elr_el1
+    14c8:	a90f7be0 	stp	x0, x30, [sp, #240]
+    14cc:	910003e0 	mov	x0, sp
+    14d0:	97fffb10 	bl	110 <lower_aarch64_irq>
+    14d4:	140000c1 	b	17d8 <__restore_context>
+	...
+    1500:	d50343df 	msr	daifset, #0x3
+    1504:	d10403ff 	sub	sp, sp, #0x100
+    1508:	a90007e0 	stp	x0, x1, [sp]
+    150c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1510:	a90217e4 	stp	x4, x5, [sp, #32]
+    1514:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1518:	a90427e8 	stp	x8, x9, [sp, #64]
+    151c:	a9052fea 	stp	x10, x11, [sp, #80]
+    1520:	a90637ec 	stp	x12, x13, [sp, #96]
+    1524:	a9073fee 	stp	x14, x15, [sp, #112]
+    1528:	a90847f0 	stp	x16, x17, [sp, #128]
+    152c:	a9094ff2 	stp	x18, x19, [sp, #144]
+    1530:	a90a57f4 	stp	x20, x21, [sp, #160]
+    1534:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    1538:	a90c67f8 	stp	x24, x25, [sp, #192]
+    153c:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    1540:	a90e77fc 	stp	x28, x29, [sp, #224]
+    1544:	d5384020 	mrs	x0, elr_el1
+    1548:	a90f7be0 	stp	x0, x30, [sp, #240]
+    154c:	910003e0 	mov	x0, sp
+    1550:	97fffaf4 	bl	120 <lower_aarch64_fiq>
+    1554:	140000a1 	b	17d8 <__restore_context>
+	...
+    1580:	d50343df 	msr	daifset, #0x3
+    1584:	d10403ff 	sub	sp, sp, #0x100
+    1588:	a90007e0 	stp	x0, x1, [sp]
+    158c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1590:	a90217e4 	stp	x4, x5, [sp, #32]
+    1594:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1598:	a90427e8 	stp	x8, x9, [sp, #64]
+    159c:	a9052fea 	stp	x10, x11, [sp, #80]
+    15a0:	a90637ec 	stp	x12, x13, [sp, #96]
+    15a4:	a9073fee 	stp	x14, x15, [sp, #112]
+    15a8:	a90847f0 	stp	x16, x17, [sp, #128]
+    15ac:	a9094ff2 	stp	x18, x19, [sp, #144]
+    15b0:	a90a57f4 	stp	x20, x21, [sp, #160]
+    15b4:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    15b8:	a90c67f8 	stp	x24, x25, [sp, #192]
+    15bc:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    15c0:	a90e77fc 	stp	x28, x29, [sp, #224]
+    15c4:	d5384020 	mrs	x0, elr_el1
+    15c8:	a90f7be0 	stp	x0, x30, [sp, #240]
+    15cc:	910003e0 	mov	x0, sp
+    15d0:	97fffae4 	bl	160 <lower_aarch64_serror>
+    15d4:	14000081 	b	17d8 <__restore_context>
+	...
+    1600:	d50343df 	msr	daifset, #0x3
+    1604:	d10403ff 	sub	sp, sp, #0x100
+    1608:	a90007e0 	stp	x0, x1, [sp]
+    160c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1610:	a90217e4 	stp	x4, x5, [sp, #32]
+    1614:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1618:	a90427e8 	stp	x8, x9, [sp, #64]
+    161c:	a9052fea 	stp	x10, x11, [sp, #80]
+    1620:	a90637ec 	stp	x12, x13, [sp, #96]
+    1624:	a9073fee 	stp	x14, x15, [sp, #112]
+    1628:	a90847f0 	stp	x16, x17, [sp, #128]
+    162c:	a9094ff2 	stp	x18, x19, [sp, #144]
+    1630:	a90a57f4 	stp	x20, x21, [sp, #160]
+    1634:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    1638:	a90c67f8 	stp	x24, x25, [sp, #192]
+    163c:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    1640:	a90e77fc 	stp	x28, x29, [sp, #224]
+    1644:	d5384020 	mrs	x0, elr_el1
+    1648:	a90f7be0 	stp	x0, x30, [sp, #240]
+    164c:	910003e0 	mov	x0, sp
+    1650:	97fffac6 	bl	168 <lower_aarch32_synchronous>
+    1654:	14000061 	b	17d8 <__restore_context>
+	...
+    1680:	d50343df 	msr	daifset, #0x3
+    1684:	d10403ff 	sub	sp, sp, #0x100
+    1688:	a90007e0 	stp	x0, x1, [sp]
+    168c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1690:	a90217e4 	stp	x4, x5, [sp, #32]
+    1694:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1698:	a90427e8 	stp	x8, x9, [sp, #64]
+    169c:	a9052fea 	stp	x10, x11, [sp, #80]
+    16a0:	a90637ec 	stp	x12, x13, [sp, #96]
+    16a4:	a9073fee 	stp	x14, x15, [sp, #112]
+    16a8:	a90847f0 	stp	x16, x17, [sp, #128]
+    16ac:	a9094ff2 	stp	x18, x19, [sp, #144]
+    16b0:	a90a57f4 	stp	x20, x21, [sp, #160]
+    16b4:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    16b8:	a90c67f8 	stp	x24, x25, [sp, #192]
+    16bc:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    16c0:	a90e77fc 	stp	x28, x29, [sp, #224]
+    16c4:	d5384020 	mrs	x0, elr_el1
+    16c8:	a90f7be0 	stp	x0, x30, [sp, #240]
+    16cc:	910003e0 	mov	x0, sp
+    16d0:	97fffa96 	bl	128 <lower_aarch32_irq>
+    16d4:	14000041 	b	17d8 <__restore_context>
+	...
+    1700:	d50343df 	msr	daifset, #0x3
+    1704:	d10403ff 	sub	sp, sp, #0x100
+    1708:	a90007e0 	stp	x0, x1, [sp]
+    170c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1710:	a90217e4 	stp	x4, x5, [sp, #32]
+    1714:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1718:	a90427e8 	stp	x8, x9, [sp, #64]
+    171c:	a9052fea 	stp	x10, x11, [sp, #80]
+    1720:	a90637ec 	stp	x12, x13, [sp, #96]
+    1724:	a9073fee 	stp	x14, x15, [sp, #112]
+    1728:	a90847f0 	stp	x16, x17, [sp, #128]
+    172c:	a9094ff2 	stp	x18, x19, [sp, #144]
+    1730:	a90a57f4 	stp	x20, x21, [sp, #160]
+    1734:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    1738:	a90c67f8 	stp	x24, x25, [sp, #192]
+    173c:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    1740:	a90e77fc 	stp	x28, x29, [sp, #224]
+    1744:	d5384020 	mrs	x0, elr_el1
+    1748:	a90f7be0 	stp	x0, x30, [sp, #240]
+    174c:	910003e0 	mov	x0, sp
+    1750:	97fffa78 	bl	130 <lower_aarch32_fiq>
+    1754:	14000021 	b	17d8 <__restore_context>
+	...
+    1780:	d50343df 	msr	daifset, #0x3
+    1784:	d10403ff 	sub	sp, sp, #0x100
+    1788:	a90007e0 	stp	x0, x1, [sp]
+    178c:	a9010fe2 	stp	x2, x3, [sp, #16]
+    1790:	a90217e4 	stp	x4, x5, [sp, #32]
+    1794:	a9031fe6 	stp	x6, x7, [sp, #48]
+    1798:	a90427e8 	stp	x8, x9, [sp, #64]
+    179c:	a9052fea 	stp	x10, x11, [sp, #80]
+    17a0:	a90637ec 	stp	x12, x13, [sp, #96]
+    17a4:	a9073fee 	stp	x14, x15, [sp, #112]
+    17a8:	a90847f0 	stp	x16, x17, [sp, #128]
+    17ac:	a9094ff2 	stp	x18, x19, [sp, #144]
+    17b0:	a90a57f4 	stp	x20, x21, [sp, #160]
+    17b4:	a90b5ff6 	stp	x22, x23, [sp, #176]
+    17b8:	a90c67f8 	stp	x24, x25, [sp, #192]
+    17bc:	a90d6ffa 	stp	x26, x27, [sp, #208]
+    17c0:	a90e77fc 	stp	x28, x29, [sp, #224]
+    17c4:	d5384020 	mrs	x0, elr_el1
+    17c8:	a90f7be0 	stp	x0, x30, [sp, #240]
+    17cc:	910003e0 	mov	x0, sp
+    17d0:	97fffa68 	bl	170 <lower_aarch32_serror>
+    17d4:	14000001 	b	17d8 <__restore_context>
 
-00000000000017d8 __restore_context:
-    17d8: e0 7b 4f a9                  	ldp	x0, x30, [sp, #240]
-    17dc: 20 40 18 d5                  	msr	ELR_EL1, x0
-    17e0: e0 07 40 a9                  	ldp	x0, x1, [sp]
-    17e4: e2 0f 41 a9                  	ldp	x2, x3, [sp, #16]
-    17e8: e4 17 42 a9                  	ldp	x4, x5, [sp, #32]
-    17ec: e6 1f 43 a9                  	ldp	x6, x7, [sp, #48]
-    17f0: e8 27 44 a9                  	ldp	x8, x9, [sp, #64]
-    17f4: ea 2f 45 a9                  	ldp	x10, x11, [sp, #80]
-    17f8: ec 37 46 a9                  	ldp	x12, x13, [sp, #96]
-    17fc: ee 3f 47 a9                  	ldp	x14, x15, [sp, #112]
-    1800: f0 47 48 a9                  	ldp	x16, x17, [sp, #128]
-    1804: f2 4f 49 a9                  	ldp	x18, x19, [sp, #144]
-    1808: f4 57 4a a9                  	ldp	x20, x21, [sp, #160]
-    180c: f6 5f 4b a9                  	ldp	x22, x23, [sp, #176]
-    1810: f8 67 4c a9                  	ldp	x24, x25, [sp, #192]
-    1814: fa 6f 4d a9                  	ldp	x26, x27, [sp, #208]
-    1818: fc 77 4e a9                  	ldp	x28, x29, [sp, #224]
-    181c: ff 03 04 91                  	add	sp, sp, #256
-    1820: ff 43 03 d5                  	msr	DAIFClr, #3
-    1824: e0 03 9f d6                  	eret
-Sections:
-Idx Name          Size     VMA          Type
-  0               00000000 0000000000000000 
-  1 .task_list_item 00000018 0000000000000000 DATA 
-  2 .task_header  00000028 0000000000000018 DATA 
-  3 .text         00000d14 0000000000000040 TEXT 
-  4 .vectors      00000828 0000000000001000 TEXT 
-  5 .rodata       000001a4 0000000000001828 DATA 
-  6 .data         00000000 0000000000002000 DATA 
-  7 .bss          00009000 0000000000002000 BSS
-  8 .symtab       00000720 0000000000000000 
-  9 .shstrtab     0000005a 0000000000000000 
- 10 .strtab       0000034f 0000000000000000 
-
-Contents of section .task_list_item:
- 0000 4954454d 00000000 00000000 00000000  ITEM............
- 0010 00b00000 00000000                    ........
-Contents of section .task_header:
- 0018 00000000 00000000 00000000 00000000  ................
- 0028 40000000 00000000 7c000000 00000000  @.......|.......
- 0038 88000000 00000000                    ........
-Contents of section .text:
- 0040 fd7bbfa9 000000b0 fd030091 00e02091  .{............ .
- 0050 52020094 000000d0 010000b0 00000091  R...............
- 0060 21000891 28030094 080000b0 08010091  !...(...........
- 0070 08c018d5 fd7bc1a8 c0035fd6 000000b0  .....{...._.....
- 0080 00b42191 45020014 000000b0 00482491  ..!.E........H$.
- 0090 42020014 c0035fd6 c0035fd6 c0035fd6  B....._..._..._.
- 00a0 c0035fd6 c0035fd6 c0035fd6 c0035fd6  .._..._..._..._.
- 00b0 c0035fd6 c0035fd6 c0035fd6 c0035fd6  .._..._..._..._.
- 00c0 c0035fd6 c0035fd6 c0035fd6 c0035fd6  .._..._..._..._.
- 00d0 c0035fd6 f70f1cf8 f65701a9 f50300aa  .._......W......
- 00e0 f44f02a9 f30302aa fd7b03a9 fdc30091  .O.......{......
- 00f0 f40301aa 570400d1 84020094 160000b0  ....W...........
- 0100 d6ba2091 e00316aa 24020094 e00314aa  .. .....$.......
- 0110 7e020094 000000b0 00e02591 1f020094  ~.........%.....
- 0120 e802158b 0009d39a 78020094 e00316aa  ........x.......
- 0130 1a020094 e802148b 0009d39a 73020094  ............s...
- 0140 fd7b43a9 000000b0 f44f42a9 00d82091  .{C......OB... .
- 0150 f65741a9 f70744f8 10020014 4800018b  .WA...D.....H...
- 0160 1f0101eb 09040054 e9e080d2 0a0000f0  .......T........
- 0170 0904e0f2 4a010091 5f0800f1 62000054  ....J..._...b..T
- 0180 eb0301aa 10000014 4e31008b 4cf87f92  ........N1..L...
- 0190 ce0d018b 8b01018b 2d31018b ce210091  ........-1...!..
- 01a0 ef030caa b0054091 ef0900f1 cdc13fa9  ......@.......?.
- 01b0 ad094091 ce410091 61ffff54 9f0102eb  ..@..A..a..T....
- 01c0 20010054 4a31008b 08010bcb 29310b8b   ..TJ1......)1..
- 01d0 4a0d0b8b 498500f8 080500f1 29054091  J...I.......).@.
- 01e0 a1ffff54 c0035fd6 4900018b 3f0101eb  ...T.._.I...?...
- 01f0 09040054 080000f0 5f0800f1 08010091  ...T...._.......
- 0200 62000054 ea0301aa 11000014 0d31008b  b..T.........1..
- 0210 4bf87f92 ecf08252 ad0d018b 6a01018b  K......R....j...
- 0220 8c31018b ad210091 ee030baa 8f0540d1  .1...!........@.
- 0230 ce0900f1 afb13fa9 8c094091 ad410091  ......?...@..A..
- 0240 61ffff54 7f0102eb 40010054 0b31008b  a..T....@..T.1..
- 0250 29010acb e8f08052 6b0d0a8b 48cd74b3  )......Rk...H.t.
- 0260 688500f8 290500f1 08054091 a1ffff54  h...).....@....T
- 0270 c0035fd6 fc6fbaa9 f44f04a9 f30300aa  .._..o...O......
- 0280 000000b0 28fc3f91 002c2391 1cfd4cd3  ....(.?..,#...L.
- 0290 48fc3f91 fa6701a9 f85f02a9 f40302aa  H.?..g..._......
- 02a0 f65703a9 f50301aa fd7b05a9 fd430191  .W.......{...C..
- 02b0 f6031caa 1afd4cd3 b8010094 190000f0  ......L.........
- 02c0 39030091 bc0600b4 000000b0 f8e080d2  9...............
- 02d0 00a02091 1804e0f2 b0010094 e0031faa  .. .............
- 02e0 0a020094 170000b0 f7ba2091 e00317aa  .......... .....
- 02f0 aa010094 e00315aa 04020094 000000b0  ................
- 0300 00e02591 a5010094 e0031faa ff010094  ..%.............
- 0310 e00317aa a1010094 e00316aa fb010094  ................
- 0320 000000b0 00d82091 9c010094 000000b0  ...... .........
- 0330 00f82391 99010094 e8031faa 9f0700f1  ..#.............
- 0340 c0010054 88cb7f92 2933138b 29210091  ...T....)3..)!..
- 0350 0a074091 eb0308aa 4c0540d1 6b0900f1  ..@.....L.@.k...
- 0360 2ca93fa9 4a094091 29410091 61ffff54  ,.?.J.@.)A..a..T
- 0370 9f0308eb 20010054 2a33138b 890308cb  .... ..T*3......
- 0380 4a0d088b 0833088b 488500f8 290500f1  J....3..H...)...
- 0390 08054091 a1ffff54 5b031c8b 1a0700b4  ..@....T[.......
- 03a0 000000b0 00c02091 7c010094 e00315aa  ...... .|.......
- 03b0 9702158b d5010094 180000b0 18bb2091  .............. .
- 03c0 e00318aa 75010094 e00317aa cf010094  ....u...........
- 03d0 000000b0 00e02591 70010094 e00316aa  ......%.p.......
- 03e0 ca010094 e00318aa 6c010094 e8fe3f91  ........l.....?.
- 03f0 00fd4cd3 c5010094 000000b0 00d82091  ..L........... .
- 0400 66010094 000000b0 00f82391 63010094  f.........#.c...
- 0410 5f0700f1 20020054 2a33138b 48cb7f92  _... ..T*3..H...
- 0420 e9f08252 4a0d1c8b 9603088b 29311c8b  ...RJ.......)1..
- 0430 4a210091 eb0308aa 2c0540d1 6b0900f1  J!......,.@.k...
- 0440 4ca53fa9 29094091 4a410091 61ffff54  L.?.).@.JA..a..T
- 0450 5f0308eb 40010054 2933138b 680316cb  _...@..T)3..h...
- 0460 290d168b eaf08052 cace74b3 2a8500f8  )......R..t.*...
- 0470 080500f1 4a054091 a1ffff54 7f0308f1  ....J.@....T....
- 0480 80070054 000000b0 00a02091 43010094  ...T...... .C...
- 0490 9402158b e00314aa 9c010094 150000b0  ................
- 04a0 b5ba2091 e00315aa 3c010094 0004a052  .. .....<......R
- 04b0 96010094 000000b0 00e02591 37010094  ..........%.7...
- 04c0 88fe3f91 00fd4cd3 90010094 e00315aa  ..?...L.........
- 04d0 32010094 00408052 8c010094 000000b0  2....@.R........
- 04e0 00d82091 2d010094 000000b0 00f82391  .. .-.........#.
- 04f0 2a010094 7fff07f1 c8030054 e9e080d2  *..........T....
- 0500 08408052 0904e0f2 0a011bcb e8031baa  .@.R............
- 0510 5f0900f1 03020054 2d33138b 4bf97f92  _......T-3..K...
- 0520 ad0d1b8b 68030b8b 2c311b8b ad210091  ....h...,1...!..
- 0530 ee030baa 8f054091 ce0900f1 acbd3fa9  ......@.......?.
- 0540 8c094091 ad410091 61ffff54 5f010beb  ..@..A..a..T_...
- 0550 00010054 2a33138b 2931088b 497928f8  ...T*3..)1..Iy(.
- 0560 08050091 29054091 1f0108f1 81ffff54  ....).@........T
- 0570 fd7b45a9 f44f44a9 f65743a9 f85f42a9  .{E..OD..WC.._B.
- 0580 fa6741a9 fc6fc6a8 c0035fd6 f90f1bf8  .gA..o...._.....
- 0590 f85f01a9 17f87fd3 f44f03a9 f30300aa  ._.......O......
- 05a0 000000b0 f65702a9 008c2291 fd7b04a9  .....W...."..{..
- 05b0 fd030191 f40301aa f8000094 000000b0  ................
- 05c0 00a02091 f5000094 e0031faa 4f010094  .. .........O...
- 05d0 150000b0 b5ba2091 e00315aa ef000094  ...... .........
- 05e0 0004a052 49010094 000000b0 00e02591  ...RI.........%.
- 05f0 ea000094 e0031faa 44010094 e00315aa  ........D.......
- 0600 e6000094 20008052 40010094 000000b0  .... ..R@.......
- 0610 00d82091 e1000094 000000b0 00f82391  .. ...........#.
- 0620 de000094 080000f0 160000d0 08010091  ................
- 0630 d6020091 0831138b 60a66ad3 180540b2  .....1..`.j...@.
- 0640 b40400b4 a8e08052 0904e0d2 080008aa  .......R........
- 0650 f90240b2 0801098b 33ab6bd3 9f0600f1  ..@.....3.k.....
- 0660 c87a37f8 e1060054 e00313aa 74024891  .z7....T....t.H.
- 0670 26010094 150000b0 b5ba2091 e00315aa  &......... .....
- 0680 c6000094 e00314aa 20010094 000000b0  ........ .......
- 0690 00e02591 c1000094 20ab4092 1b010094  ..%..... .@.....
- 06a0 e00315aa bd000094 08f8bf12 6802088b  ............h...
- 06b0 00fd55d3 15010094 000000b0 00d82091  ..U........... .
- 06c0 b6000094 000000b0 00002491 b3000094  ..........$.....
- 06d0 20000014 14006bb2 0c010094 150000b0   .....k.........
- 06e0 b5ba2091 e00315aa ac000094 e00314aa  .. .............
- 06f0 06010094 000000b0 00e02591 a7000094  ..........%.....
- 0700 e0a67f92 01010094 e00315aa a3000094  ................
- 0710 20008052 60a67fb3 fc000094 000000b0   ..R`...........
- 0720 00d82091 9d000094 000000b0 00002491  .. ...........$.
- 0730 9a000094 f90240b2 d87a37f8 33ab6bd3  ......@..z7.3.k.
- 0740 a8e08052 0904e0d2 680208aa 1801098b  ...R....h.......
- 0750 d87a39f8 fd7b44a9 f44f43a9 f65742a9  .z9..{D..OC..WB.
- 0760 f85f41a9 f90745f8 c0035fd6 f50f1df8  ._A...E..._.....
- 0770 f44f01a9 88e09f52 fd7b02a9 fd830091  .O.....R.{......
- 0780 08a218d5 c10100b4 f30301aa f4031faa  ................
- 0790 15200091 e00314aa 21008052 7cffff97  . ......!..R|...
- 07a0 a18a7fa9 e00314aa b3feff97 94060091  ................
- 07b0 b5420091 7f0214eb e1feff54 000000b0  .B.........T....
- 07c0 00102591 75000094 00e0a752 cf000094  ..%.u......R....
- 07d0 130000b0 73ba2091 e00313aa 6f000094  ....s. .....o...
- 07e0 0000a852 c9000094 000000b0 00e02591  ...R..........%.
- 07f0 6a000094 003f8052 c4000094 e00313aa  j....?.R........
- 0800 66000094 00408052 c0000094 000000b0  f....@.R........
- 0810 00d82091 61000094 000000b0 00f82391  .. .a.........#.
- 0820 5e000094 29c080d2 080000d0 09e0a7f2  ^...)...........
- 0830 08013f91 0904e0f2 0b14a052 2a016bb2  ..?........R*.k.
- 0840 2c016ab2 2d056bb2 2b010baa fd7b42a9  ,.j.-.k.+....{B.
- 0850 f44f41a9 092900a9 2a0169b2 0c3501a9  .OA..)..*.i..5..
- 0860 2c056ab2 29096bb2 0a2d02a9 0c2503a9  ,.j.).k..-...%..
- 0870 f50743f8 c0035fd6 ffc302d1 480090d2  ..C..._.....H...
- 0880 09208152 6800a0f2 0a0180d2 f34b00f9  . .Rh........K..
- 0890 8801c0f2 93048052 a907a072 4a00c0f2  .......R...rJ...
- 08a0 e0030091 01018052 fd7b0aa9 fd830291  .......R.{......
- 08b0 f32300a9 ea2701a9 ff2300b9 bf3f03d5  .#...'...#...?..
- 08c0 be000094 1f040031 c0040054 08138052  .......1...T...R
- 08d0 08e4a772 09c15fb8 0ac156b8 2b751e12  ...r.._...V.+u..
- 08e0 c9128052 6a161433 0ac116b8 0bc11fb8  ...Rj..3........
- 08f0 29050071 1f2003d5 c1ffff54 090140b9  )..q. .....T..@.
- 0900 2a051232 c9128052 0a0100b9 29050071  *..2...R....)..q
- 0910 1f2003d5 c1ffff54 89048252 1f0100b9  . .....T...R....
- 0920 09e4a772 4a008052 6c018052 e0031f2a  ...rJ..Rl..R...*
- 0930 282140b9 2bb54029 2e0d40b9 2a010079  (!@.+.@)..@.*..y
- 0940 2a608052 08511512 8b110033 ac051b32  *`.R.Q.....3...2
- 0950 ca010a2a 282100b9 2bb10029 2a0d00b9  ...*(!..+..)*...
- 0960 fd7b4aa9 f34b40f9 ffc30291 c0035fd6  .{J..K@......._.
- 0970 08038252 08e4a772 09014039 89002836  ...R...r..@9..(6
- 0980 1f2003d5 09014039 c9ff2f37 091c0012  . ....@9../7....
- 0990 09811eb8 c0035fd6 08038252 a9018052  ......_....R...R
- 09a0 08e4a772 03000014 00040091 0a811eb8  ...r............
- 09b0 0a004039 5f290071 c0000054 ca010034  ..@9_).q...T...4
- 09c0 0b0140b9 0b012837 f8ffff17 1f2003d5  ..@...(7..... ..
- 09d0 0b0140b9 cbff2f37 09811eb8 0a004039  ..@.../7......@9
- 09e0 4bfe2f36 1f2003d5 0b014039 cbff2f37  K./6. ....@9../7
- 09f0 eeffff17 c0035fd6 81030034 09038252  ......_....4...R
- 0a00 e8031f2a 09e4a772 aa018052 06000014  ...*...r...R....
- 0a10 00040091 08050011 1f01016b 2b811eb8  ...........k+...
- 0a20 40020054 0b004039 7f290071 c0000054  @..T..@9.).q...T
- 0a30 cb010034 2c0140b9 0c012837 f5ffff17  ...4,.@...(7....
- 0a40 1f2003d5 2c0140b9 ccff2f37 2a811eb8  . ..,.@.../7*...
- 0a50 0b004039 ecfd2f36 1f2003d5 2c014039  ..@9../6. ..,.@9
- 0a60 ccff2f37 ebffff17 c0035fd6 e803002a  ../7......_....*
- 0a70 090000b0 080d4092 29f12591 00068052  ......@.).%....R
- 0a80 8a000010 2b696838 4a090b8b 40011fd6  ....+ih8J...@...
- 0a90 20068052 c0035fd6 40068052 c0035fd6   ..R.._.@..R.._.
- 0aa0 60068052 c0035fd6 80068052 c0035fd6  `..R.._....R.._.
- 0ab0 a0068052 c0035fd6 c0068052 c0035fd6  ...R.._....R.._.
- 0ac0 e0068052 c0035fd6 00078052 c0035fd6  ...R.._....R.._.
- 0ad0 20078052 c0035fd6 20088052 c0035fd6   ..R.._. ..R.._.
- 0ae0 40088052 c0035fd6 60088052 c0035fd6  @..R.._.`..R.._.
- 0af0 80088052 c0035fd6 a0088052 c0035fd6  ...R.._....R.._.
- 0b00 c0088052 c0035fd6 08038252 0a0000b0  ...R.._....R....
- 0b10 08e4a772 a9018052 4a812291 03000014  ...r...RJ.".....
- 0b20 4a050091 0b811eb8 4b014039 7f290071  J.......K.@9.).q
- 0b30 c0000054 cb010034 0c0140b9 0c012837  ...T...4..@...(7
- 0b40 f8ffff17 1f2003d5 0c0140b9 ccff2f37  ..... ....@.../7
- 0b50 09811eb8 4b014039 4cfe2f36 1f2003d5  ....K.@9L./6. ..
- 0b60 0c014039 ccff2f37 eeffff17 090000b0  ..@9../7........
- 0b70 ec018052 29312691 04000014 4c0500d1  ...R)1&.....L...
- 0b80 0b811eb8 8a0100b4 8bf57ed3 ea030caa  ..........~.....
- 0b90 0c014039 0b24cb9a 6b0d4092 2b796bb8  ..@9.$..k.@.+yk.
- 0ba0 ecfe2f36 1f2003d5 0c014039 ccff2f37  ../6. ....@9../7
- 0bb0 f3ffff17 c0035fd6 08139752 08e0a772  ......_....R...r
- 0bc0 090140b9 8900f836 1f2003d5 090140b9  ..@....6. ....@.
- 0bd0 c9ffff37 ec03002a ea070132 0b00b052  ...7...*...2...R
- 0be0 2c0c0033 0c0900b9 8900f036 1f2003d5  ,..3.......6. ..
- 0bf0 090140b9 c9fff737 0c815eb8 8d0d0012  ..@....7..^.....
- 0c00 8c6d1c12 bf01016b 8001407a e1feff54  .m.....k..@z...T
- 0c10 0c0440b9 9f010a6b a0000054 9f010b6b  ..@....k...T...k
- 0c20 41feff54 e0031f2a c0035fd6 00008012  A..T...*.._.....
- 0c30 c0035fd6 df4303d5 ff0304d1 e00700a9  .._..C..........
- 0c40 e20f01a9 e41702a9 e61f03a9 e82704a9  .............'..
- 0c50 ea2f05a9 ec3706a9 ee3f07a9 f04708a9  ./...7...?...G..
- 0c60 f24f09a9 f4570aa9 f65f0ba9 f8670ca9  .O...W..._...g..
- 0c70 fa6f0da9 fc770ea9 204038d5 e07b0fa9  .o...w.. @8..{..
- 0c80 e07b4fa9 204018d5 e00740a9 e20f41a9  .{O. @....@...A.
- 0c90 e41742a9 e61f43a9 e82744a9 ea2f45a9  ..B...C..'D../E.
- 0ca0 ec3746a9 ee3f47a9 f04748a9 f24f49a9  .7F..?G..GH..OI.
- 0cb0 f4574aa9 f65f4ba9 f8674ca9 fa6f4da9  .WJ.._K..gL..oM.
- 0cc0 fc774ea9 ff030491 ff4303d5 f44fbea9  .wN......C...O..
- 0cd0 fd7b01a9 fd430091 f30300aa 080440f9  .{...C........@.
- 0ce0 f4030091 1f010091 d3ffff97 e8030091  ................
- 0cf0 9f020091 680600f9 fd7b41a9 f44fc2a8  ....h....{A..O..
- 0d00 c0035fd6 610200b4 3f0400f1 61000054  .._.a...?...a..T
- 0d10 e8031faa 0a000014 28f87f92 09040091  ........(.......
- 0d20 ea0308aa 3ff11f78 29090091 4a0900f1  ....?..x)...J...
- 0d30 a1ffff54 1f0101eb c0000054 0900088b  ...T.......T....
- 0d40 280008cb 080500f1 3f150038 c1ffff54  (.......?..8...T
- 0d50 c0035fd6                             .._.
-Contents of section .vectors:
- 1000 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1010 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 1020 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 1030 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 1040 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 1050 19fcff97 e1010014 00000000 00000000  ................
- 1060 00000000 00000000 00000000 00000000  ................
- 1070 00000000 00000000 00000000 00000000  ................
- 1080 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1090 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 10a0 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 10b0 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 10c0 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 10d0 f1fbff97 c1010014 00000000 00000000  ................
- 10e0 00000000 00000000 00000000 00000000  ................
- 10f0 00000000 00000000 00000000 00000000  ................
- 1100 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1110 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 1120 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 1130 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 1140 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 1150 d2fbff97 a1010014 00000000 00000000  ................
- 1160 00000000 00000000 00000000 00000000  ................
- 1170 00000000 00000000 00000000 00000000  ................
- 1180 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1190 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 11a0 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 11b0 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 11c0 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 11d0 bafbff97 81010014 00000000 00000000  ................
- 11e0 00000000 00000000 00000000 00000000  ................
- 11f0 00000000 00000000 00000000 00000000  ................
- 1200 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1210 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 1220 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 1230 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 1240 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 1250 9bfbff97 61010014 00000000 00000000  ....a...........
- 1260 00000000 00000000 00000000 00000000  ................
- 1270 00000000 00000000 00000000 00000000  ................
- 1280 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1290 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 12a0 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 12b0 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 12c0 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 12d0 73fbff97 41010014 00000000 00000000  s...A...........
- 12e0 00000000 00000000 00000000 00000000  ................
- 12f0 00000000 00000000 00000000 00000000  ................
- 1300 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1310 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 1320 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 1330 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 1340 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 1350 54fbff97 21010014 00000000 00000000  T...!...........
- 1360 00000000 00000000 00000000 00000000  ................
- 1370 00000000 00000000 00000000 00000000  ................
- 1380 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1390 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 13a0 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 13b0 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 13c0 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 13d0 3cfbff97 01010014 00000000 00000000  <...............
- 13e0 00000000 00000000 00000000 00000000  ................
- 13f0 00000000 00000000 00000000 00000000  ................
- 1400 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1410 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 1420 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 1430 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 1440 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 1450 1dfbff97 e1000014 00000000 00000000  ................
- 1460 00000000 00000000 00000000 00000000  ................
- 1470 00000000 00000000 00000000 00000000  ................
- 1480 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1490 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 14a0 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 14b0 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 14c0 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 14d0 f5faff97 c1000014 00000000 00000000  ................
- 14e0 00000000 00000000 00000000 00000000  ................
- 14f0 00000000 00000000 00000000 00000000  ................
- 1500 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1510 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 1520 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 1530 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 1540 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 1550 d6faff97 a1000014 00000000 00000000  ................
- 1560 00000000 00000000 00000000 00000000  ................
- 1570 00000000 00000000 00000000 00000000  ................
- 1580 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1590 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 15a0 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 15b0 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 15c0 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 15d0 befaff97 81000014 00000000 00000000  ................
- 15e0 00000000 00000000 00000000 00000000  ................
- 15f0 00000000 00000000 00000000 00000000  ................
- 1600 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1610 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 1620 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 1630 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 1640 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 1650 9ffaff97 61000014 00000000 00000000  ....a...........
- 1660 00000000 00000000 00000000 00000000  ................
- 1670 00000000 00000000 00000000 00000000  ................
- 1680 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1690 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 16a0 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 16b0 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 16c0 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 16d0 77faff97 41000014 00000000 00000000  w...A...........
- 16e0 00000000 00000000 00000000 00000000  ................
- 16f0 00000000 00000000 00000000 00000000  ................
- 1700 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1710 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 1720 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 1730 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 1740 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 1750 58faff97 21000014 00000000 00000000  X...!...........
- 1760 00000000 00000000 00000000 00000000  ................
- 1770 00000000 00000000 00000000 00000000  ................
- 1780 df4303d5 ff0304d1 e00700a9 e20f01a9  .C..............
- 1790 e41702a9 e61f03a9 e82704a9 ea2f05a9  .........'.../..
- 17a0 ec3706a9 ee3f07a9 f04708a9 f24f09a9  .7...?...G...O..
- 17b0 f4570aa9 f65f0ba9 f8670ca9 fa6f0da9  .W..._...g...o..
- 17c0 fc770ea9 204038d5 e07b0fa9 e0030091  .w.. @8..{......
- 17d0 40faff97 01000014 e07b4fa9 204018d5  @........{O. @..
- 17e0 e00740a9 e20f41a9 e41742a9 e61f43a9  ..@...A...B...C.
- 17f0 e82744a9 ea2f45a9 ec3746a9 ee3f47a9  .'D../E..7F..?G.
- 1800 f04748a9 f24f49a9 f4574aa9 f65f4ba9  .GH..OI..WJ.._K.
- 1810 f8674ca9 fa6f4da9 fc774ea9 ff030491  .gL..oM..wN.....
- 1820 ff4303d5 e0039fd6                    .C......
-Contents of section .rodata:
- 1828 5257203a 20002d00 524f583a 20005d00  RW : .-.ROX: .].
- 1838 72706933 72746f73 3a3a7461 736b305f  rpi3rtos::task0_
- 1848 696e6974 28293a20 496e6974 69616c69  init(): Initiali
- 1858 7a696e67 206b6572 6e656c20 5461736b  zing kernel Task
- 1868 302e2e2e 00727069 3372746f 733a3a74  0....rpi3rtos::t
- 1878 61736b30 5f726573 65742829 3a205265  ask0_reset(): Re
- 1888 73657474 696e6720 6b65726e 656c2054  setting kernel T
- 1898 61736b30 2e2e2e00 3078006d 6d755f65  ask0....0x.mmu_e
- 18a8 6e61626c 6528293a 20536574 74696e67  nable(): Setting
- 18b8 20757020 6c657665 6c203220 7461626c   up level 2 tabl
- 18c8 650a006d 6d753a3a 696e6974 5f706167  e..mmu::init_pag
- 18d8 655f7461 626c6573 28293a20 53657474  e_tables(): Sett
- 18e8 696e6720 7570206c 6576656c 20332074  ing up level 3 t
- 18f8 61626c65 0a000a00 2d3e6c65 76656c20  able....->level 
- 1908 33207461 626c652e 0a007270 69337274  3 table...rpi3rt
- 1918 6f733a3a 7461736b 305f6d61 696e2829  os::task0_main()
- 1928 3a204265 67696e6e 696e6720 6b65726e  : Beginning kern
- 1938 656c2054 61736b30 2e2e2e00 6d6d755f  el Task0....mmu_
- 1948 656e6162 6c652829 3a204d61 7070696e  enable(): Mappin
- 1958 67207065 72697068 6572616c 7320696e  g peripherals in
- 1968 206c6576 656c2032 20746162 6c650a00   level 2 table..
- 1978 205b0000 1d000204 06080a0c 0e101214   [..............
- 1988 16181a1c 30000000 31000000 32000000  ....0...1...2...
- 1998 33000000 34000000 35000000 36000000  3...4...5...6...
- 19a8 37000000 38000000 39000000 41000000  7...8...9...A...
- 19b8 42000000 43000000 44000000 45000000  B...C...D...E...
- 19c8 46000000                             F...
-Contents of section .bss:
-<skipping contents of bss section at [2000, b000)>
-Contents of section .symtab:
- 0000 00000000 00000000 00000000 00000000  ................
- 0010 00000000 00000000 01000000 00000400  ................
- 0020 00100000 00000000 00000000 00000000  ................
- 0030 06000000 00000400 d8170000 00000000  ................
- 0040 00000000 00000000 18000000 0400f1ff  ................
- 0050 00000000 00000000 00000000 00000000  ................
- 0060 20000000 00000200 18000000 00000000   ...............
- 0070 00000000 00000000 25000000 00000500  ........%.......
- 0080 38180000 00000000 00000000 00000000  8...............
- 0090 2a000000 00000100 00000000 00000000  *...............
- 00a0 00000000 00000000 2f000000 0000f1ff  ......../.......
- 00b0 41000000 00000000 00000000 00000000  A...............
- 00c0 01000000 00000300 40000000 00000000  ........@.......
- 00d0 00000000 00000000 34000000 01000200  ........4.......
- 00e0 18000000 00000000 28000000 00000000  ........(.......
- 00f0 3f000000 01000100 00000000 00000000  ?...............
- 0100 18000000 00000000 4c000000 0400f1ff  ........L.......
- 0110 00000000 00000000 00000000 00000000  ................
- 0120 20000000 0000f1ff 41000000 00000000   .......A.......
- 0130 00000000 00000000 01000000 00000300  ................
- 0140 94000000 00000000 00000000 00000000  ................
- 0150 59000000 0400f1ff 00000000 00000000  Y...............
- 0160 00000000 00000000 20000000 0000f1ff  ........ .......
- 0170 41000000 00000000 00000000 00000000  A...............
- 0180 01000000 00000300 b4000000 00000000  ................
- 0190 00000000 00000000 66000000 0400f1ff  ........f.......
- 01a0 00000000 00000000 00000000 00000000  ................
- 01b0 20000000 00000500 2e180000 00000000   ...............
- 01c0 00000000 00000000 25000000 0000f1ff  ........%.......
- 01d0 41000000 00000000 00000000 00000000  A...............
- 01e0 01000000 00000300 d4000000 00000000  ................
- 01f0 00000000 00000000 6c000000 0400f1ff  ........l.......
- 0200 00000000 00000000 00000000 00000000  ................
- 0210 20000000 00000500 7c190000 00000000   .......|.......
- 0220 00000000 00000000 25000000 00000500  ........%.......
- 0230 a0180000 00000000 00000000 00000000  ................
- 0240 2a000000 0000f1ff 41000000 00000000  *.......A.......
- 0250 00000000 00000000 01000000 00000300  ................
- 0260 78080000 00000000 00000000 00000000  x...............
- 0270 73000000 0400f1ff 00000000 00000000  s...............
- 0280 00000000 00000000 20000000 0000f1ff  ........ .......
- 0290 41000000 00000000 00000000 00000000  A...............
- 02a0 01000000 00000300 b80b0000 00000000  ................
- 02b0 00000000 00000000 7a000000 0400f1ff  ........z.......
- 02c0 00000000 00000000 00000000 00000000  ................
- 02d0 20000000 0000f1ff 41000000 00000000   .......A.......
- 02e0 00000000 00000000 01000000 00000300  ................
- 02f0 340c0000 00000000 00000000 00000000  4...............
- 0300 81000000 10000400 00100000 00000000  ................
- 0310 00000000 00000000 9b000000 12000300  ................
- 0320 98000000 00000000 04000000 00000000  ................
- 0330 ab000000 12000300 94000000 00000000  ................
- 0340 04000000 00000000 bb000000 12000300  ................
- 0350 b8000000 00000000 04000000 00000000  ................
- 0360 ce000000 12000300 b4000000 00000000  ................
- 0370 04000000 00000000 e6000000 12000300  ................
- 0380 a0000000 00000000 04000000 00000000  ................
- 0390 f6000000 12000300 9c000000 00000000  ................
- 03a0 04000000 00000000 06010000 12000300  ................
- 03b0 c0000000 00000000 04000000 00000000  ................
- 03c0 19010000 12000300 bc000000 00000000  ................
- 03d0 04000000 00000000 31010000 12000300  ........1.......
- 03e0 b0000000 00000000 04000000 00000000  ................
- 03f0 43010000 12000300 ac000000 00000000  C...............
- 0400 04000000 00000000 55010000 12000300  ........U.......
- 0410 d0000000 00000000 04000000 00000000  ................
- 0420 6a010000 12000300 cc000000 00000000  j...............
- 0430 04000000 00000000 84010000 12000300  ................
- 0440 a8000000 00000000 04000000 00000000  ................
- 0450 96010000 12000300 a4000000 00000000  ................
- 0460 04000000 00000000 a8010000 12000300  ................
- 0470 c8000000 00000000 04000000 00000000  ................
- 0480 bd010000 12000300 c4000000 00000000  ................
- 0490 04000000 00000000 d7010000 10000700  ................
- 04a0 00200000 00000000 00000000 00000000  . ..............
- 04b0 e1010000 1000f1ff 00120000 00000000  ................
- 04c0 00000000 00000000 ea010000 10000700  ................
- 04d0 00b00000 00000000 00000000 00000000  ................
- 04e0 f5010000 12000300 88000000 00000000  ................
- 04f0 0c000000 00000000 fa010000 12000300  ................
- 0500 7c000000 00000000 0c000000 00000000  |...............
- 0510 00020000 12000300 40000000 00000000  ........@.......
- 0520 3c000000 00000000 06020000 12000300  <...............
- 0530 040d0000 00000000 50000000 00000000  ........P.......
- 0540 14020000 12000300 98090000 00000000  ................
- 0550 60000000 00000000 1e020000 11000700  `...............
- 0560 00200000 00000000 00100000 00000000  . ..............
- 0570 2c020000 11000700 00300000 00000000  ,........0......
- 0580 00800000 00000000 3b020000 12000300  ........;.......
- 0590 6c070000 00000000 0c010000 00000000  l...............
- 05a0 46020000 12000300 8c050000 00000000  F...............
- 05b0 e0010000 00000000 5f020000 12000300  ........_.......
- 05c0 74020000 00000000 18030000 00000000  t...............
- 05d0 78020000 12000300 e8010000 00000000  x...............
- 05e0 8c000000 00000000 9a020000 12000300  ................
- 05f0 5c010000 00000000 8c000000 00000000  \...............
- 0600 bb020000 12000300 d4000000 00000000  ................
- 0610 88000000 00000000 cb020000 12000300  ................
- 0620 080b0000 00000000 b0000000 00000000  ................
- 0630 d7020000 12000300 b80b0000 00000000  ................
- 0640 7c000000 00000000 e1020000 12000300  |...............
- 0650 78080000 00000000 f8000000 00000000  x...............
- 0660 eb020000 12000300 f8090000 00000000  ................
- 0670 74000000 00000000 f6020000 12000300  t...............
- 0680 70090000 00000000 28000000 00000000  p.......(.......
- 0690 00030000 12000300 6c0a0000 00000000  ........l.......
- 06a0 9c000000 00000000 0b030000 12000300  ................
- 06b0 800c0000 00000000 4c000000 00000000  ........L.......
- 06c0 20030000 12000300 cc0c0000 00000000   ...............
- 06d0 38000000 00000000 2a030000 12000300  8.......*.......
- 06e0 340c0000 00000000 4c000000 00000000  4.......L.......
- 06f0 3c030000 10000700 00b00000 00000000  <...............
- 0700 00000000 00000000 46030000 10000600  ........F.......
- 0710 00200000 00000000 00000000 00000000  . ..............
-Contents of section .shstrtab:
- 0000 002e7461 736b5f6c 6973745f 6974656d  ..task_list_item
- 0010 002e7461 736b5f68 65616465 72002e74  ..task_header..t
- 0020 65787400 2e766563 746f7273 002e726f  ext..vectors..ro
- 0030 64617461 002e6461 7461002e 62737300  data..data..bss.
- 0040 2e73796d 74616200 2e736873 74727461  .symtab..shstrta
- 0050 62002e73 74727461 6200               b..strtab.
-Contents of section .strtab:
- 0000 0024782e 30005f5f 72657374 6f72655f  .$x.0.__restore_
- 0010 636f6e74 65787400 7461736b 302e6300  context.task0.c.
- 0020 24642e31 0024642e 32002464 2e330024  $d.1.$d.2.$d.3.$
- 0030 642e3400 7461736b 68656164 65720074  d.4.taskheader.t
- 0040 61736b6c 69737469 74656d00 696e7465  asklistitem.inte
- 0050 72727570 74732e63 00657863 65707469  rrupts.c.excepti
- 0060 6f6e732e 63006d6d 752e6300 75617274  ons.c.mmu.c.uart
- 0070 2e63006d 626f782e 63007461 736b2e63  .c.mbox.c.task.c
- 0080 005f5f65 78636570 74696f6e 5f766563  .__exception_vec
- 0090 746f7273 5f737461 72740063 75727265  tors_start.curre
- 00a0 6e745f65 6c305f66 69710063 75727265  nt_el0_fiq.curre
- 00b0 6e745f65 6c305f69 72710063 75727265  nt_el0_irq.curre
- 00c0 6e745f65 6c305f73 6572726f 72006375  nt_el0_serror.cu
- 00d0 7272656e 745f656c 305f7379 6e636872  rrent_el0_synchr
- 00e0 6f6e6f75 73006375 7272656e 745f656c  onous.current_el
- 00f0 785f6669 71006375 7272656e 745f656c  x_fiq.current_el
- 0100 785f6972 71006375 7272656e 745f656c  x_irq.current_el
- 0110 785f7365 72726f72 00637572 72656e74  x_serror.current
- 0120 5f656c78 5f73796e 6368726f 6e6f7573  _elx_synchronous
- 0130 006c6f77 65725f61 61726368 33325f66  .lower_aarch32_f
- 0140 6971006c 6f776572 5f616172 63683332  iq.lower_aarch32
- 0150 5f697271 006c6f77 65725f61 61726368  _irq.lower_aarch
- 0160 33325f73 6572726f 72006c6f 7765725f  32_serror.lower_
- 0170 61617263 6833325f 73796e63 68726f6e  aarch32_synchron
- 0180 6f757300 6c6f7765 725f6161 72636836  ous.lower_aarch6
- 0190 345f6669 71006c6f 7765725f 61617263  4_fiq.lower_aarc
- 01a0 6836345f 69727100 6c6f7765 725f6161  h64_irq.lower_aa
- 01b0 72636836 345f7365 72726f72 006c6f77  rch64_serror.low
- 01c0 65725f61 61726368 36345f73 796e6368  er_aarch64_synch
- 01d0 726f6e6f 7573005f 5f627373 5f626567  ronous.__bss_beg
- 01e0 005f5f62 73735f73 7a005f5f 7461736b  .__bss_sz.__task
- 01f0 5f656e64 006d6169 6e007265 73657400  _end.main.reset.
- 0200 73746172 74007461 736b5f7a 65726f5f  start.task_zero_
- 0210 62737300 75617274 5f707574 73004c45  bss.uart_puts.LE
- 0220 56454c5f 325f5441 424c4500 4c455645  VEL_2_TABLE.LEVE
- 0230 4c5f335f 5441424c 4553006d 6d755f65  L_3_TABLES.mmu_e
- 0240 6e61626c 65006d6d 755f656e 61626c65  nable.mmu_enable
- 0250 5f6c6576 656c5f32 5f746162 6c65006d  _level_2_table.m
- 0260 6d755f65 6e61626c 655f6c65 76656c5f  mu_enable_level_
- 0270 335f7461 626c6500 6d6d755f 656e6162  3_table.mmu_enab
- 0280 6c655f6c 6576656c 5f335f74 61626c65  le_level_3_table
- 0290 5f726f78 5f626c6b 73006d6d 755f656e  _rox_blks.mmu_en
- 02a0 61626c65 5f6c6576 656c5f33 5f746162  able_level_3_tab
- 02b0 6c655f72 775f626c 6b73006d 6d755f70  le_rw_blks.mmu_p
- 02c0 72696e74 5f72616e 67650075 6172745f  rint_range.uart_
- 02d0 75363468 6578006d 626f785f 63616c6c  u64hex.mbox_call
- 02e0 00756172 745f696e 69740075 6172745f  .uart_init.uart_
- 02f0 6e707574 73007561 72745f73 656e6400  nputs.uart_send.
- 0300 75617274 5f746f68 65780074 61736b5f  uart_tohex.task_
- 0310 72657374 6f72655f 636f6e74 65787400  restore_context.
- 0320 7461736b 5f736176 65007461 736b5f73  task_save.task_s
- 0330 6176655f 636f6e74 65787400 5f5f6273  ave_context.__bs
- 0340 735f656e 64005f5f 726f5f65 6e6400    s_end.__ro_end.
-SYMBOL TABLE:
-0000000000001000         .vectors	00000000 $x.0
-00000000000017d8         .vectors	00000000 __restore_context
-0000000000000000 l    df *ABS*	00000000 task0.c
-0000000000000018         .task_header	00000000 $d.1
-0000000000001838         .rodata	00000000 $d.2
-0000000000000000         .task_list_item	00000000 $d.3
-0000000000000041         *ABS*	00000000 $d.4
-0000000000000040         .text	00000000 $x.0
-0000000000000018 l     O .task_header	00000028 taskheader
-0000000000000000 l     O .task_list_item	00000018 tasklistitem
-0000000000000000 l    df *ABS*	00000000 interrupts.c
-0000000000000041         *ABS*	00000000 $d.1
-0000000000000094         .text	00000000 $x.0
-0000000000000000 l    df *ABS*	00000000 exceptions.c
-0000000000000041         *ABS*	00000000 $d.1
-00000000000000b4         .text	00000000 $x.0
-0000000000000000 l    df *ABS*	00000000 mmu.c
-000000000000182e         .rodata	00000000 $d.1
-0000000000000041         *ABS*	00000000 $d.2
-00000000000000d4         .text	00000000 $x.0
-0000000000000000 l    df *ABS*	00000000 uart.c
-000000000000197c         .rodata	00000000 $d.1
-00000000000018a0         .rodata	00000000 $d.2
-0000000000000041         *ABS*	00000000 $d.3
-0000000000000878         .text	00000000 $x.0
-0000000000000000 l    df *ABS*	00000000 mbox.c
-0000000000000041         *ABS*	00000000 $d.1
-0000000000000bb8         .text	00000000 $x.0
-0000000000000000 l    df *ABS*	00000000 task.c
-0000000000000041         *ABS*	00000000 $d.1
-0000000000000c34         .text	00000000 $x.0
-0000000000001000         .vectors	00000000 __exception_vectors_start
-0000000000000098 g     F .text	00000004 current_el0_fiq
-0000000000000094 g     F .text	00000004 current_el0_irq
-00000000000000b8 g     F .text	00000004 current_el0_serror
-00000000000000b4 g     F .text	00000004 current_el0_synchronous
-00000000000000a0 g     F .text	00000004 current_elx_fiq
-000000000000009c g     F .text	00000004 current_elx_irq
-00000000000000c0 g     F .text	00000004 current_elx_serror
-00000000000000bc g     F .text	00000004 current_elx_synchronous
-00000000000000b0 g     F .text	00000004 lower_aarch32_fiq
-00000000000000ac g     F .text	00000004 lower_aarch32_irq
-00000000000000d0 g     F .text	00000004 lower_aarch32_serror
-00000000000000cc g     F .text	00000004 lower_aarch32_synchronous
-00000000000000a8 g     F .text	00000004 lower_aarch64_fiq
-00000000000000a4 g     F .text	00000004 lower_aarch64_irq
-00000000000000c8 g     F .text	00000004 lower_aarch64_serror
-00000000000000c4 g     F .text	00000004 lower_aarch64_synchronous
-0000000000002000         .bss	00000000 __bss_beg
-0000000000001200         *ABS*	00000000 __bss_sz
-000000000000b000         .bss	00000000 __task_end
-0000000000000088 g     F .text	0000000c main
-000000000000007c g     F .text	0000000c reset
-0000000000000040 g     F .text	0000003c start
-0000000000000d04 g     F .text	00000050 task_zero_bss
-0000000000000998 g     F .text	00000060 uart_puts
-0000000000002000 g     O .bss	00001000 LEVEL_2_TABLE
-0000000000003000 g     O .bss	00008000 LEVEL_3_TABLES
-000000000000076c g     F .text	0000010c mmu_enable
-000000000000058c g     F .text	000001e0 mmu_enable_level_2_table
-0000000000000274 g     F .text	00000318 mmu_enable_level_3_table
-00000000000001e8 g     F .text	0000008c mmu_enable_level_3_table_rox_blks
-000000000000015c g     F .text	0000008c mmu_enable_level_3_table_rw_blks
-00000000000000d4 g     F .text	00000088 mmu_print_range
-0000000000000b08 g     F .text	000000b0 uart_u64hex
-0000000000000bb8 g     F .text	0000007c mbox_call
-0000000000000878 g     F .text	000000f8 uart_init
-00000000000009f8 g     F .text	00000074 uart_nputs
-0000000000000970 g     F .text	00000028 uart_send
-0000000000000a6c g     F .text	0000009c uart_tohex
-0000000000000c80 g     F .text	0000004c task_restore_context
-0000000000000ccc g     F .text	00000038 task_save
-0000000000000c34 g     F .text	0000004c task_save_context
-000000000000b000         .bss	00000000 __bss_end
-0000000000002000         .data	00000000 __ro_end
-Program Header:
-    LOAD off    0x0000000000010000 vaddr 0x0000000000000000 paddr 0x0000000000000000 align 2**16
-         filesz 0x0000000000000040 memsz 0x0000000000000040 flags rw-
-    LOAD off    0x0000000000010040 vaddr 0x0000000000000040 paddr 0x0000000000000040 align 2**16
-         filesz 0x0000000000001fc0 memsz 0x0000000000001fc0 flags r-x
-    LOAD off    0x0000000000012000 vaddr 0x0000000000002000 paddr 0x0000000000002000 align 2**16
-         filesz 0x0000000000000000 memsz 0x0000000000009000 flags rw-
-   STACK off    0x0000000000000000 vaddr 0x0000000000000000 paddr 0x0000000000000000 align 2**64
-         filesz 0x0000000000000000 memsz 0x0000000000000000 flags rw-
-
-Dynamic Section:
+00000000000017d8 <__restore_context>:
+    17d8:	a94f7be0 	ldp	x0, x30, [sp, #240]
+    17dc:	d5184020 	msr	elr_el1, x0
+    17e0:	a94007e0 	ldp	x0, x1, [sp]
+    17e4:	a9410fe2 	ldp	x2, x3, [sp, #16]
+    17e8:	a94217e4 	ldp	x4, x5, [sp, #32]
+    17ec:	a9431fe6 	ldp	x6, x7, [sp, #48]
+    17f0:	a94427e8 	ldp	x8, x9, [sp, #64]
+    17f4:	a9452fea 	ldp	x10, x11, [sp, #80]
+    17f8:	a94637ec 	ldp	x12, x13, [sp, #96]
+    17fc:	a9473fee 	ldp	x14, x15, [sp, #112]
+    1800:	a94847f0 	ldp	x16, x17, [sp, #128]
+    1804:	a9494ff2 	ldp	x18, x19, [sp, #144]
+    1808:	a94a57f4 	ldp	x20, x21, [sp, #160]
+    180c:	a94b5ff6 	ldp	x22, x23, [sp, #176]
+    1810:	a94c67f8 	ldp	x24, x25, [sp, #192]
+    1814:	a94d6ffa 	ldp	x26, x27, [sp, #208]
+    1818:	a94e77fc 	ldp	x28, x29, [sp, #224]
+    181c:	910403ff 	add	sp, sp, #0x100
+    1820:	d50343ff 	msr	daifclr, #0x3
+    1824:	d69f03e0 	eret

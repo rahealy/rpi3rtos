@@ -1,5 +1,3 @@
-ENTRY(0x0)
-
 SECTIONS
 {
     . = 0x00000000;

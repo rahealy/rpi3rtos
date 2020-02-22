@@ -47,6 +47,6 @@ typedef struct _mbox_buf {
 //Call mailbox with buffer contents.
 // Returns: -1 on error. 0 on success.
 //
-int mbox_call(mbox_buf *mbox, u32_t ch);
+int mbox_call(mbox_buf *buf, u64_t ch);
 
 #endif

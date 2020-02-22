@@ -22,14 +22,30 @@
  * SOFTWARE.
  */
 
+#include "irq.h"
 #include "uart.h"
 #include "task.h"
+#include "timer.h"
 
-extern int __bss_beg;
-extern int __bss_sz;
-extern int __task_end;
+//
+//From linker script in order of appearance in memory.
+//
+extern int __task_ro_end;
+extern int __task_rw_beg;
+extern int __task_header_beg;
+extern int __task_rw_end;
+extern int __task_bss_beg;
+extern int __task_bss_end;
+extern int __task_bss_sz;
+
+//
+//From vectors.S
+//
 extern void __exception_vectors_start(void);
 
+//
+//Predefines
+//
 void start(void);
 void reset(void);
 void main(void);
@@ -51,33 +67,44 @@ void task0_panic() {
 static task_list_item tasklistitem
     __attribute__ ((section (".task_list_item"))) 
     __attribute__ ((__used__)) = {
-    TASK_LIST_ITEM_MAGIC,                          //Magic number.
-    (u64_t) &__task_end - sizeof(task_list_item)   //Size of task not including this header.
+    TASK_LIST_ITEM_MAGIC,
+    (u64_t) &__task_ro_end,
+    (u64_t) &__task_rw_beg,
+    (u64_t) &__task_rw_end,
+    (u64_t) &__task_bss_beg,
+    (u64_t) &__task_bss_end
 };
 
+
 //
-//Header shared by task and kernel to communicate.
+//Header located in 4kB aligned R/W memory shared by task and kernel.
 //
-static task_header taskheader
+static task_header task0_header
     __attribute__ ((section (".task_header"))) 
     __attribute__ ((__used__)) = {
-    0, 0,
+    TASK_HEADER_MAGIC,
+    0, 0, 0, 0,
     start,
     reset,
     main
 };
 
 void start(void) {
-    uart_puts("rpi3rtos::task0_init(): Initializing kernel Task0...");
+    u64_t base = task_get_base_addr(0);
 
-//Zero the .bss segment.
-    task_zero_bss((char *) &__bss_beg, (u64_t) &__bss_sz);
+    uart_puts("rpi3rtos::task0_init(): Initializing kernel Task0...\n");
 
 //Set exception handlers for EL1.
-    asm volatile (
-        "msr    vbar_el1, %0\n" :: "r"(__exception_vectors_start) :
-    );
-
+    uart_puts("rpi3rtos::task0_init(): Rebased __exception_vectors_start: ");
+    uart_u64hex_s((u64_t) __exception_vectors_start + base);
+    uart_puts("\n");
+    asm volatile ("msr  vbar_el1, %0\n" :: "r"(__exception_vectors_start + base) :);
+//__atomic_add_fetch((char *)0x80000000, (unsigned int)1, __ATOMIC_SEQ_CST);
+//Initialize the timer.
+    uart_puts("rpi3rtos::task0_init(): Timer test...\n");
+    timer_init_core0(500);
+    irq_enable();
+    uart_puts("rpi3rtos::task0_init(): Timer test done.\n");
     task0_panic();
 }
 

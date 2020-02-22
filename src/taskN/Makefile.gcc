@@ -1,0 +1,37 @@
+#
+# Compile to object files.
+#
+
+#
+# Builds the startup stub that gets loaded by the hardware to 0x00080000
+#
+
+CSRCS        = $(wildcard *.c) 
+COBJS        = $(CSRCS:.c=.o)
+
+CFLAGS       = -Wall -O2 -fno-stack-protector -nodefaultlibs -nostartfiles 
+CFLAGS      += -ffreestanding -nostdinc -nostdlib -nostartfiles
+
+CINCLUDES    = -I "." -I "../hardware" -I "../hardware/peripherals" -I "../tasks"
+
+#######################################################################
+# Targets
+#######################################################################
+
+all: taskN.img
+
+taskN.img: $(COBJS) $(ASMOBJS)
+	aarch64-elf-ld -nostdlib -nostartfiles $(COBJS) -T link.ld -o taskN.elf
+	aarch64-elf-objcopy -O binary taskN.elf taskN.img
+
+%.o: %.c
+	aarch64-elf-gcc $(CFLAGS) $(CINCLUDES) -c $< -o $@
+
+clean:
+	-rm -f taskN.elf
+	-rm -f taskN.img
+	-rm -f *.o
+
+objdump:
+	aarch64-elf-objdump --disassemble taskN.elf > ../../debug/taskN.lst
+

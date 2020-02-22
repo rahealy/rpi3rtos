@@ -22,13 +22,12 @@
  * SOFTWARE.
  */
 
-/*
-Null task compiled and linked to the end of the kernel image. End of task list.
-*/
-#include "task.h"
+#include "irq.h"
 
-static task_list_item tasklistitem
-    __attribute__ ((section (".task_list_item"))) 
-    __attribute__ ((__used__)) = {
-    TASK_LIST_ITEM_MAGIC, 0, 0, 0, 0, 0
-};
+void irq_enable_system_timer(u64_t timer) {
+    if (timer == 1) {
+        IRQ_REG_BLK->ENABLE_1 = 0b10;  //System Timer 1 is IRQ 1.
+    } else {
+        IRQ_REG_BLK->ENABLE_1 = 0b100; //System Timer 3 is IRQ 3.
+    }
+}
