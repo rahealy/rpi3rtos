@@ -22,26 +22,32 @@
  * SOFTWARE.
  */
 
-void current_el0_synchronous(void) {
-}
+#include "uart.h"
+#include "kernel.h"
 
-void current_el0_serror(void) {
-}
+extern volatile kernel task0_kernel;
 
-void current_elx_synchronous(void) {
+u64_t current_el0_synchronous(void) { return 0; }
+u64_t current_el0_serror(void) { return 0; }
+u64_t current_elx_synchronous(void) {
+    if(1) { 
+//FIXME: Test for suspend syscall. Examine ESR_EL1. If EC bits = 0b010101
+//FIXME: then ISS contains syscall.
+        uart_puts("current_elx_synchronous(): Exception is syscall.\n");
+        uart_puts("current_elx_synchronous(): task sp pointer = ");
+        uart_u64hex_s((u64_t) &task0_kernel.tasks[task0_kernel.task].sp);
+        uart_puts("\n");
+//Set syscall.
+        task0_kernel.syscall = 0x1;
+//x0 (return value) is a pointer to the current stack pointer.
+//x1 is the kernel context stack pointer which will be restored.
+        asm ("mov x1, %0" :: "r"(task0_kernel.tasks[0].sp) : );
+        return (u64_t) &task0_kernel.tasks[task0_kernel.task].sp;
+    }
+    return 0;
 }
-
-void current_elx_serror(void) {
-}
-
-void lower_aarch64_synchronous(void) {
-}
-
-void lower_aarch64_serror(void) {
-}
-
-void lower_aarch32_synchronous(void) {
-}
-
-void lower_aarch32_serror(void) {
-}
+u64_t current_elx_serror(void) { return 0; }
+u64_t lower_aarch64_synchronous(void) { return 0; }
+u64_t lower_aarch64_serror(void) { return 0; }
+u64_t lower_aarch32_synchronous(void) { return 0; }
+u64_t lower_aarch32_serror(void) { return 0; }

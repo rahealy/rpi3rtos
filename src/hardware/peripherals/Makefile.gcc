@@ -1,0 +1,17 @@
+#
+# Convert C header files into files which can be included by asm files.
+#
+
+HSRCS        = $(wildcard *.h) 
+HINCS        = $(HSRCS:.h=.inc)
+CINCLUDES    = -I "." -I ".."
+CFLAGS       = -E -dM
+
+all: $(HINCS)
+
+%.inc: %.h
+	aarch64-elf-gcc $(CFLAGS) $(CINCLUDES) $< > $@
+
+clean:
+	-rm -f *.o
+	-rm -f *.inc

@@ -28,7 +28,6 @@
 
 extern int __bss_end;
 
-
 #define STARTUP_LIST_HEADER_MAGIC      0x214F4F4D //"MOO!"
 
 //
@@ -103,7 +102,7 @@ void startup_test_floats(void) {
 //curitem Points at current task list item header.
 //task    Current task.
 //
-void startup_load_task_list(task_list_item *curitem, u64_t task) {
+u64_t startup_load_task_list(task_list_item *curitem, u64_t task) {
     if (TASK_LIST_ITEM_MAGIC != curitem->magic) {
         uart_puts("rpi3rtos::startup_load_task_list(): No task list item found at ");
         uart_u64hex_s((u64_t) curitem);
@@ -116,9 +115,9 @@ void startup_load_task_list(task_list_item *curitem, u64_t task) {
         uart_u64hex_s((u64_t) curitem);
         uart_puts("\n");
         uart_puts("rpi3rtos::startup_load_task_list(): End of list. Begin loading.\n");
-        return;
+        return task;
     } else {
-        u64_t i;
+        u64_t i, cnt;
         char *src;
         char *dst;
 
@@ -151,7 +150,7 @@ void startup_load_task_list(task_list_item *curitem, u64_t task) {
         uart_puts("...\n");
 
         //Re-entrant. Seek end of list.
-        startup_load_task_list (
+        cnt = startup_load_task_list (
             (task_list_item *) ((u64_t) curitem + curitem->rw_end),
             task + 1
         );
@@ -193,18 +192,14 @@ void startup_load_task_list(task_list_item *curitem, u64_t task) {
 
         for(i = 0; i < curitem->rw_end - curitem->rw_beg; ++i) {
             *dst = *src;
-//             uart_u64hex_s((u64_t) *dst);
             ++src;
             ++dst;
         }
 
-//         uart_puts("i = ");
-//         uart_u64hex_s(i);
-//         uart_puts("\n");
-
         task_header_rebase(task);
         task_bss_zero(task);
-        task_stack_pointer_reset(task);
+
+        return cnt;
     }
 }
 
@@ -216,6 +211,7 @@ void startup(void) {
     //Pointer to first byte in the kernel image after startup.
     startup_list_header *lsthdr = (startup_list_header *) &__bss_end;
     task_header *task0;
+    u64_t num_tasks;
 
     if (-1 == uart_init()) {
         startup_panic();
@@ -236,25 +232,19 @@ void startup(void) {
     uart_u64hex_s((u64_t) lsthdr + sizeof(startup_list_header));
     uart_puts("...\n");
 
-    startup_load_task_list (
+    num_tasks = startup_load_task_list (
         (task_list_item *) ((u64_t) lsthdr + sizeof(startup_list_header)), 0
     );
 
+//Task0 is the kernel.
     task0 = task_get_header(0);
+    task0->init(num_tasks);
+    task0->reset(0);
+    task0->start(0);
 
-    uart_puts("rpi3rtos::startup(): Calling task0->start() (");
-    uart_u64hex_s((u64_t) task0);
-    uart_puts(" ");
-    uart_u64hex_s((u64_t) task0->start);
-    uart_puts(")\n");
-
-    asm("nop":::);
-    task0->start();
-    asm("nop":::);
-
-    while(1) {
-        asm("wfe":::);
-    }
+//task0->start() should never return but just in case.
+    uart_puts("rpi3rtos::startup(): Function task0->start() unexpectedly returned. Panic.\n");
+    startup_panic();
 }
 
 static startup_list_header startuplistheader

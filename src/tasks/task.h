@@ -37,7 +37,7 @@
 #define TASK_PENDING   0x00000004 //Task is waiting on something.
 #define TASK_FINISHED  0x00000008 //Task is finished.
 
-typedef void (*taskfn)();
+typedef void (*taskfn)(u64_t);
 
 #define TASK_LIST_ITEM_MAGIC 0x4D455449 //"ITEM"
 #define TASK_HEADER_MAGIC 0x4B534154    //"TASK"
@@ -56,25 +56,26 @@ typedef struct _task_list_item {
     u64_t bss_end; //BSS.
 } task_list_item; 
 
+#define TASK_HEADER_FLAG_RUNNING 0x1
+#define TASK_HEADER_FLAG_TIMEOUT (0x1 << 1)
+
 //
 //Header shared by kernel and task.
 //
 typedef struct _task_header {
-    u64_t magic;    //Magic value.
-    u64_t flags;    //Status flags.
-    u64_t sp;       //Saved stack pointer.
-    u64_t ticks;    //If task is running, incremented each tick slice.
-    u64_t timeout;  //Number of ticks before timeout.
-    taskfn start;   //Run once. Constructor.
-    taskfn reset;   //Reset/re-init the task. Check flags for timeout.
-    taskfn main;    //Task's main loop.
+    u64_t magic;        //Magic value.
+    u64_t flags;        //Status flags.
+    taskfn init;        //Run once. Constructor.
+    taskfn reset;       //Reset/re-init the task. Check flags for timeout.
+    taskfn start;       //Task's main loop.
 } task_header;
 
 //FIXME: Need macros to build & init task_list_item & task_header correctly.
 
 //
 //task_get_base_addr()
-// Tasks are stored at the bottom most 2MB boundary.
+// Tasks are stored at the bottom most 2MB boundary. Stack grows toward
+// lower address.
 //
 inline u64_t task_get_base_addr(u64_t task) {
     return ((task + 1) * MMU_TASK_MEMORY_SZ) - MMU_BLOCK_SZ;
@@ -92,9 +93,6 @@ task_list_item *task_get_list_item(u64_t task);
 //
 task_header *task_get_header(u64_t task);
 
-inline void task_stack_pointer_reset(u64_t task) {
-//    task_get_header(task)->sp = task_get_base_addr(task);
-}
 
 //
 //task_header_rebase()
@@ -106,20 +104,18 @@ void task_header_rebase(u64_t task);
 
 //
 //task_bss_zero()
-// Task start() must zero the task's bss segment.
+// Zero the task's bss segment.
 //
 void task_bss_zero(u64_t task);
 
 //
-//task_save_context()
-// Saves the task's state on the current stack.
+//Suspend current task and return control to kernel.
 //
-//void __attribute__((naked)) task_save_context();
+void task_suspend(void);
 
 //
-//task_restore_context()
-// Restores the task's state from the current stack.
+//Suspend current task for specified number of milliseconds.
 //
-//void __attribute__((naked)) task_restore_context();
+void task_sleep(u64_t msecs);
 
 #endif

@@ -25,33 +25,26 @@
 #include "uart.h"
 #include "irq.h"
 #include "timer.h"
+#include "kernel.h"
 
-void current_el0_irq(void) {
-}
+extern volatile kernel task0_kernel;
 
-void current_el0_fiq(void) {
-}
+u64_t current_el0_irq(u64_t arg) { return 0; }
+u64_t current_el0_fiq(u64_t arg) { return 0; }
 
-void current_elx_irq(void) {
+u64_t current_elx_irq(u64_t sp) {
     if (*TIMER_CTL_AND_STATUS & TIMER_CTL_AND_STATUS_INT_FLG) {
         timer_clr_and_reload();
         uart_puts("current_elx_irq(): Timer tick!\n");
+        ++task0_kernel.ticks;
     }
+    task0_kernel.tasks[task0_kernel.task].sp = sp; //Save current stack pointer.
+    return task0_kernel.tasks[0].sp;               //Return kernel stack pointer.    
 }
 
-void current_elx_fiq(void) {
-}
-
-void lower_aarch64_irq(void) {
-    uart_puts("lower_aarch64_irq(): HERE!\n");
-}
-
-void lower_aarch64_fiq(void) {
-}
-
-void lower_aarch32_irq(void) {
-}
-
-void lower_aarch32_fiq(void) {
-}
+u64_t current_elx_fiq(u64_t arg) { return 0; }
+u64_t lower_aarch64_irq(u64_t arg) { return 0; }
+u64_t lower_aarch64_fiq(u64_t arg) { return 0; }
+u64_t lower_aarch32_irq(u64_t arg) { return 0; }
+u64_t lower_aarch32_fiq(u64_t arg) { return 0; }
 

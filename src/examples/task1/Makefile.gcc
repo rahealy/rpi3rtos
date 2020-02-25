@@ -5,7 +5,8 @@
 #
 # Builds the startup stub that gets loaded by the hardware to 0x00080000
 #
-SRCDIR       = ../
+
+SRCDIR       = ../../
 
 CSRCS        = $(wildcard *.c) 
 CSRCS       += $(wildcard $(SRCDIR)/hardware/peripherals/*.c) 
@@ -21,8 +22,7 @@ ASMOBJS      = $(ASMSRCS:.S=.o)
 CFLAGS       = -Wall -O2 -fno-stack-protector -nodefaultlibs -nostartfiles 
 CFLAGS      += -ffreestanding -nostdinc -nostdlib -nostartfiles -fpie
 
-CINCLUDES    = -I "." 
-CINCLUDES   += -I "$(SRCDIR)/hardware" 
+CINCLUDES    = -I "$(SRCDIR)/hardware" 
 CINCLUDES   += -I "$(SRCDIR)/hardware/peripherals" 
 CINCLUDES   += -I "$(SRCDIR)/tasks"
 
@@ -32,12 +32,11 @@ OBJDUMPFLGS  = --disassemble --file-headers --section-headers
 # Targets
 #######################################################################
 
-all: task0.img
+all: task1.img
 
-task0.img: $(COBJS) $(ASMOBJS)
-#-E option to ld exports the symbols as dynamic symbols.
-	aarch64-elf-ld -nostdlib -nostartfiles $(ASMOBJS) $(COBJS) -T link.ld -o task0.elf
-	aarch64-elf-objcopy -O binary task0.elf task0.img
+task1.img: $(COBJS) $(ASMOBJS)
+	aarch64-elf-ld -nostdlib -nostartfiles $(ASMOBJS) $(COBJS) -T link.ld -o task1.elf
+	aarch64-elf-objcopy -O binary task1.elf task1.img
 
 %.o: %.c
 	aarch64-elf-gcc $(CFLAGS) $(CINCLUDES) -c $< -o $@
@@ -46,9 +45,9 @@ task0.img: $(COBJS) $(ASMOBJS)
 	aarch64-elf-gcc $(CFLAGS) $(CINCLUDES) -c $< -o $@
 
 clean:
-	-rm -f task0.elf
-	-rm -f task0.img
+	-rm -f task1.elf
+	-rm -f task1.img
 	-rm -f *.o
 
 objdump:
-	aarch64-elf-objdump $(OBJDUMPFLGS) task0.elf > ../../debug/task0.lst
+	aarch64-elf-objdump $(OBJDUMPFLGS) task1.elf > $(SRCDIR)/../debug/task1.lst

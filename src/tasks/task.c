@@ -66,28 +66,27 @@ void task_header_rebase(u64_t task) {
     uart_u64hex_s(base);
     uart_puts("\n");
 
-    uart_puts("rpi3rtos::task_header_rebase(): ");
-    uart_u64hex_s((u64_t) th->start);
+    uart_puts("rpi3rtos::task_header_rebase(): init() ");
+    uart_u64hex_s((u64_t) th->init);
     uart_puts("->");
-    uart_u64hex_s((u64_t) th->start + base);
+    uart_u64hex_s((u64_t) th->init + base);
     uart_puts("\n");
 
-    uart_puts("rpi3rtos::task_header_rebase(): ");
+    uart_puts("rpi3rtos::task_header_rebase(): reset() ");
     uart_u64hex_s((u64_t) th->reset);
     uart_puts("->");
     uart_u64hex_s((u64_t) th->reset + base);
     uart_puts("\n");
 
-
-    uart_puts("rpi3rtos::task_header_rebase(): ");
-    uart_u64hex_s((u64_t) th->main);
+    uart_puts("rpi3rtos::task_header_rebase(): start() ");
+    uart_u64hex_s((u64_t) th->start);
     uart_puts("->");
-    uart_u64hex_s((u64_t) th->main + base);
+    uart_u64hex_s((u64_t) th->start + base);
     uart_puts("\n");
 
-    th->start = (taskfn)(((char *) th->start) + base);
+    th->init  = (taskfn)(((char *) th->init)  + base);
     th->reset = (taskfn)(((char *) th->reset) + base);
-    th->main  = (taskfn)(((char *) th->main)  + base);
+    th->start = (taskfn)(((char *) th->start) + base);
 }
 
 void task_bss_zero(u64_t task) {
@@ -107,70 +106,6 @@ void task_bss_zero(u64_t task) {
     }
 }
 
-
-void task_save_context(void) {
-    asm(
-        "msr    daifset, #3\n"              //Disable IRQ and FIQ interrupts. 
-        "sub    sp,  sp,  #16 * 16\n"       //Allocate 256 bytes on the stack.
-        "stp    x0,  x1,  [sp, #16 * 0]\n"  //Save registers on the stack.
-        "stp    x2,  x3,  [sp, #16 * 1]\n"
-        "stp    x4,  x5,  [sp, #16 * 2]\n"
-        "stp    x6,  x7,  [sp, #16 * 3]\n"
-        "stp    x8,  x9,  [sp, #16 * 4]\n"
-        "stp    x10, x11, [sp, #16 * 5]\n"
-        "stp    x12, x13, [sp, #16 * 6]\n"
-        "stp    x14, x15, [sp, #16 * 7]\n"
-        "stp    x16, x17, [sp, #16 * 8]\n"
-        "stp    x18, x19, [sp, #16 * 9]\n"
-        "stp    x20, x21, [sp, #16 * 10]\n"
-        "stp    x22, x23, [sp, #16 * 11]\n"
-        "stp    x24, x25, [sp, #16 * 12]\n"
-        "stp    x26, x27, [sp, #16 * 13]\n"
-        "stp    x28, x29, [sp, #16 * 14]\n"
-        "mrs    x0,  ELR_EL1\n"
-        "stp    x0,  x30, [sp, #16 * 15]\n"
-    );
+void task_suspend() {
+    asm("svc    0");
 }
-
-void task_restore_context(void) {
-    asm(
-        "ldp    x0, x30,  [sp, #16 * 15]\n"
-        "msr    ELR_EL1,  x0\n"
-        "ldp    x0,  x1,  [sp, #16 * 0]\n"
-        "ldp    x2,  x3,  [sp, #16 * 1]\n"
-        "ldp    x4,  x5,  [sp, #16 * 2]\n"
-        "ldp    x6,  x7,  [sp, #16 * 3]\n"
-        "ldp    x8,  x9,  [sp, #16 * 4]\n"
-        "ldp    x10, x11, [sp, #16 * 5]\n"
-        "ldp    x12, x13, [sp, #16 * 6]\n"
-        "ldp    x14, x15, [sp, #16 * 7]\n"
-        "ldp    x16, x17, [sp, #16 * 8]\n"
-        "ldp    x18, x19, [sp, #16 * 9]\n"
-        "ldp    x20, x21, [sp, #16 * 10]\n"
-        "ldp    x22, x23, [sp, #16 * 11]\n"
-        "ldp    x24, x25, [sp, #16 * 12]\n"
-        "ldp    x26, x27, [sp, #16 * 13]\n"
-        "ldp    x28, x29, [sp, #16 * 14]\n"
-        "add    sp,  sp,  #16 * 16\n"
-        "msr    daifclr, #3\n"
-    );
-}
-
-void task_save(task_header *th) {
-    u64_t sp = 0;
-
-    asm volatile (
-        "mov    %0, sp\n"
-        "mov    sp, %1\n"
-        : "=r"(sp) : "r"(th->sp) : 
-    );
-
-    task_save_context();
-    
-    asm volatile (
-        "mov    %0, sp\n"
-        "mov    sp, %1\n"
-        : "=r"(th->sp) : "r"(sp) : 
-    );
-}
-

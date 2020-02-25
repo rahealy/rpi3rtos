@@ -1,0 +1,9 @@
+#
+# Clean up.
+#
+
+all:
+	$(MAKE) -f Makefile.gcc -C ./peripherals all
+
+clean:
+	$(MAKE) -f Makefile.gcc -C ./peripherals clean

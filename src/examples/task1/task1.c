@@ -22,59 +22,8 @@
  * SOFTWARE.
  */
 
-#include "irq.h"
-#include "uart.h"
 #include "task.h"
-#include "timer.h"
-#include "kernel.h"
-
-volatile kernel task0_kernel;
-
-//
-//From vectors.S
-//
-extern void __exception_vectors_start(void);
-
-//
-//task0_panic()
-// Infinite loop.
-//
-void task0_panic() {
-    while(1) {
-        asm("wfe":::);
-    }
-}
-
-void task0_init(u64_t num_tasks) {
-    u64_t base = task_get_base_addr(0);
-
-    uart_puts("rpi3rtos::task0_init(): Initializing task0 (kernel)...\n");
-
-//Set exception handlers for EL1.
-    uart_puts("rpi3rtos::task0_init(): Rebased __exception_vectors_start: ");
-    uart_u64hex_s((u64_t) __exception_vectors_start + base);
-    uart_puts("\n");
-    asm volatile ("msr  vbar_el1, %0\n" :: "r"(__exception_vectors_start + base) :);
-
-//Initialize kernel.
-    kernel_init(&task0_kernel, num_tasks);
-
-//Init non-kernel tasks.
-    kernel_tasks_init(&task0_kernel);
-
-//Set slice timer.
-//     uart_puts("rpi3rtos::task0_reset(): Setting slice timer...\n");
-//     irq_disable();
-//     timer_init_core0(500);
-//     irq_enable();
-//     uart_puts("rpi3rtos::task0_reset(): Done setting slice timer.\n");
-
-//Kernel main
-    kernel_main(&task0_kernel);
-}
-
-void task0_reset(u64_t arg) {}
-void task0_start(u64_t arg) {}
+#include "uart.h"
 
 //
 //From linker script in order of appearance in memory.
@@ -85,6 +34,35 @@ extern int __task_header_beg;
 extern int __task_rw_end;
 extern int __task_bss_beg;
 extern int __task_bss_end;
+extern int __task_bss_sz;
+
+//
+//From vectors.S
+//
+extern void __exception_vectors_start(void);
+
+void task1_init(u64_t arg) {
+    u64_t sptmp;
+    asm volatile ( "mov %0, sp" : "=r"(sptmp) :: );
+    
+    uart_puts("rpi3rtos::task1_init(): Initializing task1 (sp = ");
+    uart_u64hex_s(sptmp);
+    uart_puts(") ...\n");
+    uart_puts("rpi3rtos::task1_init(): Initialized task1. Suspending...\n");
+    task_suspend();
+    uart_puts("rpi3rtos::task1_init(): Woke from suspend. Working...\n");
+    while(1) {
+//        uart_puts("T1 ");
+    }
+}
+
+void task1_reset(u64_t arg) {
+    uart_puts("rpi3rtos::task1_reset(): Resetting task1...");
+}
+
+void task1_start(u64_t arg) {
+    uart_puts("rpi3rtos::task1_start(): Start task1...\n");
+}
 
 //
 //Used by the loader to copy the task from the initial kernel image to 
@@ -101,14 +79,18 @@ static task_list_item tasklistitem
     (u64_t) &__task_bss_end
 };
 
+
 //
 //Header located in 4kB aligned R/W memory shared by task and kernel.
 //
-volatile task_header task0_header
+//
+//Header located in 4kB aligned R/W memory shared by task and kernel.
+//
+volatile task_header task1_header
     __attribute__ ((section (".task_header"))) 
     __attribute__ ((__used__)) = {
     TASK_HEADER_MAGIC, 0,
-    task0_init,
-    task0_reset,
-    task0_start
+    task1_init,
+    task1_reset,
+    task1_start
 };

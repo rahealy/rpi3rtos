@@ -53,4 +53,4 @@ SECTIONS
     }
 
     /DISCARD/ : { *(.comment) *(.gnu*) *(.note*) *(.eh_frame*) }
-}
+} 

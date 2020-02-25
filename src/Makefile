@@ -14,14 +14,31 @@ COMPLIER = gcc
 all: kernel8.img
 
 kernel8.img: $(COBJS) $(ASMOBJS)
+	$(MAKE) -f Makefile.gcc -C ./hardware all
 	$(MAKE) -f Makefile.gcc -C ./startup startup.img objdump
 	$(MAKE) -f Makefile.gcc -C ./task0 task0.img objdump
 	$(MAKE) -f Makefile.gcc -C ./taskN taskN.img objdump
-	$(shell) cat ./startup/startup.img ./task0/task0.img ./taskN/taskN.img  >> $(KERNEL_IMAGE)
+	$(shell) cat \
+	./startup/startup.img \
+	./task0/task0.img \
+	./taskN/taskN.img  >> $(KERNEL_IMAGE)
+
+example: $(COBJS) $(ASMOBJS)
+	$(MAKE) -f Makefile.gcc -C ./hardware all
+	$(MAKE) -f Makefile.gcc -C ./startup startup.img objdump
+	$(MAKE) -f Makefile.gcc -C ./task0 task0.img objdump
+	$(MAKE) -f Makefile.gcc -C ./taskN taskN.img objdump
+	$(MAKE) -f Makefile.gcc -C ./examples/task1 task1.img objdump
+	$(shell) cat \
+	./startup/startup.img \
+	./task0/task0.img \
+	./examples/task1/task1.img \
+	./taskN/taskN.img  >> $(KERNEL_IMAGE)
 
 clean:
 	-rm -f ./$(KERNEL_IMAGE)
-	$(MAKE) -C ./hardware clean
+	$(MAKE) -f Makefile.gcc -C ./examples clean
+	$(MAKE) -f Makefile.gcc -C ./hardware clean
 	$(MAKE) -f Makefile.gcc -C ./startup clean
 	$(MAKE) -f Makefile.gcc -C ./task0 clean
 	$(MAKE) -f Makefile.gcc -C ./taskN clean
