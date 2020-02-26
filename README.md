@@ -3,10 +3,13 @@ A Simple RTOS for the Raspberry Pi 3
 
 A recent job application of mine was rejected because it did not contain the terms  "RTOS" and "C". As a result I decided to take on a personal daily challenge to write a simple RTOS in C for the Raspberry Pi 3. I'll be leveraging much of what I learned in my [rpi3fxproc](https://github.com/rahealy/rpi3fxproc) project to see how much working code can be written in 1 day, 2 days, and so on...
 
+### Current
+
 **Wednesday February 26, 2020 (Current)** <b>&ast;</b> Update covers several days. Task switching works, task suspend and sleep syscalls are in progress. Decided on a sorted linked list for task priority - currently the OS is limited to 8 tasks so btree or other data structure seems unnecessary. MMU is on hold - tasks need to behave on their own for now. Currently the kernel clock tick duration is one second to allow all the debugging messages to scroll by. Looking to get a pre-alpha release out later today.
 
 <b>(&ast;)</b> Just a reminder that I'm actively looking for paid work either locally (Twin Cities, Minnesota, USA) or remotely. If you believe I could be of service to your organization or know of an organization that is looking for a dedicated employee comitted to a lifetime of learning and serving others please feel free to contact me through [LinkedIn](https://www.linkedin.com/in/richardarthurhealy/). Thank you so much.
 
+### Older
 
 **Saturday February 22, 2020 0752** - Update covers several days. Built GCC aarch64-elf cross compiler. QEMU doesn't support RPi3's system timer so switched over to local timer on core0. GCC always puts a `.got` section in the elf. Since this is silent it was necessary to put a `.got` section in the linker script so the linker script variables aligned to what is output.
 
