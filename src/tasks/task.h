@@ -27,25 +27,31 @@
 
 //
 //task.h
-// A task is a block of code that will be run.
+// A task is a position independent executable that is managed by a 
+// kernel.
 //
+
 #include "platform.h"
 #include "mmu.h"
 
-#define TASK_TIMED_OUT 0x00000001 //Set if task is still running after slice expires.
-#define TASK_WORKING   0x00000002 //Task is working on something.
-#define TASK_PENDING   0x00000004 //Task is waiting on something.
-#define TASK_FINISHED  0x00000008 //Task is finished.
-
+//
+//taskfn()
+// Signature of the two task functions called by kernel.
+//
 typedef void (*taskfn)(u64_t);
 
+//
+//TASK_*_MAGIC
+// Magic numbers are used as a sanity check by startup when loading
+// tasks into the address space from the kernel image.
+//
 #define TASK_LIST_ITEM_MAGIC 0x4D455449 //"ITEM"
-#define TASK_HEADER_MAGIC 0x4B534154    //"TASK"
+#define TASK_HEADER_MAGIC    0x4B534154 //"TASK"
 
 //
-//task_list_item
-// List header for each task stored in the executable image. This is
-// not loaded into the task's address space.
+//task_list_item{}
+// List item for each task stored in the executable image. This gets
+// loaded into first block of r/o memory in task's address space.
 //
 typedef struct _task_list_item {
     u64_t magic;   //Always ASCII 'ITEM'
@@ -60,22 +66,24 @@ typedef struct _task_list_item {
 #define TASK_HEADER_FLAG_TIMEOUT (0x1 << 1)
 
 //
-//Header shared by kernel and task.
+//task_header{}
+// Header shared by kernel and task. This gets loaded into first block
+// of 4kB aligned r/w memory.
 //
 typedef struct _task_header {
-    u64_t magic;        //Magic value.
+    u64_t magic;        //Always ASCII 'TASK'
     u64_t flags;        //Status flags.
-    taskfn init;        //Run once. Constructor.
+    taskfn main;        //Initialze and run.
     taskfn reset;       //Reset/re-init the task. Check flags for timeout.
-    taskfn start;       //Task's main loop.
 } task_header;
 
 //FIXME: Need macros to build & init task_list_item & task_header correctly.
 
 //
 //task_get_base_addr()
-// Tasks are stored at the bottom most 2MB boundary. Stack grows toward
-// lower address.
+// Tasks are stored at the beginning of the highest block by memory address
+// of task address space . Stack grows toward lower memory addresses to fill
+// lower blocks.
 //
 inline u64_t task_get_base_addr(u64_t task) {
     return ((task + 1) * MMU_TASK_MEMORY_SZ) - MMU_BLOCK_SZ;
@@ -109,12 +117,17 @@ void task_header_rebase(u64_t task);
 void task_bss_zero(u64_t task);
 
 //
-//Suspend current task and return control to kernel.
+//task_suspend()
+// Suspend current task and return control to kernel.
+// 
+// wakeup - Logical or of 0 or more KERNEL_TASK_FLAG_WAKEUP_* flags.
 //
-void task_suspend(void);
+void task_suspend(u64_t wakeup);
 
 //
-//Suspend current task for specified number of milliseconds.
+//task_sleep()
+// Suspend task for a period of time in milliseconds rounded up to 
+// nearest kernel tick duration.
 //
 void task_sleep(u64_t msecs);
 

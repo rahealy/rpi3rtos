@@ -47,7 +47,7 @@ void _cpuinit(void) {
             "orr    %0, %0, #3\n"        //Allow EL1 access to the physical timer & counter
             "msr    cnthctl_el2, %0\n"   //Write updated counter control value.
             "msr    cntvoff_el2, xzr\n"  //Virtual timer offset is 0.
-            : "=r"(reg0): "r"(reg0):
+            : "=r"(reg0) : "r"(reg0) :
         );
 
 //Disable traps to hypervisor (won't be using EL2)
@@ -57,7 +57,7 @@ void _cpuinit(void) {
             "mov    %0, 0x33ff\n"       //Default 0x33ff is fine.
             "msr    cptr_el2, %0\n"     //
             "msr    hstr_el2, xzr\n"    //Don't trap anything in the hypervisor.
-            : : "r"(reg0):
+            :: "r"(reg0) :
         );
 
 //EL1 will be running in AARCH64 mode.
@@ -65,17 +65,17 @@ void _cpuinit(void) {
             "mrs    %0, hcr_el2\n"         //Read Hypervisor Configuration Register
             "orr    %0, %0, #0x80000000\n" //Set bit 31 for AARCH64 mode in EL1.
             "msr    hcr_el2, %0\n"         //Write Hypervisor Configuration Register
-            : "=r"(reg0): "r"(reg0):
+            : "=r"(reg0) : "r"(reg0) :
         );
 
-//Set SPSR_EL2
+//Set SPSR_EL2. Disable exceptions and interrupts for now.
         asm volatile (
             "mov    %0, #0x3C5\n"       //Set D,A,I,F flags. Set return to EL1h.
             "mrs    %1, spsr_el2\n"     //Read Hypervisor Configuration Register
             "orr    %1, %1, %0\n"       //Set flags.
             "msr    spsr_el2, %1\n"     //Write Hypervisor Configuration Register
             : "=r"(reg0), "=r"(reg1)
-            : "r"(reg0), "r"(reg1):
+            : "r"(reg0), "r"(reg1) :
         );
 
 //On ERET, execution will jump to location in elr_el2.

@@ -27,6 +27,7 @@
 #include "task.h"
 
 extern int __bss_end;
+extern int __startup_list_header;
 
 #define STARTUP_LIST_HEADER_MAGIC      0x214F4F4D //"MOO!"
 
@@ -96,8 +97,8 @@ void startup_test_floats(void) {
 //
 //startup_load_task_list()
 // Reentrant function loads tasks from the executable image into their
-// memory locations. Tasks are loaded from last to first and image is
-// overwritten as they go.
+// memory locations. Tasks are loaded from last to first and executable
+// image is overwritten bottom to top.
 //
 //curitem Points at current task list item header.
 //task    Current task.
@@ -209,7 +210,7 @@ u64_t startup_load_task_list(task_list_item *curitem, u64_t task) {
 //
 void startup(void) {
     //Pointer to first byte in the kernel image after startup.
-    startup_list_header *lsthdr = (startup_list_header *) &__bss_end;
+    startup_list_header *lsthdr = (startup_list_header *) &__startup_list_header;
     task_header *task0;
     u64_t num_tasks;
 
@@ -221,7 +222,9 @@ void startup(void) {
     startup_test_floats();
     
     if (STARTUP_LIST_HEADER_MAGIC != lsthdr->magic) {
-        uart_puts("rpi3rtos::startup(): No startup list header found. Panic.\n");
+        uart_puts("rpi3rtos::startup(): No startup list header found at ");
+        uart_u64hex_s((u64_t) lsthdr);
+        uart_puts(". Panic.\n");
         startup_panic();
     }
 
@@ -236,14 +239,13 @@ void startup(void) {
         (task_list_item *) ((u64_t) lsthdr + sizeof(startup_list_header)), 0
     );
 
-//Task0 is the kernel.
+//Task0 is the kernel. Set stack pointer and branch.
     task0 = task_get_header(0);
-    task0->init(num_tasks);
-    task0->reset(0);
-    task0->start(0);
+    asm ("mov sp, %0" :: "r"(task_get_base_addr(0)) : );
+    task0->main(num_tasks);
 
 //task0->start() should never return but just in case.
-    uart_puts("rpi3rtos::startup(): Function task0->start() unexpectedly returned. Panic.\n");
+    uart_puts("rpi3rtos::startup(): task0->main() unexpectedly returned. Panic.\n");
     startup_panic();
 }
 

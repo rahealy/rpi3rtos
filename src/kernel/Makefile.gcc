@@ -1,0 +1,7 @@
+#
+# Clean.
+#
+
+clean:
+	-rm -f *.o
+

@@ -22,18 +22,9 @@
  * SOFTWARE.
  */
 
-#include "irq.h"
 #include "uart.h"
 #include "task.h"
-#include "timer.h"
 #include "kernel.h"
-
-volatile kernel task0_kernel;
-
-//
-//From vectors.S
-//
-extern void __exception_vectors_start(void);
 
 //
 //task0_panic()
@@ -45,32 +36,11 @@ void task0_panic() {
     }
 }
 
-void task0_init(u64_t num_tasks) {
-    u64_t base = task_get_base_addr(0);
-
-    uart_puts("rpi3rtos::task0_init(): Initializing task0 (kernel)...\n");
-
-//Set exception handlers for EL1.
-    uart_puts("rpi3rtos::task0_init(): Rebased __exception_vectors_start: ");
-    uart_u64hex_s((u64_t) __exception_vectors_start + base);
-    uart_puts("\n");
-    asm volatile ("msr  vbar_el1, %0\n" :: "r"(__exception_vectors_start + base) :);
-
-//Initialize kernel.
-    kernel_init(&task0_kernel, num_tasks);
-
-//Init non-kernel tasks.
-    kernel_tasks_init(&task0_kernel);
-
-//Set slice timer.
-//     uart_puts("rpi3rtos::task0_reset(): Setting slice timer...\n");
-//     irq_disable();
-//     timer_init_core0(500);
-//     irq_enable();
-//     uart_puts("rpi3rtos::task0_reset(): Done setting slice timer.\n");
-
-//Kernel main
-    kernel_main(&task0_kernel);
+void task0_main(u64_t num_tasks) {
+    kernel k;
+    uart_puts("rpi3rtos::task0_main(): Initialize and branch to kernel_main().\n");
+    kernel_init(&k, num_tasks);
+    kernel_main(&k);
 }
 
 void task0_reset(u64_t arg) {}
@@ -108,7 +78,6 @@ volatile task_header task0_header
     __attribute__ ((section (".task_header"))) 
     __attribute__ ((__used__)) = {
     TASK_HEADER_MAGIC, 0,
-    task0_init,
+    task0_main,
     task0_reset,
-    task0_start
 };

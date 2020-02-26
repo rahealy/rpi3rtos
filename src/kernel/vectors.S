@@ -55,8 +55,8 @@
     stp     x24, x25, [sp, #16 * 12]
     stp     x26, x27, [sp, #16 * 13]
     stp     x28, x29, [sp, #16 * 14]
-    mrs     x0,  ELR_EL1             //Exception return address.
-    stp     x0,  x30, [sp, #16 * 15] //Save ELR_EL1 & link register (x30) on current stack.
+    mrs     x4,  ELR_EL1             //Exception return address. X0-X3 might contain args. Use x4.
+    stp     x4,  x30, [sp, #16 * 15] //Save ELR_EL1 & link register (x30) on current stack.
 .endm
 
 .macro RESTORE_CONTEXT 
@@ -84,12 +84,18 @@
 //add     x3, x3, #4              //x3 = increment link register past exception.
 //stp     x2, x3, [sp, #16 * 15]  //Save ELR_EL1 & link register (x30).
 
-
+//
+//SAVE_CALL_RESTORE_IRQ
+// The \handler is expected to return the following:
+//  x0 Pointer to the kernel task SP where current task SP will be 
+//     saved.
+//  x1 If x0 is non-zero the kernel context stack pointer which will be 
+//     restored, otherwise ignored.
+//
 .macro SAVE_CALL_RESTORE_IRQ origin handler
 .org \origin
     msr     daifset, #3             //Disable IRQ and FIQ interrupts.
     SAVE_CONTEXT                    //Save context to current stack.
-    mov     x0, sp                  //Pass current stack pointer as argument.
     bl      \handler                //Call handler.
     cbz     x0, 1f                  //Test for context switch. x0 = ptr and x1 = sp.
     mov     x2, sp                  //x2   = Current stack pointer.
@@ -98,7 +104,16 @@
 1:  b      __restore_context        //Restore and return from exception.
 .endm
 
-
+//
+//SAVE_CALL_RESTORE_EXC
+// In the case of a syscall x0-x3 may be used as arguments.
+//
+// The \handler is expected to return the following:
+//  x0 Pointer to the kernel task SP where current task SP will be 
+//     saved.
+//  x1 If x0 is non-zero the kernel context stack pointer which will be 
+//     restored, otherwise ignored.
+//
 .macro SAVE_CALL_RESTORE_EXC origin handler
 .org \origin
     msr     daifset, #3             //Disable IRQ and FIQ interrupts.
@@ -106,7 +121,6 @@
     add     x0, x0, #4              //Increment link register past exception instruction.
     msr     ELR_EL1, x0             //Store modified link register.*/
     SAVE_CONTEXT                    //Save context to current stack.
-    mov     x0, sp                  //Pass current stack pointer as argument.
     bl      \handler                //Call handler.
     cbz     x0, 1f                  //Test for context switch. x0 = ptr and x1 = sp.
     mov     x2, sp                  //x2   = Current stack pointer.
@@ -146,7 +160,6 @@ __restore_context:
     eret
 
 .macro TASK_CONTEXT_SAVE
-    msr     ELR_EL1, x30            //Set ELR_EL1 to LR
     sub     sp,  sp,  #16 * 16      //Allocate 256 bytes on the stack.
     stp     x0,  x1,  [sp, #16 * 0]
     stp     x2,  x3,  [sp, #16 * 1]
@@ -164,10 +177,13 @@ __restore_context:
     stp     x26, x27, [sp, #16 * 13]
     stp     x28, x29, [sp, #16 * 14]
     stp     x30, x30, [sp, #16 * 15] //Save link register (x30) twice on current stack.
+                                     //This will set ELR_EL1 to LR in __restore_context.
 .endm
 
 //
 //__task_context_save_and_branch()
+// Do not use in an exception or interrupt handler!
+//
 // x0 Pointer where current saved task context stack pointer will be saved.
 // x1 Stack pointer of next task context.
 // x2 Address to branch to.
@@ -187,6 +203,8 @@ __task_context_save_and_branch:
 
 //
 //__task_context_save_and_switch()
+// Do not use in an exception or interrupt handler!
+//
 // x0 Pointer where current saved task context stack pointer will be 
 //    saved.
 // x1 Stack pointer of next task context.

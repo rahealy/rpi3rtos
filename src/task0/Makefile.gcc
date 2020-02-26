@@ -1,18 +1,17 @@
 #
-# Compile to object files.
+# Builds task0 which functions as the kernel.
 #
 
-#
-# Builds the startup stub that gets loaded by the hardware to 0x00080000
-#
 SRCDIR       = ../
 
 CSRCS        = $(wildcard *.c) 
 CSRCS       += $(wildcard $(SRCDIR)/hardware/peripherals/*.c) 
+CSRCS       += $(wildcard $(SRCDIR)/kernel/*.c)
 CSRCS       += $(wildcard $(SRCDIR)/tasks/*.c)
 
 ASMSRCS      = $(wildcard *.S)
 ASMSRCS     += $(wildcard $(SRCDIR)/hardware/peripherals/*.S)
+ASMSRCS     += $(wildcard $(SRCDIR)/kernel/*.S)
 ASMSRCS     += $(wildcard $(SRCDIR)/tasks/*.S)
 
 COBJS        = $(CSRCS:.c=.o)
@@ -24,6 +23,7 @@ CFLAGS      += -ffreestanding -nostdinc -nostdlib -nostartfiles -fpie
 CINCLUDES    = -I "." 
 CINCLUDES   += -I "$(SRCDIR)/hardware" 
 CINCLUDES   += -I "$(SRCDIR)/hardware/peripherals" 
+CINCLUDES   += -I "$(SRCDIR)/kernel"
 CINCLUDES   += -I "$(SRCDIR)/tasks"
 
 OBJDUMPFLGS  = --disassemble --file-headers --section-headers 
@@ -51,4 +51,4 @@ clean:
 	-rm -f *.o
 
 objdump:
-	aarch64-elf-objdump $(OBJDUMPFLGS) task0.elf > ../../debug/task0.lst
+	aarch64-elf-objdump $(OBJDUMPFLGS) task0.elf > $(SRCDIR)/../debug/task0.lst

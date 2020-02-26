@@ -2,20 +2,31 @@
 # Builds the startup stub that gets loaded by the hardware to 0x00080000
 #
 
+SRCDIR       = ../
+
 CSRCS        = $(wildcard *.c) 
-CSRCS       += $(wildcard ../hardware/peripherals/*.c) 
-CSRCS       += $(wildcard ../tasks/*.c)
+CSRCS       += $(wildcard $(SRCDIR)/hardware/peripherals/*.c)
+CSRCS       += $(wildcard $(SRCDIR)/kernel/*.c)
+CSRCS       += $(wildcard $(SRCDIR)/tasks/*.c)
 
 ASMSRCS      = $(wildcard *.S)
-ASMSRCS     += $(wildcard ../hardware/peripherals/*.S)
-ASMSRCS     += $(wildcard ../tasks/*.S)
+ASMSRCS     += $(wildcard $(SRCDIR)/hardware/peripherals/*.S)
+ASMSRCS     += $(wildcard $(SRCDIR)/kernel/*.S)
+ASMSRCS     += $(wildcard $(SRCDIR)/tasks/*.S)
 
 COBJS        = $(CSRCS:.c=.o)
 ASMOBJS      = $(ASMSRCS:.S=.o)
 
 CFLAGS       = -Wall -O2 -fno-stack-protector -nodefaultlibs -nostartfiles 
 CFLAGS      += -ffreestanding -nostdinc -nostdlib -nostartfiles
-CINCLUDES    = -I "." -I "../hardware" -I "../hardware/peripherals" -I "../tasks"
+
+CINCLUDES    = -I "." 
+CINCLUDES   += -I "$(SRCDIR)/hardware" 
+CINCLUDES   += -I "$(SRCDIR)/hardware/peripherals" 
+CINCLUDES   += -I "$(SRCDIR)/kernel"
+CINCLUDES   += -I "$(SRCDIR)/tasks"
+
+OBJDUMPFLGS  = --disassemble --file-headers --section-headers 
 
 #######################################################################
 # Targets
@@ -34,7 +45,7 @@ startup.img: $(COBJS) $(ASMOBJS)
 	aarch64-elf-gcc $(CFLAGS) -c $< -o $@
 
 objdump: startup.img
-	aarch64-elf-objdump --disassemble --file-headers --section-headers startup.elf > ../../debug/startup.lst
+	aarch64-elf-objdump $(OBJDUMPFLGS) startup.elf > $(SRCDIR)/../debug/startup.lst
 
 clean:
 	-rm -f *.o

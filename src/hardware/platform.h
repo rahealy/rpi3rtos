@@ -35,11 +35,17 @@
 // No stdlib so define these ourselves.
 //
 typedef long long unsigned int u64_t;
-typedef unsigned int u32_t;
-typedef unsigned short int u16_t;
-typedef unsigned char u8_t;
-typedef float f32_t;
-typedef double f64_t;
+typedef unsigned int        u32_t;
+typedef unsigned short int  u16_t;
+typedef unsigned char       u8_t;
+
+typedef long long int       i64_t;
+typedef int                 i32_t;
+typedef short int           i16_t;
+typedef char                c8_t;
+
+typedef float               f32_t;
+typedef double              f64_t;
 
 //
 //Maximum number of allowed tasks.

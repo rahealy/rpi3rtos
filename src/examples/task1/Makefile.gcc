@@ -24,6 +24,7 @@ CFLAGS      += -ffreestanding -nostdinc -nostdlib -nostartfiles -fpie
 
 CINCLUDES    = -I "$(SRCDIR)/hardware" 
 CINCLUDES   += -I "$(SRCDIR)/hardware/peripherals" 
+CINCLUDES   += -I "$(SRCDIR)/kernel"
 CINCLUDES   += -I "$(SRCDIR)/tasks"
 
 OBJDUMPFLGS  = --disassemble --file-headers --section-headers 
