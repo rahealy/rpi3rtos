@@ -39,6 +39,7 @@ clean:
 	-rm -f ./$(KERNEL_IMAGE)
 	$(MAKE) -f Makefile.gcc -C ./examples clean
 	$(MAKE) -f Makefile.gcc -C ./hardware clean
+	$(MAKE) -f Makefile.gcc -C ./kernel clean
 	$(MAKE) -f Makefile.gcc -C ./startup clean
 	$(MAKE) -f Makefile.gcc -C ./task0 clean
 	$(MAKE) -f Makefile.gcc -C ./taskN clean

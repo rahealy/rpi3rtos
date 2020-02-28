@@ -48,32 +48,51 @@
 //*********************************************************************
 
 //
-//KERNEL_TASK_FLAG_WAKEUP_POST_INIT
-// After task has initialized it should suspend and return control to
-// kernel using this flag.
-//
-#define KERNEL_TASK_FLAG_WAKEUP_POST_INIT (0x1)
-
-//
-//KERNEL_TASK_FLAG_WAKEUP_UART0_RX
-// If UART0 (PLO11) received data wake task up.
-//
-#define KERNEL_TASK_FLAG_WAKEUP_UART0_RX (0x2)
-
-//FIXME: I2S? I2C? SPI? Timers? DMA? Should IRQs from these sources be
-//FIXME: serviced by privileged driver tasks instead of the kernel?
-
-//
 //KERNEL_TASK_FLAG_SUSPENDED
 // Task is suspended.
 //
-#define KERNEL_TASK_FLAG_SUSPENDED (0x3)
+#define KERNEL_TASK_FLAG_SUSPENDED (0x1)
+
 
 //
 //KERNEL_TASK_FLAG_SLEEPING
 // Task is sleeping.
 //
-#define KERNEL_TASK_FLAG_SLEEPING (0x4)
+#define KERNEL_TASK_FLAG_SLEEPING (0x1 << 1)
+
+//*********************************************************************
+//
+//KERNEL_TASK_FLAG_WAKEUP_*
+// Task flags used by kernel to determine when to wake up a suspended
+// task.
+//
+//*********************************************************************
+
+//
+//KERNEL_TASK_FLAG_WAKEUP_POST_INIT
+// After task has initialized it should suspend and return control to
+// kernel using this flag.
+//
+#define KERNEL_TASK_FLAG_WAKEUP_POST_INIT (0x1 << 2)
+
+//
+//KERNEL_TASK_FLAG_WAKEUP_POST_RESET
+// After task has been reset it should suspend and return control to
+// kernel using this flag. Kernel will reset the task's stack pointer
+// and re-initialize the task.
+//
+#define KERNEL_TASK_FLAG_WAKEUP_POST_RESET (0x1 << 3)
+
+//
+//FIXME: UART0, UART1, I2S? I2C? SPI? Timers? DMA? Should IRQs from 
+//FIXME: these sources be serviced by privileged driver tasks instead 
+//FIXME: of the kernel?
+//
+// If UART0 (PLO11) received data wake task up.
+//
+//#define KERNEL_TASK_FLAG_WAKEUP_UART0_RX (0x2)
+//
+
 
 //*********************************************************************
 //
@@ -110,7 +129,7 @@
 typedef struct _kernel_nd_item {
     union {
         struct {
-            struct _kernel_task_lst *list;
+            struct _kernel_nd_item  **list;
             struct _kernel_nd_item  *next;
             struct _kernel_nd_item  *prev;
         };
@@ -124,31 +143,17 @@ typedef struct _kernel_nd_item {
     u64_t task;
 } kernel_nd_item;
 
-
-//
-//_kernel_task_lst{}
-// A task list can be a linked list or a btree.
-//
-//FIXME: Haven't decided if b-tree is necessary. Unimplemented for now.
-//FIXME: Arrays might be good enough? Use ll's for now.
-//
-typedef struct _kernel_task_lst {
-    kernel_nd_item *root;  //Root of tree / head of linked list.
-    kernel_nd_item *stack; //Stack of unused items.
-    kernel_nd_item items[KERNEL_TASKS_MAX]; //Storage.
-} kernel_task_lst;
-
-
 //
 //kernel_task{}
 // Task state information kept by the kernel.
 //
 typedef struct _kernel_task {
     task_header *header;  //Points at the task header.
-    i64_t       priority; //Task priority used to determine which gets slices of time.
-    u64_t       flags;    //Logical or of KERNEL_TASK_FLAG_*
-    u64_t       sp;       //Task stack pointer used to save/restore context.
-    u64_t       wakeup;   //Number of slices before sleeping task put back on priority queue.
+    i64_t priority;       //Task priority used to determine which gets slices of time.
+    u64_t flags;          //Logical or of KERNEL_TASK_FLAG_*
+    u64_t sp;             //Task stack pointer used to save/restore context.
+    i64_t wakeup;         //Number of slices before sleeping task put back on priority queue.
+    kernel_nd_item node;  //Node in priority queue.
 } kernel_task;
 
 //
@@ -161,8 +166,9 @@ typedef struct _kernel {
     u64_t syscall;              //Non-zero if syscall needs to be serviced.
     u64_t sysarg;               //Argument to syscall.
     u64_t num_tasks;            //Number of tasks. Set by loader.
-    kernel_task_lst sleeping;   //Sleeping tasks.
-    kernel_task_lst queue;      //Priority queue.
+    kernel_nd_item *queue;      //Priority queue.
+    kernel_nd_item *sleep;      //Sleeping tasks.
+    kernel_nd_item *suspend;    //Suspended tasks.
     kernel_task tasks[KERNEL_TASKS_MAX]; //Tasks.
 } kernel;
 
@@ -203,11 +209,16 @@ void kernel_main(kernel *k);
 void kernel_panic(void);
 
 //
+//Returns the address of the kernel in kernel space.
+//
+kernel *kernel_get_pointer();
+
+//
 //kernel_get_sp
 // Get the kernel stack pointer offset.
 //
-inline u64_t kernel_get_sp(kernel *k) {
-    return k->tasks[0].sp;
+inline u64_t kernel_get_sp() {
+    return kernel_get_pointer()->tasks[0].sp;
 }
 
 //
@@ -215,8 +226,6 @@ inline u64_t kernel_get_sp(kernel *k) {
 // Get a pointer to a kernel task structure's SP field for the 
 // currently running task.
 //
-inline u64_t *kernel_get_cur_task_sp_ptr(kernel *k) {
-    return &k->tasks[k->task].sp;
-}
+u64_t *kernel_get_cur_task_sp_ptr();
 
 #endif

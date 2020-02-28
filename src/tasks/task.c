@@ -29,7 +29,6 @@
 
 #include "task.h"
 #include "uart.h"
-#include "kernel.h"
 
 inline task_list_item *task_get_list_item(u64_t task) {
     task_list_item *li = (task_list_item *) task_get_base_addr(task);
@@ -67,10 +66,10 @@ void task_header_rebase(u64_t task) {
     uart_u64hex_s(base);
     uart_puts("\n");
 
-    uart_puts("rpi3rtos::task_header_rebase(): main() ");
-    uart_u64hex_s((u64_t) th->main);
+    uart_puts("rpi3rtos::task_header_rebase(): init() ");
+    uart_u64hex_s((u64_t) th->init);
     uart_puts("->");
-    uart_u64hex_s((u64_t) th->main + base);
+    uart_u64hex_s((u64_t) th->init + base);
     uart_puts("\n");
 
     uart_puts("rpi3rtos::task_header_rebase(): reset() ");
@@ -79,7 +78,7 @@ void task_header_rebase(u64_t task) {
     uart_u64hex_s((u64_t) th->reset + base);
     uart_puts("\n");
 
-    th->main  = (taskfn)(((char *) th->main)  + base);
+    th->init  = (taskfn)(((char *) th->init)  + base);
     th->reset = (taskfn)(((char *) th->reset) + base);
 }
 
@@ -100,6 +99,10 @@ void task_bss_zero(u64_t task) {
     }
 }
 
+//
+//task_suspend()
+// Kernel service call 1 is suspend.
+//
 void task_suspend(u64_t wakeup) {
     asm volatile (
         "mov    x0, %0\n"
@@ -108,10 +111,13 @@ void task_suspend(u64_t wakeup) {
     );
 }
 
+//
+//task_sleep()
+//
 void task_sleep(u64_t msecs) {
     asm volatile (
         "mov    x0, %0\n"
-        "svc    2\n" 
+        "svc    2\n"        //Kernel service call 2 is sleep.
         :: "r"(msecs): 
     );
 }

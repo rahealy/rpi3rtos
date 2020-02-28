@@ -6,12 +6,10 @@ SRCDIR       = ../
 
 CSRCS        = $(wildcard *.c) 
 CSRCS       += $(wildcard $(SRCDIR)/hardware/peripherals/*.c)
-CSRCS       += $(wildcard $(SRCDIR)/kernel/*.c)
 CSRCS       += $(wildcard $(SRCDIR)/tasks/*.c)
 
 ASMSRCS      = $(wildcard *.S)
 ASMSRCS     += $(wildcard $(SRCDIR)/hardware/peripherals/*.S)
-ASMSRCS     += $(wildcard $(SRCDIR)/kernel/*.S)
 ASMSRCS     += $(wildcard $(SRCDIR)/tasks/*.S)
 
 COBJS        = $(CSRCS:.c=.o)

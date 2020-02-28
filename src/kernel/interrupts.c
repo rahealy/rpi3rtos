@@ -27,41 +27,31 @@
 #include "timer.h"
 #include "kernel.h"
 
-//
-//Global kernel pointer.
-//
-kernel *g_kernel_ptr;
-
-//
-//interrupts_init()
-// Called by kernel_init() in kernel.c.
-//
-void interrupts_init(kernel *k) {
-    g_kernel_ptr = k;
-}
-
 u64_t current_el0_irq(void) { return 0; }
 u64_t current_el0_fiq(void) { return 0; }
 
 void current_elx_irq(void) {
-    u64_t *sp_ptr = kernel_get_cur_task_sp_ptr(g_kernel_ptr);
-    u64_t sp = kernel_get_sp(g_kernel_ptr);
+    u64_t *sp_ptr;
+    u64_t sp;
 
     uart_puts("rpi3rtos::current_elx_irq(): An interrupt has occurred.\n");
+
+    sp_ptr = kernel_get_cur_task_sp_ptr();
+    sp = kernel_get_sp();
 
     if (*TIMER_CTL_AND_STATUS & TIMER_CTL_AND_STATUS_INT_FLG) {
         uart_puts("rpi3rtos::current_elx_irq(): Timer has expired. Clear and reload.\n");
         timer_clr_and_reload();
-        ++g_kernel_ptr->ticks;
+        ++kernel_get_pointer()->ticks;
     }
 
-//     uart_puts("rpi3rtos::current_elx_irq(): Pointer to current kernel task SP located at ");
-//     uart_u64hex_s((u64_t) sp_ptr);
-//     uart_puts("\n");
-// 
-//     uart_puts("rpi3rtos::current_elx_irq(): Kernel SP is ");
-//     uart_u64hex_s(sp);
-//     uart_puts("\n");
+    uart_puts("rpi3rtos::current_elx_irq(): Pointer to current kernel task SP located at ");
+    uart_u64hex_s((u64_t) sp_ptr);
+    uart_puts("\n");
+
+    uart_puts("rpi3rtos::current_elx_irq(): Kernel SP is ");
+    uart_u64hex_s(sp);
+    uart_puts("\n");
 
     uart_puts("rpi3rtos::current_elx_irq(): Interrupt handled. Switching to kernel task.\n");
 

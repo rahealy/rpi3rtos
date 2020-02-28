@@ -34,6 +34,7 @@
 #include "platform.h"
 #include "mmu.h"
 
+
 //
 //taskfn()
 // Signature of the two task functions called by kernel.
@@ -62,8 +63,13 @@ typedef struct _task_list_item {
     u64_t bss_end; //BSS.
 } task_list_item; 
 
-#define TASK_HEADER_FLAG_RUNNING 0x1
-#define TASK_HEADER_FLAG_TIMEOUT (0x1 << 1)
+
+//
+//TASK_HEADER_FLAG_OVERSLEPT
+// If task was sleeping and kernel couldn't wake it up in time kernel
+// sets this flag.
+//
+#define TASK_HEADER_FLAG_OVERSLEPT 0x1
 
 //
 //task_header{}
@@ -73,8 +79,8 @@ typedef struct _task_list_item {
 typedef struct _task_header {
     u64_t magic;        //Always ASCII 'TASK'
     u64_t flags;        //Status flags.
-    taskfn main;        //Initialze and run.
-    taskfn reset;       //Reset/re-init the task. Check flags for timeout.
+    taskfn init;        //Initialize task then suspend.
+    taskfn reset;       //Reset the task then suspend.
 } task_header;
 
 //FIXME: Need macros to build & init task_list_item & task_header correctly.

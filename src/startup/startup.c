@@ -242,7 +242,7 @@ void startup(void) {
 //Task0 is the kernel. Set stack pointer and branch.
     task0 = task_get_header(0);
     asm ("mov sp, %0" :: "r"(task_get_base_addr(0)) : );
-    task0->main(num_tasks);
+    task0->init(num_tasks);
 
 //task0->start() should never return but just in case.
     uart_puts("rpi3rtos::startup(): task0->main() unexpectedly returned. Panic.\n");

@@ -30,6 +30,13 @@ SECTIONS
         *(.task_header) ;
     }
 
+/*Rebased value always points at memory address of kernel in kernel address space.*/ 
+    .kernel_pointer :
+    {
+        __kernel_pointer = .;
+        *(.kernel_pointer) ;
+    }
+
 /*Initialized r/w memory.*/
     .data : {
         *(.data .data.*)

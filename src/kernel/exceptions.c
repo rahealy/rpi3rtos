@@ -26,25 +26,12 @@
 #include "kernel.h"
 
 //
-//Set by kernel_init() in kernel.c.
-//
-kernel *g_kernel_ptr;
-
-//
-//exceptions_init()
-// Called by kernel.c
-//
-void exceptions_init(kernel *k) {
-    g_kernel_ptr = k;
-}
-
-//
 //ESR_EL1 Exception syndrome register contains information about what
 //        triggered the exception.
 //
-#define EXCEPTIONS_ESR_EL1_EC               0xFC000000 //EC (Exception Class) bits [31:26]
+#define EXCEPTIONS_ESR_EL1_EC               0xFC000000       //EC (Exception Class) bits [31:26]
 #define EXCEPTIONS_ESR_EL1_EC_AARCH64_SVC   (0b010101 << 26) //Exception was a service call.
-#define EXCEPTIONS_ESR_EL1_ISS              0x1FFFFFF
+#define EXCEPTIONS_ESR_EL1_ISS              0x1FFFFFF        //ISS bits [24:0]
 
 //
 //Exception handlers.
@@ -66,33 +53,36 @@ void current_elx_synchronous(u64_t arg) {
 //Determine what caused the exception.
     switch (esr & EXCEPTIONS_ESR_EL1_EC) {
         case EXCEPTIONS_ESR_EL1_EC_AARCH64_SVC: //Syscall from task.
-            sp_ptr = kernel_get_cur_task_sp_ptr(g_kernel_ptr);
-            sp = kernel_get_sp(g_kernel_ptr);
+            sp_ptr = kernel_get_cur_task_sp_ptr();
+            sp = kernel_get_sp();
 
-            uart_puts("rpi3rtos::current_elx_synchronous(): Exception is a syscall from task ");
-            uart_u64hex_s(g_kernel_ptr->task);
+            uart_puts("rpi3rtos::current_elx_synchronous(): "
+                      "Exception is a syscall from task ");
+            uart_u64hex_s(kernel_get_pointer()->task);
             uart_puts(".\n");
 
-            g_kernel_ptr->syscall = (esr & EXCEPTIONS_ESR_EL1_ISS); //Syscall number in ISS.
-            g_kernel_ptr->sysarg  = arg; //Argument passed in x0.
+            kernel_get_pointer()->syscall = (esr & EXCEPTIONS_ESR_EL1_ISS); //Syscall number in ISS.
+            kernel_get_pointer()->sysarg  = arg; //Argument passed in x0.
 
             uart_puts("rpi3rtos::current_elx_synchronous(): Syscall is ");
-            uart_u64hex_s(g_kernel_ptr->syscall);
+            uart_u64hex_s(kernel_get_pointer()->syscall);
             uart_puts(".\n");
 
             uart_puts("rpi3rtos::current_elx_synchronous(): Sysarg is ");
-            uart_u64hex_s(g_kernel_ptr->sysarg);
+            uart_u64hex_s(kernel_get_pointer()->sysarg);
             uart_puts(".\n");
 
-//             uart_puts("rpi3rtos::current_elx_synchronous(): Pointer to current kernel task SP located at ");
-//             uart_u64hex_s((u64_t) kernel_get_cur_task_sp_ptr(g_kernel_ptr));
-//             uart_puts("\n");
-// 
-//             uart_puts("rpi3rtos::current_elx_synchronous(): Kernel SP is ");
-//             uart_u64hex_s((u64_t) kernel_get_sp(g_kernel_ptr));
-//             uart_puts("\n");
+            uart_puts("rpi3rtos::current_elx_synchronous(): "
+                      "Pointer to current kernel task SP located at ");
+            uart_u64hex_s((u64_t) sp_ptr);
+            uart_puts("\n");
 
-            uart_puts("rpi3rtos::current_elx_synchronous(): Exception handled. Switching to kernel task.\n");
+            uart_puts("rpi3rtos::current_elx_synchronous(): Kernel SP is ");
+            uart_u64hex_s(sp);
+            uart_puts("\n");
+
+            uart_puts("rpi3rtos::current_elx_synchronous(): "
+                      "Exception handled. Switching to kernel task.\n");
 
 //
 //Exception handler stub expects the following conditions after return:

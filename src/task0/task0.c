@@ -36,15 +36,17 @@ void task0_panic() {
     }
 }
 
-void task0_main(u64_t num_tasks) {
+void task0_init(u64_t num_tasks) {
     kernel k;
     uart_puts("rpi3rtos::task0_main(): Initialize and branch to kernel_main().\n");
     kernel_init(&k, num_tasks);
     kernel_main(&k);
 }
 
-void task0_reset(u64_t arg) {}
-void task0_start(u64_t arg) {}
+void task0_reset(u64_t num_tasks) {
+    uart_puts("rpi3rtos::task0_reset(): Should never get here. Panic.\n");
+    kernel_panic();
+}
 
 //
 //From linker script in order of appearance in memory.
@@ -78,6 +80,6 @@ volatile task_header task0_header
     __attribute__ ((section (".task_header"))) 
     __attribute__ ((__used__)) = {
     TASK_HEADER_MAGIC, 0,
-    task0_main,
+    task0_init,
     task0_reset,
 };

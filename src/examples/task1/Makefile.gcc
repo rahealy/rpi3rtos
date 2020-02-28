@@ -8,7 +8,7 @@
 
 SRCDIR       = ../../
 
-CSRCS        = $(wildcard *.c) 
+CSRCS        = $(wildcard *.c)
 CSRCS       += $(wildcard $(SRCDIR)/hardware/peripherals/*.c) 
 CSRCS       += $(wildcard $(SRCDIR)/tasks/*.c)
 

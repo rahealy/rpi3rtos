@@ -54,3 +54,6 @@ dkms.conf
 
 # development specific files that don't belong in the repo
 **/dev
+
+# Headers generated for inclusion in asm files.
+*.inc
