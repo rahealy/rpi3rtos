@@ -1,5 +1,5 @@
 
-task1.elf:     file format elf64-littleaarch64
+task2.elf:     file format elf64-littleaarch64
 architecture: aarch64, flags 0x00000112:
 EXEC_P, HAS_SYMS, D_PAGED
 start address 0x0000000000000030
@@ -21,7 +21,7 @@ Idx Name          Size      VMA               LMA               File off  Algn
 
 Disassembly of section .text:
 
-0000000000000030 <task1_reset>:
+0000000000000030 <task2_reset>:
   30:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
   34:	910003fd 	mov	x29, sp
   38:	f9000bf3 	str	x19, [sp, #16]
@@ -41,11 +41,11 @@ Disassembly of section .text:
   70:	14000382 	b	e78 <task_suspend>
   74:	d503201f 	nop
 
-0000000000000078 <task1_counter_init>:
+0000000000000078 <task2_counter_init>:
   78:	f900001f 	str	xzr, [x0]
   7c:	d65f03c0 	ret
 
-0000000000000080 <task1_main>:
+0000000000000080 <task2_main>:
   80:	a9bb7bfd 	stp	x29, x30, [sp, #-80]!
   84:	910003fd 	mov	x29, sp
   88:	a9025bf5 	stp	x21, x22, [sp, #32]
@@ -56,50 +56,50 @@ Disassembly of section .text:
   9c:	d2800016 	mov	x22, #0x0                   	// #0
   a0:	a90363f7 	stp	x23, x24, [sp, #48]
   a4:	9101c2b8 	add	x24, x21, #0x70
-  a8:	d0000017 	adrp	x23, 2000 <task1_header>
+  a8:	d0000017 	adrp	x23, 2000 <task2_header>
   ac:	f90023f9 	str	x25, [sp, #64]
   b0:	9101a2b9 	add	x25, x21, #0x68
   b4:	d503201f 	nop
-  b8:	d2800013 	mov	x19, #0x0                   	// #0
-  bc:	aa1303e0 	mov	x0, x19
-  c0:	940000f4 	bl	490 <uart_u64hex_s>
-  c4:	91000673 	add	x19, x19, #0x1
-  c8:	aa1403e0 	mov	x0, x20
-  cc:	94000091 	bl	310 <uart_puts>
-  d0:	f100167f 	cmp	x19, #0x5
-  d4:	54ffff41 	b.ne	bc <task1_main+0x3c>  // b.any
-  d8:	aa1903e0 	mov	x0, x25
-  dc:	9400008d 	bl	310 <uart_puts>
-  e0:	aa1803e0 	mov	x0, x24
-  e4:	910016d6 	add	x22, x22, #0x5
-  e8:	9400008a 	bl	310 <uart_puts>
-  ec:	910002f3 	add	x19, x23, #0x0
-  f0:	aa1603e0 	mov	x0, x22
-  f4:	940000e7 	bl	490 <uart_u64hex_s>
-  f8:	910282a0 	add	x0, x21, #0xa0
-  fc:	94000085 	bl	310 <uart_puts>
- 100:	9102a2a0 	add	x0, x21, #0xa8
- 104:	94000083 	bl	310 <uart_puts>
- 108:	d280fa00 	mov	x0, #0x7d0                 	// #2000
- 10c:	940000e1 	bl	490 <uart_u64hex_s>
- 110:	910322a0 	add	x0, x21, #0xc8
- 114:	9400007f 	bl	310 <uart_puts>
- 118:	d280fa00 	mov	x0, #0x7d0                 	// #2000
- 11c:	9400035b 	bl	e88 <task_sleep>
- 120:	f9400660 	ldr	x0, [x19, #8]
- 124:	360000e0 	tbz	w0, #0, 140 <task1_main+0xc0>
- 128:	9103e2a0 	add	x0, x21, #0xf8
- 12c:	94000079 	bl	310 <uart_puts>
- 130:	f9400660 	ldr	x0, [x19, #8]
- 134:	927ff800 	and	x0, x0, #0xfffffffffffffffe
- 138:	f9000660 	str	x0, [x19, #8]
- 13c:	17ffffdf 	b	b8 <task1_main+0x38>
- 140:	9104c2a0 	add	x0, x21, #0x130
- 144:	94000073 	bl	310 <uart_puts>
- 148:	17ffffdc 	b	b8 <task1_main+0x38>
- 14c:	d503201f 	nop
+  b8:	d2800153 	mov	x19, #0xa                   	// #10
+  bc:	d503201f 	nop
+  c0:	aa1303e0 	mov	x0, x19
+  c4:	940000f3 	bl	490 <uart_u64hex_s>
+  c8:	91000673 	add	x19, x19, #0x1
+  cc:	aa1403e0 	mov	x0, x20
+  d0:	94000090 	bl	310 <uart_puts>
+  d4:	f100427f 	cmp	x19, #0x10
+  d8:	54ffff41 	b.ne	c0 <task2_main+0x40>  // b.any
+  dc:	aa1903e0 	mov	x0, x25
+  e0:	9400008c 	bl	310 <uart_puts>
+  e4:	aa1803e0 	mov	x0, x24
+  e8:	91001ad6 	add	x22, x22, #0x6
+  ec:	94000089 	bl	310 <uart_puts>
+  f0:	910002f3 	add	x19, x23, #0x0
+  f4:	aa1603e0 	mov	x0, x22
+  f8:	940000e6 	bl	490 <uart_u64hex_s>
+  fc:	910282a0 	add	x0, x21, #0xa0
+ 100:	94000084 	bl	310 <uart_puts>
+ 104:	9102a2a0 	add	x0, x21, #0xa8
+ 108:	94000082 	bl	310 <uart_puts>
+ 10c:	d280fa00 	mov	x0, #0x7d0                 	// #2000
+ 110:	940000e0 	bl	490 <uart_u64hex_s>
+ 114:	910322a0 	add	x0, x21, #0xc8
+ 118:	9400007e 	bl	310 <uart_puts>
+ 11c:	d280fa00 	mov	x0, #0x7d0                 	// #2000
+ 120:	9400035a 	bl	e88 <task_sleep>
+ 124:	f9400660 	ldr	x0, [x19, #8]
+ 128:	360000e0 	tbz	w0, #0, 144 <task2_main+0xc4>
+ 12c:	9103e2a0 	add	x0, x21, #0xf8
+ 130:	94000078 	bl	310 <uart_puts>
+ 134:	f9400660 	ldr	x0, [x19, #8]
+ 138:	927ff800 	and	x0, x0, #0xfffffffffffffffe
+ 13c:	f9000660 	str	x0, [x19, #8]
+ 140:	17ffffde 	b	b8 <task2_main+0x38>
+ 144:	9104c2a0 	add	x0, x21, #0x130
+ 148:	94000072 	bl	310 <uart_puts>
+ 14c:	17ffffdb 	b	b8 <task2_main+0x38>
 
-0000000000000150 <task1_init>:
+0000000000000150 <task2_init>:
  150:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
  154:	910003fd 	mov	x29, sp
  158:	f9000bf3 	str	x19, [sp, #16]
@@ -117,7 +117,7 @@ Disassembly of section .text:
  188:	9400033c 	bl	e78 <task_suspend>
  18c:	91070260 	add	x0, x19, #0x1c0
  190:	94000060 	bl	310 <uart_puts>
- 194:	97ffffbb 	bl	80 <task1_main>
+ 194:	97ffffbb 	bl	80 <task2_main>
 
 0000000000000198 <uart_init>:
  198:	a9b67bfd 	stp	x29, x30, [sp, #-160]!
@@ -417,7 +417,7 @@ Disassembly of section .text:
  5f0:	8b020022 	add	x2, x1, x2
  5f4:	eb02003f 	cmp	x1, x2
  5f8:	540001c2 	b.cs	630 <mmu_enable_level_3_table_rw_blks+0x40>  // b.hs, b.nlast
- 5fc:	d0000004 	adrp	x4, 2000 <task1_header>
+ 5fc:	d0000004 	adrp	x4, 2000 <task2_header>
  600:	8b002423 	add	x3, x1, x0, lsl #9
  604:	d280e0e5 	mov	x5, #0x707                 	// #1799
  608:	f9401884 	ldr	x4, [x4, #48]
@@ -437,7 +437,7 @@ Disassembly of section .text:
  638:	8b020022 	add	x2, x1, x2
  63c:	eb02003f 	cmp	x1, x2
  640:	540001c2 	b.cs	678 <mmu_enable_level_3_table_rox_blks+0x40>  // b.hs, b.nlast
- 644:	d0000004 	adrp	x4, 2000 <task1_header>
+ 644:	d0000004 	adrp	x4, 2000 <task2_header>
  648:	8b002423 	add	x3, x1, x0, lsl #9
  64c:	d374cc20 	lsl	x0, x1, #12
  650:	d374cc42 	lsl	x2, x2, #12
@@ -498,7 +498,7 @@ Disassembly of section .text:
  724:	97fffefb 	bl	310 <uart_puts>
  728:	f107fe7f 	cmp	x19, #0x1ff
  72c:	54fffdc8 	b.hi	6e4 <mmu_enable_level_3_table+0x64>  // b.pmore
- 730:	d0000001 	adrp	x1, 2000 <task1_header>
+ 730:	d0000001 	adrp	x1, 2000 <task2_header>
  734:	8b152675 	add	x21, x19, x21, lsl #9
  738:	d280e0e0 	mov	x0, #0x707                 	// #1799
  73c:	b20b03e2 	mov	x2, #0x20000000200000      	// #9007199256838144
@@ -530,7 +530,7 @@ Disassembly of section .text:
  7a4:	97fffedb 	bl	310 <uart_puts>
  7a8:	eb14027f 	cmp	x19, x20
  7ac:	54fff989 	b.ls	6dc <mmu_enable_level_3_table+0x5c>  // b.plast
- 7b0:	d0000002 	adrp	x2, 2000 <task1_header>
+ 7b0:	d0000002 	adrp	x2, 2000 <task2_header>
  7b4:	8b152680 	add	x0, x20, x21, lsl #9
  7b8:	d374ce83 	lsl	x3, x20, #12
  7bc:	d374ce61 	lsl	x1, x19, #12
@@ -552,7 +552,7 @@ Disassembly of section .text:
  7fc:	91016360 	add	x0, x27, #0x58
  800:	97fffec4 	bl	310 <uart_puts>
  804:	b4fff694 	cbz	x20, 6d4 <mmu_enable_level_3_table+0x54>
- 808:	d0000001 	adrp	x1, 2000 <task1_header>
+ 808:	d0000001 	adrp	x1, 2000 <task2_header>
  80c:	d280e0e0 	mov	x0, #0x707                 	// #1799
  810:	f2e00400 	movk	x0, #0x20, lsl #48
  814:	f9401821 	ldr	x1, [x1, #48]
@@ -591,8 +591,8 @@ Disassembly of section .text:
  890:	cb1902f7 	sub	x23, x23, x25
  894:	97fffe9f 	bl	310 <uart_puts>
  898:	91024296 	add	x22, x20, #0x90
- 89c:	d0000002 	adrp	x2, 2000 <task1_header>
- 8a0:	d0000001 	adrp	x1, 2000 <task1_header>
+ 89c:	d0000002 	adrp	x2, 2000 <task2_header>
+ 8a0:	d0000001 	adrp	x1, 2000 <task2_header>
  8a4:	d369a260 	lsl	x0, x19, #23
  8a8:	d2800015 	mov	x21, #0x0                   	// #0
  8ac:	f9401842 	ldr	x2, [x2, #48]
@@ -658,7 +658,7 @@ Disassembly of section .text:
  994:	97fffef7 	bl	570 <mmu_print_range>
  998:	91016260 	add	x0, x19, #0x58
  99c:	97fffe5d 	bl	310 <uart_puts>
- 9a0:	d0000000 	adrp	x0, 2000 <task1_header>
+ 9a0:	d0000000 	adrp	x0, 2000 <task2_header>
  9a4:	d280c028 	mov	x8, #0x601                 	// #1537
  9a8:	d280c027 	mov	x7, #0x601                 	// #1537
  9ac:	d280c026 	mov	x6, #0x601                 	// #1537

@@ -1,9 +1,5 @@
 #
-# Compile to object files.
-#
-
-#
-# Builds the startup stub that gets loaded by the hardware to 0x00080000
+# Build example task.
 #
 
 SRCDIR       = ../../

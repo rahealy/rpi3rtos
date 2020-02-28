@@ -451,6 +451,12 @@ int kernel_init(kernel *k, u64_t num_tasks) {
 //Push task node onto suspend list.
         k->tasks[k->task].flags |= k->sysarg;
         kernel_suspend_task_node_add(k, k->task);
+        k->syscall = 0; //Reset
+        k->sysarg  = 0; //Reset
+
+        uart_puts("rpi3rtos::kernel_init(): k->suspend is ");
+        uart_u64hex_s((u64_t) k->suspend);
+        uart_puts("\n");
     }
 
     uart_puts("rpi3rtos::kernel_init(): Kernel tasks initialized.\n");
@@ -479,27 +485,31 @@ void kernel_service_sleeping(kernel *k) {
 
                 if (0 == k->tasks[cur->task].wakeup) {
 //Wake up. Remove from sleep list and add to priority queue.
+                    kernel_nd_item *nd = cur;
+                    cur = cur->next;
+                    
                     uart_puts("rpi3rtos::kernel_service_sleeping(): Task ");
-                    uart_u64hex_s(cur->task);
+                    uart_u64hex_s(nd->task);
                     uart_puts(" is ready to wake up.\n");
-
-                    k->tasks[cur->task].flags &= ~KERNEL_TASK_FLAG_SLEEPING;
-
 //Update queue.
-                    kernel_sleep_task_node_rmv(k, cur->task);        //Remove from sleep list.
-                    kernel_queue_task_node_add(k, cur->task);        //Add to queue.
+                    k->tasks[nd->task].flags &= ~KERNEL_TASK_FLAG_SLEEPING;
+                    kernel_sleep_task_node_rmv(k, nd->task); //Remove from sleep list.
+                    kernel_queue_task_node_add(k, nd->task); //Add to queue.
+                    continue;
                 } else if (k->tasks[cur->task].wakeup < 0) {
 //Wake up. Remove from sleep list and add to priority queue.
+                    kernel_nd_item *nd = cur;
+                    cur = cur->next;
+
                     uart_puts("rpi3rtos::kernel_service_sleeping(): Task ");
                     uart_u64hex_s(cur->task);
                     uart_puts(" overslept and is ready to wake up.\n");
-
-                    k->tasks[cur->task].flags &= ~KERNEL_TASK_FLAG_SLEEPING;
-                    k->tasks[cur->task].header->flags |= TASK_HEADER_FLAG_OVERSLEPT;
-
 //Update queue.
-                    kernel_sleep_task_node_rmv(k, cur->task);        //Remove from sleep list.
-                    kernel_queue_task_node_add(k, cur->task);        //Add to queue.
+                    k->tasks[nd->task].flags &= ~KERNEL_TASK_FLAG_SLEEPING;
+                    k->tasks[nd->task].header->flags |= TASK_HEADER_FLAG_OVERSLEPT;
+                    kernel_sleep_task_node_rmv(k, nd->task); //Remove from sleep list.
+                    kernel_queue_task_node_add(k, nd->task); //Add to queue.
+                    continue;
                 }
             }
             cur = cur->next;
@@ -516,7 +526,7 @@ void kernel_service_sleeping(kernel *k) {
 //
 void kernel_service_suspended(kernel *k) {
     kernel_nd_item *cur = k->suspend;
-//    uart_puts("rpi3rtos::kernel_service_suspended(): Servicing suspended tasks.");
+    kernel_nd_item *nd;
 
     while(cur) {
         uart_puts("rpi3rtos::kernel_service_suspended(): Servicing suspended. Cur node is ");
@@ -534,21 +544,24 @@ void kernel_service_suspended(kernel *k) {
             if (k->tasks[cur->task].flags & 
                 KERNEL_TASK_FLAG_WAKEUP_POST_INIT)
             {
+                nd = cur;
+                cur = cur->next;
+
                 //Task was suspended after initialization.
-                k->tasks[cur->task].flags &= ~KERNEL_TASK_FLAG_WAKEUP_POST_INIT;
-                k->tasks[cur->task].header->flags |= 0x0;        //Nothing to do here.
-                kernel_suspend_task_node_rmv(k, cur->task);      //Remove from suspend list.
-                kernel_queue_task_node_add(k, cur->task);        //Add to queue.
+                k->tasks[nd->task].flags &= ~KERNEL_TASK_FLAG_WAKEUP_POST_INIT;
+                k->tasks[nd->task].header->flags |= 0x0;        //Nothing to do here.
+                kernel_suspend_task_node_rmv(k, nd->task);      //Remove from suspend list.
+                kernel_queue_task_node_add(k, nd->task);        //Add to queue.
                 
                 uart_puts("rpi3rtos::kernel_service_suspended(): k->queue = ");
                 uart_u64hex_s((u64_t) k->queue);
                 uart_puts("\n");
+
+                continue;
             }
         }
         cur = cur->next;
     }
-
-//    uart_puts("rpi3rtos::kernel_service_suspended(): Suspended tasks serviced.");
 }
 
 void kernel_service_syscall(kernel *k) {
@@ -557,11 +570,11 @@ void kernel_service_syscall(kernel *k) {
         break;
 
         case KERNEL_SYSCALL_SLEEP:
-            uart_puts("rpi3rtos::kernel_main(): Task ");
+            uart_puts("rpi3rtos::kernel_service_syscall(): Task ");
             uart_u64hex_s(k->task);
             uart_puts(" is requesting sleep...\n");
 
-            uart_puts("rpi3rtos::kernel_main(): Requested sleep duration (ms): ");
+            uart_puts("rpi3rtos::kernel_service_syscall(): Requested sleep duration (ms): ");
             uart_u64hex_s(k->sysarg);
             uart_puts("\n");
 
@@ -569,16 +582,17 @@ void kernel_service_syscall(kernel *k) {
             k->tasks[k->task].wakeup = (k->sysarg + KERNEL_TICK_DURATION_MS - 1) /
                                        KERNEL_TICK_DURATION_MS;
 
-            uart_puts("rpi3rtos::kernel_main(): Rounded up to nearest kernel tick (ticks): ");
+            uart_puts("rpi3rtos::kernel_service_syscall(): "
+                      "Rounded up to nearest kernel tick (ticks): ");
             uart_u64hex_s(k->tasks[k->task].wakeup);
             uart_puts("\n");
 
 //Update queue.
-            uart_puts("rpi3rtos::kernel_service_suspended(): Remove from queue.\n");
+            uart_puts("rpi3rtos::kernel_service_syscall(): Remove from queue.\n");
 
             kernel_queue_task_node_rmv(k, k->task); //Remove from queue.
             
-            uart_puts("rpi3rtos::kernel_service_suspended(): k->queue = ");
+            uart_puts("rpi3rtos::kernel_service_syscall(): k->queue = ");
             uart_u64hex_s((u64_t) k->queue);
             uart_puts("\n");
 
@@ -590,7 +604,7 @@ void kernel_service_syscall(kernel *k) {
         break;
 
         case KERNEL_SYSCALL_SUSPEND:
-            uart_puts("rpi3rtos::kernel_main(): Task ");
+            uart_puts("rpi3rtos::kernel_service_syscall(): Task ");
             uart_u64hex_s(k->task);
             uart_puts(" is requesting suspend...\n");
 
@@ -613,7 +627,7 @@ void kernel_service_syscall(kernel *k) {
         break;
 
         default:
-            uart_puts("rpi3rtos::kernel_main(): Task ");
+            uart_puts("rpi3rtos::kernel_service_syscall(): Task ");
             uart_u64hex_s(k->task);
             uart_puts(" requested unrecognized syscall ");
             uart_u64hex_s(k->syscall);            

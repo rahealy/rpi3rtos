@@ -1,9 +1,5 @@
 #
-# Compile to object files.
-#
-
-#
-# Builds the startup stub that gets loaded by the hardware to 0x00080000
+# Build example task.
 #
 
 SRCDIR       = ../../
@@ -33,11 +29,11 @@ OBJDUMPFLGS  = --disassemble --file-headers --section-headers
 # Targets
 #######################################################################
 
-all: task1.img
+all: task2.img
 
-task1.img: $(COBJS) $(ASMOBJS)
-	aarch64-elf-ld -nostdlib -nostartfiles $(ASMOBJS) $(COBJS) -T link.ld -o task1.elf
-	aarch64-elf-objcopy -O binary task1.elf task1.img
+task2.img: $(COBJS) $(ASMOBJS)
+	aarch64-elf-ld -nostdlib -nostartfiles $(ASMOBJS) $(COBJS) -T link.ld -o task2.elf
+	aarch64-elf-objcopy -O binary task2.elf task2.img
 
 %.o: %.c
 	aarch64-elf-gcc $(CFLAGS) $(CINCLUDES) -c $< -o $@
@@ -51,4 +47,4 @@ clean:
 	-rm -f *.o
 
 objdump:
-	aarch64-elf-objdump $(OBJDUMPFLGS) task1.elf > $(SRCDIR)/../debug/task1.lst
+	aarch64-elf-objdump $(OBJDUMPFLGS) task2.elf > $(SRCDIR)/../debug/task2.lst
