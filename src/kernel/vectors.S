@@ -117,9 +117,6 @@
 .macro SAVE_CALL_RESTORE_EXC origin handler
 .org \origin
     msr     daifset, #3             //Disable IRQ and FIQ interrupts.
-/*    mrs     x0,  ELR_EL1            //x0 = ELR_EL1
-    add     x0, x0, #4              //Increment link register past exception instruction.
-    msr     ELR_EL1, x0             //Store modified link register.*/
     SAVE_CONTEXT                    //Save context to current stack.
     bl      \handler                //Call handler.
     cbz     x0, 1f                  //Test for context switch. x0 = ptr and x1 = sp.

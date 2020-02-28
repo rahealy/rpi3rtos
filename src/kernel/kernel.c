@@ -374,6 +374,15 @@ int kernel_init(kernel *k, u64_t num_tasks) {
     uart_puts("\n");
     asm volatile ("msr  vbar_el1, %0\n" :: "r"(__exception_vectors_start + base) :);
 
+//Initialize kernel specifics.
+    k->task    = 0; //Reset
+    k->ticks   = 0; //Reset
+    k->syscall = 0; //Reset
+    k->sysarg  = 0; //Reset
+    k->queue   = 0; //Reset
+    k->sleep   = 0; //Reset
+    k->suspend = 0; //Reset
+
 //Initialize list of tasks.
     uart_puts("rpi3rtos::kernel_init(): Initializing kernel task headers...\n");
     for (i = 0; i < k->num_tasks; ++i) {
@@ -445,15 +454,6 @@ int kernel_init(kernel *k, u64_t num_tasks) {
     }
 
     uart_puts("rpi3rtos::kernel_init(): Kernel tasks initialized.\n");
-
-//Initialize kernel specifics.
-    k->task    = 0; //Reset
-    k->ticks   = 0; //Reset
-    k->syscall = 0; //Reset
-    k->sysarg  = 0; //Reset
-    k->queue   = 0; //Reset
-    k->sleep   = 0; //Reset
-
     uart_puts("rpi3rtos::kernel_init(): Kernel initialized.\n");
 
     return 0;
@@ -504,6 +504,7 @@ void kernel_service_sleeping(kernel *k) {
             }
             cur = cur->next;
         }
+        uart_puts("rpi3rtos::kernel_service_sleeping(): Resetting kernel tick counter.\n");
         k->ticks = 0;
     }
 }

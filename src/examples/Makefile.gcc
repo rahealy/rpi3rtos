@@ -4,3 +4,4 @@
 
 clean:
 	$(MAKE) -f Makefile.gcc -C ./task1 clean
+	$(MAKE) -f Makefile.gcc -C ./task2 clean

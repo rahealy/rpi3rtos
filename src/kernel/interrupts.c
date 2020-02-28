@@ -31,41 +31,43 @@ u64_t current_el0_irq(void) { return 0; }
 u64_t current_el0_fiq(void) { return 0; }
 
 void current_elx_irq(void) {
-    u64_t *sp_ptr;
-    u64_t sp;
 
     uart_puts("rpi3rtos::current_elx_irq(): An interrupt has occurred.\n");
 
-    sp_ptr = kernel_get_cur_task_sp_ptr();
-    sp = kernel_get_sp();
 
     if (*TIMER_CTL_AND_STATUS & TIMER_CTL_AND_STATUS_INT_FLG) {
         uart_puts("rpi3rtos::current_elx_irq(): Timer has expired. Clear and reload.\n");
         timer_clr_and_reload();
         ++kernel_get_pointer()->ticks;
     }
-
-    uart_puts("rpi3rtos::current_elx_irq(): Pointer to current kernel task SP located at ");
-    uart_u64hex_s((u64_t) sp_ptr);
-    uart_puts("\n");
-
-    uart_puts("rpi3rtos::current_elx_irq(): Kernel SP is ");
-    uart_u64hex_s(sp);
-    uart_puts("\n");
-
-    uart_puts("rpi3rtos::current_elx_irq(): Interrupt handled. Switching to kernel task.\n");
-
+    
 //
 //IRQ handler stub expects the following conditions after return:
 // x0 Pointer to the kernel task SP where current task SP will be 
-//    saved.
+//    saved. If 0 skip.
 // x1 kernel context stack pointer which will be restored.
 //
-    asm volatile (
-        "mov x0, %0\n"
-        "mov x1, %1\n" 
-        :: "r"(sp_ptr), "r"(sp) :
-    );
+    if (kernel_get_pointer()->task) {
+        u64_t *sp_ptr = kernel_get_cur_task_sp_ptr();
+        u64_t sp = kernel_get_sp();
+
+        uart_puts("rpi3rtos::current_elx_irq(): ");
+        uart_puts("Interrupt handled. Switching to kernel task.\n");
+
+        asm volatile (
+            "mov x0, %0\n"
+            "mov x1, %1\n" 
+            :: "r"(sp_ptr), "r"(sp) :
+        );
+    } else { //Task0 is kernel task. No need to switch.
+        uart_puts("rpi3rtos::current_elx_irq(): ");
+        uart_puts("Interrupt handled. Resuming kernel task.\n");
+
+        asm volatile (
+            "mov x0, 0\n"
+            "mov x1, 0\n"
+        );
+    }
 
     return;
 }

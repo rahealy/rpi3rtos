@@ -23,9 +23,9 @@
  */
 
 //
-//task1.c
+//task2.c
 // This is an example of a task that counts up by five, sleeps for
-// TASK1_SLEEP_DURATION_MS rounded up to the nearest kernel tick length
+// TASK2_SLEEP_DURATION_MS rounded up to the nearest kernel tick length
 // then repeats.
 //
 
@@ -34,11 +34,11 @@
 #include "kernel.h"
 
 //
-//TASK1_SLEEP_DURATION_MS
+//TASK2_SLEEP_DURATION_MS
 // Time in milliseconds to sleep. Actual sleep time will be rounded up
 // to the nearest kernel tick.
 //
-#define TASK1_SLEEP_DURATION_MS 2000
+#define TASK2_SLEEP_DURATION_MS 2000
 
 //*********************************************************************
 // Mandatory OS Headers
@@ -80,19 +80,19 @@ static task_list_item tasklistitem
 //
 //Predefines for header.
 //
-void task1_init(u64_t);
-void task1_reset(u64_t);
+void task2_init(u64_t);
+void task2_reset(u64_t);
 
 //
-//task1_header{}
+//task2_header{}
 // Header located in 4kB aligned R/W memory shared by task and kernel.
 //
-volatile task_header task1_header
+volatile task_header task2_header
     __attribute__ ((section (".task_header"))) 
     __attribute__ ((__used__)) = {
     TASK_HEADER_MAGIC, 0,
-    task1_init,
-    task1_reset
+    task2_init,
+    task2_reset
 };
 
 
@@ -101,98 +101,98 @@ volatile task_header task1_header
 //*********************************************************************
 
 //
-//task1_counter{}
+//task2_counter{}
 // Demonstrates a simple counter.
 //
-typedef struct _task1_counter {
+typedef struct _task2_counter {
     u64_t counter;
-} task1_counter;
+} task2_counter;
 
 //
-//task1_counter_init()
-// Initialize task1's counter.
+//task2_counter_init()
+// Initialize task2's counter.
 //
-void task1_counter_init(task1_counter *ti) {
+void task2_counter_init(task2_counter *ti) {
     ti->counter = 0;    
 }
 
 //
-//task1_main()
+//task2_main()
 // Count up five, sleep for 1000ms rounded up to the nearest kernel 
 // tick length then repeat.
 //
-void task1_main() {
+void task2_main() {
     u64_t i;
-    task1_counter task1;
+    task2_counter task2;
     
-    task1_counter_init(&task1);
+    task2_counter_init(&task2);
 
     while(1) {
-        for (i = 0; i < 5; ++i) {
+        for (i = 0xA; i < 0x10; ++i) {
             uart_u64hex_s(i);
             uart_puts(" ");
-            ++task1.counter;
+            ++task2.counter;
         }
 
         uart_puts("\n");
-        uart_puts("task1_main(): Done. Task counter now equals ");
-        uart_u64hex_s(task1.counter);
+        uart_puts("task2_main(): Done. Task counter now equals ");
+        uart_u64hex_s(task2.counter);
         uart_puts(".\n");
 
-        uart_puts("task1_main(): Sleeping for ");
-        uart_u64hex_s(TASK1_SLEEP_DURATION_MS);
+        uart_puts("task2_main(): Sleeping for ");
+        uart_u64hex_s(TASK2_SLEEP_DURATION_MS);
         uart_puts("ms rounded to nearest kernel tick duration...\n");
 
-        task_sleep(TASK1_SLEEP_DURATION_MS);
+        task_sleep(TASK2_SLEEP_DURATION_MS);
 
-        if (task1_header.flags & TASK_HEADER_FLAG_OVERSLEPT) {
-            uart_puts("task1_main(): Overslept. Don't care. Keep working...\n");
-            task1_header.flags &= ~TASK_HEADER_FLAG_OVERSLEPT;
+        if (task2_header.flags & TASK_HEADER_FLAG_OVERSLEPT) {
+            uart_puts("task2_main(): Overslept. Don't care. Keep working...\n");
+            task2_header.flags &= ~TASK_HEADER_FLAG_OVERSLEPT;
         } else {
-            uart_puts("task1_main(): Woke from sleep. Get back to work...\n");
+            uart_puts("task2_main(): Woke from sleep. Get back to work...\n");
         }
     }
 }
 
 //
-//task1_init()
+//task2_init()
 // Manadatory function. Called by kernel on init. For now all tasks
 // must call task_suspend(KERNEL_TASK_FLAG_WAKEUP_POST_INIT) after
 // init is complete. This might move to a macro at some point.
 //
-void task1_init(u64_t arg) {
+void task2_init(u64_t arg) {
     u64_t sptmp;
 
-    uart_puts("task1_init(): Initializing task1 (sp = ");
+    uart_puts("task2_init(): Initializing task2 (sp = ");
     asm volatile ( "mov %0, sp" : "=r"(sptmp) :: );
     uart_u64hex_s(sptmp);
     uart_puts(") ...\n");
 
-    uart_puts("task1_init(): Initialized task1. Suspending...\n");
+    uart_puts("task2_init(): Initialized task2. Suspending...\n");
     task_suspend(KERNEL_TASK_FLAG_WAKEUP_POST_INIT);
 
 //When woke from kernel post-init execution will resume from here.
-    uart_puts("task1_main(): Woke from suspend. Calling task1_main().\n");
-    task1_main();
+    uart_puts("task2_main(): Woke from suspend. Calling task2_main().\n");
+    task2_main();
 }
 
 //
-//task1_reset()
+//task2_reset()
 // Manadatory function. Called by kernel on reset. For now all tasks
 // must call task_suspend(KERNEL_TASK_FLAG_WAKEUP_POST_RESET) after
 // reset is complete. This might move to a macro at some point.
 //
 // After reset is complete kernel will reset task stack pointer and
-// call task1_init().
+// call task2_init().
 //
-void task1_reset(u64_t arg) {
+void task2_reset(u64_t arg) {
     u64_t sptmp;
 
-    uart_puts("task1_reset(): Resetting task1 (sp = ");
+    uart_puts("task2_reset(): Resetting task2 (sp = ");
     asm volatile ( "mov %0, sp" : "=r"(sptmp) :: );
     uart_u64hex_s(sptmp);
     uart_puts(") ...\n");
 
-    uart_puts("task1_reset(): Reset task1. Suspending...\n");
+    uart_puts("task2_reset(): Reset task2. Suspending...\n");
     task_suspend(KERNEL_TASK_FLAG_WAKEUP_POST_RESET);
 }
