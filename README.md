@@ -5,16 +5,31 @@ A recent job application of mine was rejected because it did not contain the ter
 
 ### Current
 
-**Wednesday February 29, 2020** <b>&ast;</b>
+**Wednesday February 29, 2020 (Current)** <b>&ast;</b>
 
+At this point I feel ready to call this a true multi-tasking operating system implementing FIFO and round-robin priority queues. February 10th was my first full day working on this project but I'm going to start counting days from February 9th. That makes 20 days from beginning to working pre-alpha. My informal goal for this point was 2 weeks (14 days.) I skipped a few days here and there to do other things with my life so I'm pretty satisfied with the timeline.
 
+At this point rpi3rtos is **not** a usable OS in the general sense. However, at this time working proof of concept examples are provided. Please see the ~/rpi3rtos/examples/README.md for details.
+
+### What's next:
+
+* Finish MMU
+  * MMU initialization routines are about 3/4 of the way done. 
+* Special high priority tasks which provide interfaces to hardware 
+  * UART, I2C, I2S, PWM, System Timers, ???.
+* Kernel Logging 
+  * De-clutter UART output.
+  * Log levels (1-4)
+* Performance Profiling
+  * How long do things take?
 
 <b>(&ast;)</b> Just a reminder that I'm actively looking for paid work either locally (Twin Cities, Minnesota, USA) or remotely. If you believe I could be of service to your organization or know of an organization that is looking for a dedicated employee committed to a lifetime of learning and serving others please feel free to contact me through [LinkedIn](https://www.linkedin.com/in/richardarthurhealy/). Thank you so much.
 
-**Wednesday February 26, 2020** Update covers several days. Task switching works, task suspend and sleep syscalls are in progress. Decided on a sorted linked list for task priority - currently the OS is limited to 8 tasks so btree or other data structure seems unnecessary. MMU is on hold - tasks need to behave on their own for now. Currently the kernel clock tick duration is one second to allow all the debugging messages to scroll by. Looking to get a pre-alpha release out later today.
-
 
 ### Older
+
+**Wednesday February 26, 2020** Update covers several days. Task switching works, task suspend and sleep syscalls are in progress. Decided on a sorted linked list for task priority - currently the OS is limited to 8 tasks so btree or other data structure seems unnecessary. MMU is on hold - tasks need to behave on their own for now. Currently the kernel clock tick duration is one second to allow all the debugging messages to scroll by. Looking to get a pre-alpha release out later today.
+
 
 **Saturday February 22, 2020 0752** - Update covers several days. Built GCC aarch64-elf cross compiler. QEMU doesn't support RPi3's system timer so switched over to local timer on core0. GCC always puts a `.got` section in the elf. Since this is silent it was necessary to put a `.got` section in the linker script so the linker script variables aligned to what is output.
 
