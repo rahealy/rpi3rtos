@@ -1,0 +1,64 @@
+#
+# Builds example image.
+#
+
+SRCDIR       = ../../src
+KERNEL_IMAGE = kernel8.img
+
+#######################################################################
+# Targets
+#######################################################################
+
+all: kernel8.img
+
+kernel8.img:
+	$(MAKE) -f Makefile.gcc -C $(SRCDIR)/hardware all
+	$(MAKE) -f Makefile.gcc -C $(SRCDIR)/startup startup.img objdump
+	$(MAKE) -f Makefile.gcc -C $(SRCDIR)/task0 task0.img objdump
+	$(MAKE) -f Makefile.gcc -C $(SRCDIR)/taskN taskN.img objdump
+	$(MAKE) -f Makefile.gcc -C ./task1 task1.img objdump
+	$(MAKE) -f Makefile.gcc -C ./task2 task2.img objdump
+	$(MAKE) -f Makefile.gcc -C ./task3 task3.img objdump
+	$(shell) cat \
+	$(SRCDIR)/startup/startup.img \
+	$(SRCDIR)/task0/task0.img \
+	./task1/task1.img \
+	./task2/task2.img \
+	./task3/task3.img \
+	$(SRCDIR)/taskN/taskN.img  >> $(KERNEL_IMAGE)
+
+clean:
+	-rm -f ./$(KERNEL_IMAGE)
+	$(MAKE) -f Makefile.gcc -C $(SRCDIR)/hardware clean
+	$(MAKE) -f Makefile.gcc -C $(SRCDIR)/startup clean
+	$(MAKE) -f Makefile.gcc -C $(SRCDIR)/task0 clean
+	$(MAKE) -f Makefile.gcc -C $(SRCDIR)/taskN clean
+	$(MAKE) -f Makefile.gcc -C ./task1 clean
+	$(MAKE) -f Makefile.gcc -C ./task2 clean
+	$(MAKE) -f Makefile.gcc -C ./task3 clean
+	$(MAKE) -C ./debug clean
+
+objdump:
+	$(MAKE) -f Makefile.gcc -C ./task1 objdump
+	$(MAKE) -f Makefile.gcc -C ./task2 objdump
+	$(MAKE) -f Makefile.gcc -C ./task3 objdump
+
+#######################################################################
+# Experimental Targets
+#######################################################################
+
+#
+#Uses docker container from:
+# https://github.com/rust-embedded/rust-raspi3-OS-tutorials
+# Provided by Andre Richter <andre.o.richter@gmail.com>
+#
+CONTAINER_UTILS   = andrerichter/raspi3-utils
+
+DOCKER_CMD        = docker run -p 1234:1234 -it --rm
+DOCKER_ARG_CURDIR = -v $(shell pwd):/work -w /work
+DOCKER_ARG_TTY    = --privileged -v /dev:/dev
+DOCKER_EXEC_QEMU  = qemu-system-aarch64 -s -S -M raspi3 -kernel $(KERNEL_IMAGE)
+
+qemu:
+	$(DOCKER_CMD) $(DOCKER_ARG_CURDIR) $(CONTAINER_UTILS) \
+	$(DOCKER_EXEC_QEMU) -serial stdio
