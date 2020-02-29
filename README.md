@@ -11,6 +11,8 @@ At this point I feel ready to call this a true multi-tasking operating system im
 
 At this point rpi3rtos is **not** a usable OS in the general sense. However, at this time working proof of concept examples are provided. Please see the ~/rpi3rtos/examples/README.md for details.
 
+<b>(&ast;)</b> Just a reminder that I'm actively looking for paid work either locally (Twin Cities, Minnesota, USA) or remotely. If you believe I could be of service to your organization or know of an organization that is looking for a dedicated employee committed to a lifetime of learning and serving others please feel free to contact me through [LinkedIn](https://www.linkedin.com/in/richardarthurhealy/). Thank you so much.
+
 ### What's next:
 
 * Finish MMU
@@ -22,9 +24,6 @@ At this point rpi3rtos is **not** a usable OS in the general sense. However, at 
   * Log levels (1-4)
 * Performance Profiling
   * How long do things take?
-
-<b>(&ast;)</b> Just a reminder that I'm actively looking for paid work either locally (Twin Cities, Minnesota, USA) or remotely. If you believe I could be of service to your organization or know of an organization that is looking for a dedicated employee committed to a lifetime of learning and serving others please feel free to contact me through [LinkedIn](https://www.linkedin.com/in/richardarthurhealy/). Thank you so much.
-
 
 ### Older
 
