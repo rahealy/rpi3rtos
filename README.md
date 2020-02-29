@@ -1,7 +1,7 @@
 # rpi3rtos
 A Simple RTOS for the Raspberry Pi 3
 
-A recent job application of mine was rejected because it did not contain the terms  "RTOS" and "C". As a result I decided to take on a personal daily challenge to write a simple RTOS in C for the Raspberry Pi 3. I'll be leveraging much of what I learned in my [rpi3fxproc](https://github.com/rahealy/rpi3fxproc) project to see how much working code can be written in 1 day, 2 days, and so on...
+A recent job application of mine was rejected because it did not contain the terms  "RTOS" and "C". As a result I decided to take on a personal daily challenge to write a simple RTOS in C for the Raspberry Pi 3. I've leveraged much of what I learned in my [rpi3fxproc](https://github.com/rahealy/rpi3fxproc) project and continue to see how much working code can be written in 1 day, 2 days, and so on...
 
 ### Current
 
@@ -9,11 +9,11 @@ A recent job application of mine was rejected because it did not contain the ter
 
 At this point I feel ready to call this a true multi-tasking operating system implementing FIFO and round-robin priority queues. February 10th was my first full day working on this project but I'm going to start counting days from February 9th. That makes 20 days from beginning to working pre-alpha. My informal goal for this point was 2 weeks (14 days.) I skipped a few days here and there to do other things with my life so I'm still pretty satisfied with the timeline.
 
-At this point rpi3rtos is **not** a usable OS in the general sense. However, at this time working proof of concept examples are provided. Please see the ~/rpi3rtos/examples/README.md for details.
+Right now rpi3rtos is **not** a usable OS in the general sense. However, working proof of concept examples are provided. Please see the ~/rpi3rtos/examples/README.md for details.
 
 <b>(&ast;)</b> Just a reminder that I'm actively looking for paid work either locally (Twin Cities, Minnesota, USA) or remotely. If you believe I could be of service to your organization or know of an organization that is looking for a dedicated employee committed to a lifetime of learning and serving others please feel free to contact me through [LinkedIn](https://www.linkedin.com/in/richardarthurhealy/). Thank you so much.
 
-### What's next:
+**What's next:**
 
 * Finish MMU
   * MMU initialization routines are about 3/4 of the way done. 
