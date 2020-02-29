@@ -5,9 +5,9 @@ A recent job application of mine was rejected because it did not contain the ter
 
 ### Current
 
-**Wednesday February 29, 2020 (Current)** <b>&ast;</b>
+**Saturday February 29, 2020 (Current)** <b>&ast;</b>
 
-At this point I feel ready to call this a true multi-tasking operating system implementing FIFO and round-robin priority queues. February 10th was my first full day working on this project but I'm going to start counting days from February 9th. That makes 20 days from beginning to working pre-alpha. My informal goal for this point was 2 weeks (14 days.) I skipped a few days here and there to do other things with my life so I'm pretty satisfied with the timeline.
+At this point I feel ready to call this a true multi-tasking operating system implementing FIFO and round-robin priority queues. February 10th was my first full day working on this project but I'm going to start counting days from February 9th. That makes 20 days from beginning to working pre-alpha. My informal goal for this point was 2 weeks (14 days.) I skipped a few days here and there to do other things with my life so I'm still pretty satisfied with the timeline.
 
 At this point rpi3rtos is **not** a usable OS in the general sense. However, at this time working proof of concept examples are provided. Please see the ~/rpi3rtos/examples/README.md for details.
 
