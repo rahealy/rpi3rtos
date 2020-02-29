@@ -1,6 +1,9 @@
 # rpi3rtos
 A Simple RTOS for the Raspberry Pi 3
 
+## Examples
+This directory contains working proof of concept examples.
+
 ### Priority And Sleep
 
 This is an example consisting of three tasks which have different priorities and FIFO scheduling. The kernel will run each task in priority order until task requests to be put to sleep.
