@@ -11,7 +11,7 @@ This is an example consisting of three tasks which have requested the same prior
 
 ### Building Examples
 
-Currently, Makefiles are written to be compiled using an `aarch64-elf` targeted gcc cross compiler. Please see the **00_crosscompiler** section in bzt's raspi3-tutorial found [here](https://github.com/bztsrc/raspi3-tutorial) for details on how to build and install a gcc cross compiler.
+Currently, Makefiles are written to be compiled using an **aarch64-elf** targeted gcc cross compiler. Please see the **00_crosscompiler** section in bzt's raspi3-tutorial found [here](https://github.com/bztsrc/raspi3-tutorial) for details on how to build and install a gcc cross compiler.
 
 Once the gcc cross compiler is built and installed install **docker** and **gdb_multiarch** for your platform.
 
