@@ -62,24 +62,24 @@ void current_elx_synchronous(u64_t arg) {
             uart_puts(".\n");
 
             kernel_get_pointer()->syscall = (esr & EXCEPTIONS_ESR_EL1_ISS); //Syscall number in ISS.
-            kernel_get_pointer()->sysarg  = arg; //Argument passed in x0.
+            kernel_get_pointer()->sysarg.value = arg; //Argument passed in x0.
 
             uart_puts("rpi3rtos::current_elx_synchronous(): Syscall is ");
             uart_u64hex_s(kernel_get_pointer()->syscall);
             uart_puts(".\n");
 
             uart_puts("rpi3rtos::current_elx_synchronous(): Sysarg is ");
-            uart_u64hex_s(kernel_get_pointer()->sysarg);
+            uart_u64hex_s(kernel_get_pointer()->sysarg.value);
             uart_puts(".\n");
 
-            uart_puts("rpi3rtos::current_elx_synchronous(): "
-                      "Pointer to current kernel task SP located at ");
-            uart_u64hex_s((u64_t) sp_ptr);
-            uart_puts("\n");
-
-            uart_puts("rpi3rtos::current_elx_synchronous(): Kernel SP is ");
-            uart_u64hex_s(sp);
-            uart_puts("\n");
+//             uart_puts("rpi3rtos::current_elx_synchronous(): "
+//                       "Pointer to current kernel task SP located at ");
+//             uart_u64hex_s((u64_t) sp_ptr);
+//             uart_puts("\n");
+// 
+//             uart_puts("rpi3rtos::current_elx_synchronous(): Kernel SP is ");
+//             uart_u64hex_s(sp);
+//             uart_puts("\n");
 
             uart_puts("rpi3rtos::current_elx_synchronous(): "
                       "Exception handled. Switching to kernel task.\n");

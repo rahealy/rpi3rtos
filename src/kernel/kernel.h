@@ -84,6 +84,44 @@
 #define KERNEL_TASK_FLAG_WAKEUP_POST_RESET (0x1 << 3)
 
 //
+//KERNEL_TASK_FLAG_WAKEUP_CLEAR_ALL
+// Logical and to clear all wakeup flags.
+//
+#define KERNEL_TASK_FLAG_WAKEUP_CLEAR_ALL (~(KERNEL_TASK_FLAG_WAKEUP_POST_INIT & \
+                                             KERNEL_TASK_FLAG_WAKEUP_POST_RESET))
+
+//*********************************************************************
+//
+//KERNEL_TASK_FLAG_QUEUE_*
+// Task flags used by kernel to determine how to manage queue priority
+// for a task.
+//
+//*********************************************************************
+
+//
+//KERNEL_TASK_FLAG_QUEUE_ROUND_ROBIN
+// After tick kernel will move task to the end of the list of tasks 
+// with the same priority and move to next task with same priority in
+// the queue.
+//
+#define KERNEL_TASK_FLAG_QUEUE_ROUND_ROBIN (0x1 << 4)
+
+//
+//KERNEL_TASK_FLAG_QUEUE_FIFO
+// After tick kernel will finish task before moving to the next task
+// with the same priority in the queue.
+//
+#define KERNEL_TASK_FLAG_QUEUE_FIFO (0x1 << 5)
+
+//
+//KERNEL_TASK_FLAG_QUEUE_CLEAR_ALL
+// Logical and to clear all queue flags.
+//
+#define KERNEL_TASK_FLAG_QUEUE_CLEAR_ALL (~(KERNEL_TASK_FLAG_QUEUE_ROUND_ROBIN & \
+                                            KERNEL_TASK_FLAG_QUEUE_FIFO))
+
+
+//
 //FIXME: UART0, UART1, I2S? I2C? SPI? Timers? DMA? Should IRQs from 
 //FIXME: these sources be serviced by privileged driver tasks instead 
 //FIXME: of the kernel?
@@ -122,6 +160,16 @@
 #define KERNEL_SYSCALL_SLEEP   0x2
 
 //
+//KERNEL_SYSCALL_PRIORITY
+// Change task priority in queue. If priority is lower then current
+// task will be suspended and moved down in the queue.
+//
+// x0 bits [31..0] Contain priority 1-N (lowest to highest).
+//    bits [63..32] Contain one of the KERNEL_TASK_FLAG_QUEUE_* flags.
+//
+#define KERNEL_SYSCALL_PRIORITY   0x3
+
+//
 //kernel_nd_item{}
 // Data structure representing items in a linked list or nodes in a
 // binary tree.
@@ -129,7 +177,7 @@
 typedef struct _kernel_nd_item {
     union {
         struct {
-            struct _kernel_nd_item  **list;
+            struct _kernel_nd_lst   *list;
             struct _kernel_nd_item  *next;
             struct _kernel_nd_item  *prev;
         };
@@ -142,6 +190,29 @@ typedef struct _kernel_nd_item {
     };
     u64_t task;
 } kernel_nd_item;
+
+//
+//kernel_nd_lst{}
+// Linked list. Implements a FIFO.
+//
+typedef struct _kernel_nd_lst {
+    kernel_nd_item *head;
+    kernel_nd_item *tail;
+} kernel_nd_lst;
+
+//
+//kernel_sysarg{}
+// Arguments to syscalls may only need to be 32bits.
+//
+typedef struct _kernel_sysarg {
+    union {
+        struct {
+            u32_t lo;
+            u32_t hi;
+        };
+        u64_t value;
+    };
+} kernel_sysarg;
 
 //
 //kernel_task{}
@@ -164,11 +235,11 @@ typedef struct _kernel {
     u64_t task;                 //Currently running task.
     u64_t ticks;                //Number of ticks since kernel last serviced.
     u64_t syscall;              //Non-zero if syscall needs to be serviced.
-    u64_t sysarg;               //Argument to syscall.
+    kernel_sysarg sysarg;       //Argument to syscall.
     u64_t num_tasks;            //Number of tasks. Set by loader.
     kernel_nd_item *queue;      //Priority queue.
-    kernel_nd_item *sleep;      //Sleeping tasks.
-    kernel_nd_item *suspend;    //Suspended tasks.
+    kernel_nd_lst  sleep;      //Sleeping tasks. FIFO.
+    kernel_nd_lst  suspend;    //Suspended tasks. FIFO.
     kernel_task tasks[KERNEL_TASKS_MAX]; //Tasks.
 } kernel;
 

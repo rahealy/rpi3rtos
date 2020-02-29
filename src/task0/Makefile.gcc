@@ -2,7 +2,7 @@
 # Builds task0 which functions as the kernel.
 #
 
-SRCDIR       = ../
+SRCDIR       = ..
 
 CSRCS        = $(wildcard *.c) 
 CSRCS       += $(wildcard $(SRCDIR)/hardware/peripherals/*.c) 
@@ -49,6 +49,7 @@ clean:
 	-rm -f task0.elf
 	-rm -f task0.img
 	-rm -f *.o
+	$(MAKE) -f Makefile.gcc -C $(SRCDIR)/kernel clean
 
 objdump:
 	aarch64-elf-objdump $(OBJDUMPFLGS) task0.elf > $(SRCDIR)/../debug/task0.lst

@@ -5,9 +5,14 @@ A recent job application of mine was rejected because it did not contain the ter
 
 ### Current
 
-**Wednesday February 26, 2020 (Current)** <b>&ast;</b> Update covers several days. Task switching works, task suspend and sleep syscalls are in progress. Decided on a sorted linked list for task priority - currently the OS is limited to 8 tasks so btree or other data structure seems unnecessary. MMU is on hold - tasks need to behave on their own for now. Currently the kernel clock tick duration is one second to allow all the debugging messages to scroll by. Looking to get a pre-alpha release out later today.
+**Wednesday February 29, 2020** <b>&ast;</b>
 
-<b>(&ast;)</b> Just a reminder that I'm actively looking for paid work either locally (Twin Cities, Minnesota, USA) or remotely. If you believe I could be of service to your organization or know of an organization that is looking for a dedicated employee comitted to a lifetime of learning and serving others please feel free to contact me through [LinkedIn](https://www.linkedin.com/in/richardarthurhealy/). Thank you so much.
+
+
+<b>(&ast;)</b> Just a reminder that I'm actively looking for paid work either locally (Twin Cities, Minnesota, USA) or remotely. If you believe I could be of service to your organization or know of an organization that is looking for a dedicated employee committed to a lifetime of learning and serving others please feel free to contact me through [LinkedIn](https://www.linkedin.com/in/richardarthurhealy/). Thank you so much.
+
+**Wednesday February 26, 2020** Update covers several days. Task switching works, task suspend and sleep syscalls are in progress. Decided on a sorted linked list for task priority - currently the OS is limited to 8 tasks so btree or other data structure seems unnecessary. MMU is on hold - tasks need to behave on their own for now. Currently the kernel clock tick duration is one second to allow all the debugging messages to scroll by. Looking to get a pre-alpha release out later today.
+
 
 ### Older
 

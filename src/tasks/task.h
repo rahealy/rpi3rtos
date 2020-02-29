@@ -77,10 +77,12 @@ typedef struct _task_list_item {
 // of 4kB aligned r/w memory.
 //
 typedef struct _task_header {
-    u64_t magic;        //Always ASCII 'TASK'
-    u64_t flags;        //Status flags.
-    taskfn init;        //Initialize task then suspend.
-    taskfn reset;       //Reset the task then suspend.
+    u64_t magic;         //Always ASCII 'TASK'
+    u64_t flags;         //Status flags.
+    i64_t priority;      //Priority. Use task_priority_set() to change.
+    i64_t priority_flgs; //Priority flags. Use task_priority_set() to change.
+    taskfn init;         //Initialize task then suspend.
+    taskfn reset;        //Reset the task then suspend.
 } task_header;
 
 //FIXME: Need macros to build & init task_list_item & task_header correctly.
@@ -136,5 +138,13 @@ void task_suspend(u64_t wakeup);
 // nearest kernel tick duration.
 //
 void task_sleep(u64_t msecs);
+
+//
+//task_priority_set()
+// Set the task's priority. Task may be suspended if priority change
+// moves it lower in the priority queue. Flags can be 0 (no change)
+// or one of the KERNEL_TASK_FLAG_QUEUE_* values.
+//
+void task_priority_set(u64_t priority, u64_t flags);
 
 #endif

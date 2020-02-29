@@ -79,7 +79,7 @@ static task_list_item tasklistitem
 volatile task_header task0_header
     __attribute__ ((section (".task_header"))) 
     __attribute__ ((__used__)) = {
-    TASK_HEADER_MAGIC, 0,
+    TASK_HEADER_MAGIC, 0, 0, 0,
     task0_init,
     task0_reset,
 };

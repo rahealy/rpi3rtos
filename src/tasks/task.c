@@ -101,12 +101,11 @@ void task_bss_zero(u64_t task) {
 
 //
 //task_suspend()
-// Kernel service call 1 is suspend.
 //
 void task_suspend(u64_t wakeup) {
     asm volatile (
         "mov    x0, %0\n"
-        "svc    1\n" 
+        "svc    1\n"        //Kernel service call 1 is suspend.
         :: "r"(wakeup): 
     );
 }
@@ -119,5 +118,18 @@ void task_sleep(u64_t msecs) {
         "mov    x0, %0\n"
         "svc    2\n"        //Kernel service call 2 is sleep.
         :: "r"(msecs): 
+    );
+}
+
+
+//
+//task_priority_set()
+//
+void task_priority_set(u64_t priority, u64_t flags) {
+    u64_t sysarg = priority + (flags << 32);
+    asm volatile (
+        "mov    x0, %0\n"
+        "svc    3\n"        //Kernel service call 3 is set priority.
+        :: "r"(sysarg): 
     );
 }
