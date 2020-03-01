@@ -1,0 +1,50 @@
+#
+# Build example task.
+#
+
+SRCDIR       = ../../../src
+
+CSRCS        = $(wildcard *.c)
+CSRCS       += $(wildcard $(SRCDIR)/hardware/peripherals/*.c) 
+CSRCS       += $(wildcard $(SRCDIR)/tasks/*.c)
+
+ASMSRCS      = $(wildcard *.S)
+ASMSRCS     += $(wildcard $(SRCDIR)/hardware/peripherals/*.S)
+ASMSRCS     += $(wildcard $(SRCDIR)/tasks/*.S)
+
+COBJS        = $(CSRCS:.c=.o)
+ASMOBJS      = $(ASMSRCS:.S=.o)
+
+CFLAGS       = -Wall -O2 -fno-stack-protector -nodefaultlibs -nostartfiles 
+CFLAGS      += -ffreestanding -nostdinc -nostdlib -nostartfiles -fpie
+
+CINCLUDES    = -I "$(SRCDIR)/hardware" 
+CINCLUDES   += -I "$(SRCDIR)/hardware/peripherals" 
+CINCLUDES   += -I "$(SRCDIR)/kernel"
+CINCLUDES   += -I "$(SRCDIR)/tasks"
+
+OBJDUMPFLGS  = --disassemble --file-headers --section-headers 
+
+#######################################################################
+# Targets
+#######################################################################
+
+all: task3.img
+
+task3.img: $(COBJS) $(ASMOBJS)
+	aarch64-elf-ld -nostdlib -nostartfiles $(ASMOBJS) $(COBJS) -T link.ld -o task3.elf
+	aarch64-elf-objcopy -O binary task3.elf task3.img
+
+%.o: %.c
+	aarch64-elf-gcc $(CFLAGS) $(CINCLUDES) -c $< -o $@
+
+%.o: %.S
+	aarch64-elf-gcc $(CFLAGS) $(CINCLUDES) -c $< -o $@
+
+clean:
+	-rm -f task3.elf
+	-rm -f task3.img
+	-rm -f *.o
+
+objdump:
+	aarch64-elf-objdump $(OBJDUMPFLGS) task3.elf > ../debug/task3.lst
